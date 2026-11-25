@@ -4,10 +4,9 @@ Comedy Radar is a listings website for live stand-up comedy in Egypt (local show
 
 ## Read before any work
 Always read these files at the start of a session, and re-read the relevant section before building a feature:
-1. `docs/website-spec.md` — Part 1: overview, content sourcing, tech stack, **brand tokens (section 3)**, routes, public pages, Spotlight, **data model and RLS (section 10)**.
-2. `docs/website-spec-part2.md` — Part 2: accounts and roles, creator dashboard, **super admin panel (11.5)**, SEO, build phases, decisions, build setup.
-3. `docs/brand-assets.md` — brand decisions: logo, colors, fonts, patterns, links.
-4. `docs/aggregator-agent.md` — the show aggregator agent (current priority).
+1. `docs/website-spec.md` — the full website specification: overview and content sourcing, tech stack, **brand tokens (section 3)**, routes, public pages, Spotlight, **data model and RLS (section 10)**, accounts and roles, creator dashboard, **super admin panel (11.5)**, SEO, build phases, decisions, build setup.
+2. `docs/brand-assets.md` — brand decisions: logo, colors, fonts, patterns, links.
+3. `docs/aggregator-agent.md` — the show aggregator agent (current priority).
 
 The specs are the source of truth. If something is unclear or two docs disagree, ask Dina before building. Do not invent product decisions.
 
