@@ -52,8 +52,19 @@ Decided by Dina, 2026-11-26. Success and error messages are never shown in a pil
 - Success: green #157A3F with a tick icon.
 - Error: red #D12A1F with a circled "!" icon.
 - Both pass contrast on white and Lavender. Not for use on Radar Purple.
-- Pills stay only for status tags (Published yellow, Pending pink, Archived outline).
+- Pills stay only for status tags (see "Status" below).
 - In code: `SuccessNote` and `ErrorNote` in `src/components/status-note.tsx`; forms use `FormMessage`.
+
+## Status (pills and icons)
+Decided by Dina, 2026-11-26. One set of status colours across the admin panel and the creator dashboard.
+- Pills are for status only, and only in tables and grids. Compact lists (e.g. Settings > Locations and venues) use small round status icons instead, with the name on hover.
+- Published: green #157A3F with white text; icon = green circle with a white tick. Also used for Live, Verified, Approved, Accepted.
+- Pending: Spotlight Yellow with purple text; icon = yellow circle with a clock. Also used for In review, Waiting.
+- Draft: light grey #ECEAF0 with a dashed grey #A39CB3 border; icon = dashed grey circle with dots.
+- Archived: white with a grey #A39CB3 outline; icon = white circle with a grey archive box. Also used for Expired.
+- Rejected: red #D12A1F with white text; icon = red circle with a white X. Also used for Declined, Not approved.
+- Shows only: Sold out = purple, Cancelled = pink.
+- In code: `StatusPill`, `StatusIcon` and `ShowStatusPill` in `src/components/status.tsx`; colours in `src/lib/status.ts`. Never set status colours by hand on a page.
 
 ## Design references
 *Comedy Radar — Design Canvas* (claude.ai artifact), page "Website pages": row 1 public pages, row 2 creator dashboard, row 3 super admin panel, row 4 supporting and system pages. Each page's content is described in the specs.

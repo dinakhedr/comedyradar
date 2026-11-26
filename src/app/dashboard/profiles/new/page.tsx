@@ -5,6 +5,7 @@ import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { findProfiles, type FoundProfile } from "@/app/actions/profiles";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Create or claim a profile" };
 
@@ -26,7 +27,7 @@ function Result({ p }: { p: FoundProfile }) {
         </span>
         <span className="flex flex-wrap items-center gap-2 text-sm text-radar-purple/75">
           {kindLabel}
-          {p.status === "pending" && <Tag tone="pink">In review</Tag>}
+          {p.status === "pending" && <StatusPill status="pending" label="In review" />}
           {p.status === "published" && p.has_admin && <Tag tone="outline">Has an admin</Tag>}
         </span>
         {p.status === "published" && p.has_admin && (

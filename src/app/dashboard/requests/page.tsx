@@ -12,6 +12,7 @@ import { formatShowDate } from "@/lib/dates";
 import { getRequests, type IncomingInvite, type SentInvite } from "@/lib/data/requests";
 import { describe, kindOf, REQUEST_KINDS, REQUEST_TABS, requestKind, requestTab, tabOf, TYPE_LABEL, type LinkRequest, type RequestKind, type RequestTab } from "@/lib/requests";
 import { SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Requests" };
 
@@ -43,7 +44,7 @@ function LinkCard({ r }: { r: LinkRequest }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="flex flex-wrap items-center gap-2">
           <Tag tone="outline">{TYPE_LABEL[r.type]}</Tag>
-          {tab === "history" && (r.status === "accepted" ? <Tag tone="yellow">Accepted</Tag> : <Tag tone="pink">Declined</Tag>)}
+          {tab === "history" && <StatusPill status={r.status === "accepted" ? "accepted" : "declined"} label={r.status === "accepted" ? "Accepted" : "Declined"} />}
           {tab === "history" && <span className="text-xs font-bold text-radar-purple/70">{r.direction === "incoming" ? "To you" : "Sent by you"}</span>}
         </p>
         <p className="font-bold">{describe(r)}</p>
@@ -107,7 +108,7 @@ function SentInviteCard({ m }: { m: SentInvite }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="flex flex-wrap items-center gap-2">
           <Tag tone="outline">Team invite</Tag>
-          {m.status === "expired" && <Tag tone="pink">Expired</Tag>}
+          {m.status === "expired" && <StatusPill status="expired" label="Expired" />}
         </p>
         <p className="font-bold break-words">You invited {m.invite_email} to your team.</p>
         <p className="text-xs text-radar-purple/70">

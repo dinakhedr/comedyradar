@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CoverImage } from "@/components/placeholder-image";
 import { profileStatus, ROLE_LABELS, type ManagedProfile } from "@/lib/dashboard";
+import { StatusPill } from "@/components/status";
 
 /** Shared pieces of the creator dashboard: white cards, tags, profile cards. */
 
@@ -36,7 +37,7 @@ export function ProfileCard({ p }: { p: ManagedProfile }) {
           {p.kind === "group" ? "Group" : "Comedian"} · {ROLE_LABELS[p.role]}
         </span>
         <span className="flex flex-wrap items-center gap-2">
-          <Tag tone={status.tone}>{status.label}</Tag>
+          <StatusPill status={status.kind} label={status.label} />
           <Link href={`/dashboard/p/${p.slug}/edit${p.kind === "group" ? "?type=group" : ""}`} className="text-sm font-extrabold underline">
             {p.role === "admin" ? "Edit" : "Open"}
             <span className="sr-only"> {p.name}</span>

@@ -2,20 +2,21 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
-import { card, ProfileCard, Tag, yellowBtn, type Tone } from "@/components/dashboard/ui";
+import { card, ProfileCard, yellowBtn } from "@/components/dashboard/ui";
 import { CopyLink } from "@/components/profiles/claim-form";
 import { getMyProfiles } from "@/lib/data/dashboard";
 import { getMyClaims, type MyClaim } from "@/lib/data/profiles";
 import { PROOF_METHODS } from "@/lib/profile-forms";
 import { SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Profiles" };
 
-const CLAIM_STATUS: Record<MyClaim["status"], { label: string; tone: Tone }> = {
-  pending: { label: "Waiting for review", tone: "pink" },
-  approved: { label: "Approved", tone: "yellow" },
-  rejected: { label: "Not approved", tone: "outline" },
-  expired: { label: "Expired", tone: "outline" },
+const CLAIM_STATUS: Record<MyClaim["status"], { label: string }> = {
+  pending: { label: "Waiting for review" },
+  approved: { label: "Approved" },
+  rejected: { label: "Not approved" },
+  expired: { label: "Expired" },
 };
 
 async function siteOrigin() {
@@ -34,7 +35,7 @@ function Claim({ c, origin }: { c: MyClaim; origin: string }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-extrabold">{c.profile_name}</span>
         <span className="text-sm text-radar-purple/75">{c.kind === "group" ? "Group" : "Comedian"}</span>
-        <Tag tone={status.tone}>{status.label}</Tag>
+        <StatusPill status={c.status} label={status.label} />
       </div>
       <p className="text-sm text-radar-purple/80">
         Proof: {method}
