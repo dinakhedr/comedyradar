@@ -187,7 +187,7 @@ async function SidePanel({
                     className="flex flex-wrap items-center gap-2 py-2"
                   >
                     <Link
-                      href={`/admin/profiles?q=${encodeURIComponent(p.name)}`}
+                      href={`${p.kind === "group" ? "/admin/groups" : "/admin/comedians"}?q=${encodeURIComponent(p.name)}`}
                       className="min-w-0 flex-1 font-bold break-words hover:underline"
                     >
                       {p.name}
