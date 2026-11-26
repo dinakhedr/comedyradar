@@ -647,4 +647,24 @@ select pg_temp.check(public.admin_end_placement((select id from public.spotlight
 set local request.jwt.claim.aal = '';
 reset role;
 
+-- ---------------------------------------------------------------- admin activity log
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_activity('', null, '', '', 'all', null, 50) is null, 'only the super admin reads the whole activity log');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select count(*) >= 1 from jsonb_array_elements(public.admin_activity('', null, 'show', '', 'all', null, 50) -> 'rows') r
+                      where r ->> 'target' like 'Show One%'),
+  'the activity log names the show that changed');
+select pg_temp.check((select count(*) >= 1 from jsonb_array_elements(public.admin_activity('', null, 'spotlight', '', 'all', null, 50) -> 'rows') r),
+  'Spotlight placements are logged');
+select pg_temp.check((select (public.admin_activity('', null, '', '', 'all', null, 1) ->> 'more')::boolean
+                             and jsonb_array_length(public.admin_activity('', null, '', '', 'all', null, 1) -> 'rows') = 1),
+  'the activity log comes in pages');
+select pg_temp.check((select count(*) >= 1 from jsonb_array_elements(public.admin_activity('', null, '', 'update', 'all', null, 50) -> 'rows') r
+                      where r -> 'changes' is not null and r -> 'changes' <> 'null'::jsonb),
+  'edits keep the changed fields, before and after');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;
