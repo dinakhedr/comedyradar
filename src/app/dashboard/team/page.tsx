@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 import { removeMember, resendInvite } from "@/app/actions/team";
-import { inputCls, labelCls } from "@/components/auth/fields";
+import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag } from "@/components/dashboard/ui";
 import { CloseIcon } from "@/components/icons";
 import { CopyLink } from "@/components/profiles/claim-form";

@@ -59,7 +59,7 @@ async function Content() {
               </li>
             ))}
           </ul>
-          <p className="text-sm text-radar-purple/75">You will review these in the Review queue, coming in the next part.</p>
+          <Link href="/admin/review" className="self-start font-extrabold underline">Open the Review queue</Link>
         </section>
 
         <section aria-labelledby="attention" className={`${card} flex flex-col gap-3`}>

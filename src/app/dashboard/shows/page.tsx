@@ -7,7 +7,7 @@ import { pickProfile, profileKey } from "@/lib/dashboard";
 import { getMyProfiles } from "@/lib/data/dashboard";
 import { getMyShows } from "@/lib/data/my-shows";
 import { getMyTourOptions } from "@/lib/data/my-tours";
-import { inputCls, labelCls } from "@/components/auth/fields";
+import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { SHOW_TABS, showTab } from "@/lib/show-forms";
 
 export const metadata: Metadata = { title: "Shows" };

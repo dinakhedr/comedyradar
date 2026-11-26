@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { answerLinkRequest, cancelLinkRequest } from "@/app/actions/requests";
 import { removeMember } from "@/app/actions/team";
-import { inputCls, labelCls } from "@/components/auth/fields";
+import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, ExternalIcon } from "@/components/icons";
 import { AnswerForm } from "@/components/team/team-forms";

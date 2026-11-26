@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { inputCls, labelCls } from "@/components/auth/fields";
+import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { findProfiles, type FoundProfile } from "@/app/actions/profiles";

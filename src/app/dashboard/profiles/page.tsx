@@ -42,7 +42,12 @@ function Claim({ c, origin }: { c: MyClaim; origin: string }) {
         {" · "}
         sent {new Date(c.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Cairo" })}
       </p>
-      {c.decision_reason && c.status !== "pending" && <p className="text-sm">{c.decision_reason}</p>}
+      {c.decision_reason &&
+        (c.status === "pending" ? (
+          <p className="rounded-button border-2 border-laugh-pink px-3 py-2 text-sm font-bold">Comedy Radar needs more proof: {c.decision_reason}</p>
+        ) : (
+          <p className="text-sm">{c.decision_reason}</p>
+        ))}
       {waitingLink && !c.confirmed && <CopyLink url={`${origin}/claim/confirm/${c.confirm_token}`} label="Private confirmation link to send" />}
     </li>
   );

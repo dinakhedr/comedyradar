@@ -485,4 +485,36 @@ select pg_temp.check(not exists (select 1 from public.show_performers where id =
   'cancelling takes the waiting tag off the lineup');
 reset role;
 
+-- ---------------------------------------------------------------- admin review queue
+insert into public.access_requests (id, type, account_id, comedian_id, relation, proof_method, proof_value)
+values ('90000000-0000-0000-0000-000000000001', 'claim', '00000000-0000-0000-0000-00000000000b',
+        '30000000-0000-0000-0000-00000000000a', 'manager', 'official_dm', 'comica');
+insert into public.profile_name_changes (id, comedian_id, name, old_name, requested_by)
+values ('90000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-00000000000a', 'Comic A Renamed', 'Comic A',
+        '00000000-0000-0000-0000-00000000000a');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_review_queue() is null
+                     and public.admin_decide_claim('90000000-0000-0000-0000-000000000001', 'admin', true, null, null) = 'forbidden',
+  'only the super admin sees and decides the review queue');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select count(*) = 2 from jsonb_array_elements(public.admin_review_queue() -> 'pending') i
+                      where i ->> 'id' in ('90000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000002')),
+  'the review queue lists the claim and the name change');
+select pg_temp.check(public.admin_decide_claim('90000000-0000-0000-0000-000000000001', 'moderator', false, 'Welcome', 'checked DM') = 'ok',
+  'the super admin approves a claim');
+select pg_temp.check(public.admin_decide_claim('90000000-0000-0000-0000-000000000001', 'reject', false, null, null) = 'not_found',
+  'a claim is decided once');
+select pg_temp.check(public.admin_decide_name_change('90000000-0000-0000-0000-000000000002', true, null) = 'ok', 'the super admin approves a name change');
+select pg_temp.check((select name = 'Comic A Renamed' from public.comedians where id = '30000000-0000-0000-0000-00000000000a'),
+  'an approved name change renames the profile');
+select pg_temp.check((select count(*) >= 2 from jsonb_array_elements(public.admin_review_queue() -> 'done')), 'decided items move to Done');
+set local request.jwt.claim.aal = '';
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select role = 'moderator' and status = 'active' from public.profile_access
+                      where account_id = '00000000-0000-0000-0000-00000000000b' and comedian_id = '30000000-0000-0000-0000-00000000000a'),
+  'an approved claim gives the chosen role');
+reset role;
+
 rollback;

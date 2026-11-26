@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITEMS: { href: string; label: string; soon?: boolean }[] = [
   { href: "/admin", label: "Overview" },
-  { href: "/admin/review", label: "Review queue", soon: true },
+  { href: "/admin/review", label: "Review queue" },
   { href: "/admin/profiles", label: "Profiles", soon: true },
   { href: "/admin/shows", label: "Shows and tours", soon: true },
   { href: "/admin/accounts", label: "Accounts", soon: true },

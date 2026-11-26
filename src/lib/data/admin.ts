@@ -55,3 +55,19 @@ export async function getAdminOverview(): Promise<AdminOverview | null> {
   if (error) console.error("admin_overview", error.message);
   return (data ?? null) as AdminOverview | null;
 }
+
+/** The review queue, plus a short-lived link to a claim's document when one is open. */
+export async function getReviewQueue(): Promise<import("@/lib/admin-review").ReviewQueue> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_review_queue");
+  if (error) console.error("admin_review_queue", error.message);
+  return (data ?? { pending: [], done: [] }) as import("@/lib/admin-review").ReviewQueue;
+}
+
+export async function claimDocumentUrl(path: string): Promise<string | null> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data } = await supabase.storage.from("claim-documents").createSignedUrl(path, 600);
+  return data?.signedUrl ?? null;
+}
