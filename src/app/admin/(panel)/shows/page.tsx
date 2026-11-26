@@ -1097,6 +1097,7 @@ async function VenuesTab({ sp, link }: Ctx) {
               <thead>
                 <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
                   <th className="px-4 py-2 font-extrabold md:px-2">Venue</th>
+                  <th className={th}>Country</th>
                   <th className={th}>City</th>
                   <th className={`${th} text-right`}>Upcoming</th>
                   <th className={th}>Added by</th>
@@ -1129,8 +1130,9 @@ async function VenuesTab({ sp, link }: Ctx) {
                       )}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      {flagOf(v.country_code)} {v.city}
+                      {flagOf(v.country_code)} {v.country_name}
                     </td>
+                    <td className="px-2 py-2 whitespace-nowrap">{v.city}</td>
                     <td className="px-2 py-2 text-right">{v.upcoming}</td>
                     <td className="max-w-40 px-2 py-2 text-xs break-words">
                       {v.added_by ?? "Comedy Radar"}
