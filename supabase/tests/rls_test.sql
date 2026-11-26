@@ -581,4 +581,33 @@ select pg_temp.check(public.admin_set_content_status('tour', (select id from pub
 set local request.jwt.claim.aal = '';
 reset role;
 
+-- ---------------------------------------------------------------- admin accounts
+insert into auth.sessions (user_id) values ('00000000-0000-0000-0000-00000000000b');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_accounts('', '', '') is null
+                     and public.admin_account('00000000-0000-0000-0000-00000000000a') is null
+                     and public.admin_account_action('00000000-0000-0000-0000-00000000000a', 'suspend') = 'forbidden',
+  'only the super admin lists and suspends accounts');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_accounts('b@test', '', '') -> 'rows') r
+                      where r ->> 'id' = '00000000-0000-0000-0000-00000000000b'),
+  'the super admin finds an account by email');
+select pg_temp.check((public.admin_account('00000000-0000-0000-0000-00000000000b') ->> 'email') = 'b@test',
+  'the super admin opens one account');
+select pg_temp.check(public.admin_account_action('00000000-0000-0000-0000-00000000000c', 'suspend') = 'protected',
+  'a super admin cannot be suspended from the panel');
+select pg_temp.check(public.admin_account_action('00000000-0000-0000-0000-00000000000b', 'suspend') = 'ok', 'the super admin suspends an account');
+select pg_temp.check((select is_suspended from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'a suspended account is marked');
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_accounts('', '', 'suspended') -> 'rows') r
+                      where r ->> 'id' = '00000000-0000-0000-0000-00000000000b'),
+  'suspended accounts can be listed');
+select pg_temp.check(public.admin_account_action('00000000-0000-0000-0000-00000000000b', 'unsuspend') = 'ok', 'the super admin lifts a suspension');
+set local request.jwt.claim.aal = '';
+reset role;
+select pg_temp.check((select count(*) = 0 from auth.sessions where user_id = '00000000-0000-0000-0000-00000000000b'),
+  'suspending signs the account out of every device');
+select pg_temp.check((select not is_suspended from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'an unsuspended account works again');
+
 rollback;

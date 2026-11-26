@@ -8,7 +8,7 @@ const ITEMS: { href: string; label: string; soon?: boolean }[] = [
   { href: "/admin/review", label: "Review queue" },
   { href: "/admin/profiles", label: "Profiles" },
   { href: "/admin/shows", label: "Shows and tours" },
-  { href: "/admin/accounts", label: "Accounts", soon: true },
+  { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/spotlight", label: "Spotlight", soon: true },
   { href: "/admin/activity", label: "Activity log", soon: true },
   { href: "/admin/settings", label: "Settings", soon: true },

@@ -15,7 +15,19 @@ create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
   email_confirmed_at timestamptz,
-  raw_user_meta_data jsonb default '{}'::jsonb
+  raw_user_meta_data jsonb default '{}'::jsonb,
+  raw_app_meta_data jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  last_sign_in_at timestamptz
+);
+create table auth.sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade
+);
+create table auth.mfa_factors (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  status text not null default 'unverified'
 );
 
 create function auth.uid() returns uuid language sql stable as $$
