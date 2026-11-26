@@ -232,7 +232,11 @@ function Venue({ show }: { show: ShowDetail }) {
         <div className="flex gap-3">
           <PinIcon />
           <div className="flex flex-col gap-1">
-            <h3 className="text-[17px] font-extrabold md:text-xl">{v.name}</h3>
+            <h3 className="text-[17px] font-extrabold md:text-xl">
+              <Link href={`/venues/${v.slug}`} className="hover:text-spotlight-yellow">
+                {v.name}
+              </Link>
+            </h3>
             <p className="text-small text-lavender-text">{address}</p>
             {v.capacity ? <p className="text-small text-lavender-text">Capacity {v.capacity.toLocaleString("en-US")}</p> : null}
           </div>
@@ -249,7 +253,7 @@ function Venue({ show }: { show: ShowDetail }) {
             </a>
           )}
           <Link
-            href={`/shows?venue=${v.slug}`}
+            href={`/venues/${v.slug}`}
             className="flex min-h-11 flex-1 items-center justify-center rounded-button border-2 border-plum-line px-4 text-sm font-bold hover:border-spotlight-yellow md:flex-none md:text-[15px]"
           >
             <span className="md:hidden">Venue shows</span>

@@ -226,10 +226,15 @@ export type AdminVenueRow = {
   name_ar: string | null;
   status: string;
   city: string;
+  city_id: string;
   country_code: string;
+  country_name: string;
   address: string | null;
   map_url: string | null;
   website: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  slug: string;
   upcoming: number;
   added_by: string | null;
 };
