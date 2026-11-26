@@ -23,6 +23,7 @@ import {
   EditIcon,
   ExternalIcon,
   StarIcon,
+  SaveIcon,
 } from "@/components/icons";
 import {
   CONTENT_STATUSES,
@@ -148,7 +149,13 @@ function StatusForm({
           </option>
         ))}
       </select>
-      <button className={smallBtn}>Save</button>
+      <button
+        className={`${outlineBtn} h-11 w-11 shrink-0 px-0`}
+        aria-label={`Save status of ${name}`}
+        title="Save status"
+      >
+        <SaveIcon />
+      </button>
     </form>
   );
 }
@@ -240,7 +247,13 @@ function ShowPanel({
                 </option>
               ))}
             </select>
-            <button className={yellowBtn}>Save</button>
+            <button
+              className={`${yellowBtn} h-11 w-11 shrink-0 px-0`}
+              aria-label="Save status"
+              title="Save status"
+            >
+              <SaveIcon />
+            </button>
           </div>
           <p className="text-xs text-radar-purple/70">
             Draft takes the show off the public pages. Cancelled keeps it listed
@@ -1160,18 +1173,7 @@ async function VenuesTab({ sp, link }: Ctx) {
                         >
                           <EditIcon />
                         </Link>
-                        {v.website && /^https?:\/\//.test(v.website) && (
-                          <a
-                            href={v.website}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className={`${iconBtn} text-xs font-extrabold`}
-                            aria-label={`Website of ${v.name}`}
-                            title="Open the website"
-                          >
-                            www
-                          </a>
-                        )}
+
                         {v.map_url && /^https?:\/\//.test(v.map_url) && (
                           <a
                             href={v.map_url}

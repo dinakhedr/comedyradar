@@ -7,7 +7,7 @@ import { setContentStatus } from "@/app/actions/admin-shows";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { flagOf } from "@/lib/countries";
-import { EditIcon } from "@/components/icons";
+import { EditIcon, SaveIcon } from "@/components/icons";
 import { CONTENT_STATUSES, labelOf } from "@/lib/admin-shows";
 import {
   getAdminSettings,
@@ -385,9 +385,11 @@ function Locations({
                                       ))}
                                     </select>
                                     <button
-                                      className={`${outlineBtn} min-h-11 px-3 text-sm`}
+                                      className={`${outlineBtn} h-11 w-11 shrink-0 px-0`}
+                                      aria-label={`Save status of ${v.name}`}
+                                      title="Save status"
                                     >
-                                      Save
+                                      <SaveIcon />
                                     </button>
                                   </form>
                                   <Link
