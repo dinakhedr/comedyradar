@@ -1070,6 +1070,18 @@ async function VenuesTab({ sp, link }: Ctx) {
                         ret={ret}
                         name={v.name}
                       />
+                      {v.website && /^https?:\/\//.test(v.website) && (
+                        <a
+                          href={v.website}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className={`${iconBtn} text-xs font-extrabold`}
+                          aria-label={`Website of ${v.name}`}
+                          title="Open the website"
+                        >
+                          www
+                        </a>
+                      )}
                       {v.map_url && /^https?:\/\//.test(v.map_url) && (
                         <a
                           href={v.map_url}
