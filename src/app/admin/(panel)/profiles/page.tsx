@@ -92,7 +92,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           </select>
           <p className="text-xs text-radar-purple/70">Archived hides the profile everywhere. Nothing is deleted.</p>
         </div>
-        <button className={`${yellowBtn} h-11 w-11 self-start px-0`} aria-label="Save status" title="Save status">
+        <button className={`${yellowBtn} h-11 w-11 self-start px-0!`} aria-label="Save status" title="Save status">
           <SaveIcon />
         </button>
       </form>
@@ -124,7 +124,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
                     <option value="admin">Admin</option>
                     <option value="moderator">Moderator</option>
                   </select>
-                  <button className={`${outlineBtn} h-11 w-11 shrink-0 px-0`} aria-label="Save role" title="Save role">
+                  <button className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`} aria-label="Save role" title="Save role">
                     <SaveIcon />
                   </button>
                 </form>

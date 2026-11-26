@@ -251,7 +251,7 @@ async function SidePanel({
                 <option value="manager">Manager or agent</option>
               </select>
               <button
-                className={`${outlineBtn} h-11 w-11 shrink-0 bg-white px-0`}
+                className={`${outlineBtn} h-11 w-11 shrink-0 bg-white px-0!`}
                 aria-label="Save account type"
                 title="Save account type"
               >
