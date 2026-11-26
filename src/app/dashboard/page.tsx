@@ -138,8 +138,10 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
         <p className="text-base text-radar-purple/80">
           {picked
             ? `Showing ${picked.name} only.`
-            : profiles.length === 1
-              ? "You manage 1 profile."
+            : profiles.length === 0
+              ? "Welcome! Your profiles will show up here."
+              : profiles.length === 1
+                ? "You manage 1 profile."
               : `You manage ${profiles.length} profiles.`}
         </p>
       </div>
