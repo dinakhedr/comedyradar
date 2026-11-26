@@ -10,6 +10,7 @@ const ITEMS: { href: string; label: string; soon?: boolean }[] = [
   { href: "/admin/shows", label: "Shows and tours" },
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/spotlight", label: "Spotlight" },
+  { href: "/admin/messages", label: "Messages" },
   { href: "/admin/activity", label: "Activity log" },
   { href: "/admin/settings", label: "Settings" },
 ];

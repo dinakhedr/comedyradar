@@ -615,6 +615,42 @@ select pg_temp.check((select not is_suspended from public.accounts where id = '0
 select pg_temp.check((select account_type = 'manager' from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'the new account type is saved');
 update public.accounts set account_type = 'comedian' where id = '00000000-0000-0000-0000-00000000000b';
 
+-- ---------------------------------------------------------------- contact form
+set local role anon;
+select pg_temp.check(public.contact_send('Fan', 'not-an-email', 'fan', 'other', null, 'Hello there', 'c1') = 'invalid', 'a contact message needs a real email');
+select pg_temp.check(public.contact_send('Fan', 'fan@test.com', 'boss', 'other', null, 'Hello there', 'c1') = 'invalid', 'a contact message needs a known sender type');
+select pg_temp.check(public.contact_send('Fan', 'fan@test.com', 'fan', 'other', 'javascript:alert(1)', 'Hello there', 'c1') = 'invalid', 'a contact page link must be a web link');
+select pg_temp.check(public.contact_send('Fan', 'Fan@Test.com', 'fan', 'wrong_detail', '/shows/x', 'The date is wrong', 'c1') = 'ok', 'a visitor sends a contact message');
+select pg_temp.check(public.contact_send('Fan', 'fan@test.com', 'fan', 'other', null, 'Two', 'c1') = 'ok'
+                     and public.contact_send('Fan', 'fan@test.com', 'fan', 'other', null, 'Three', 'c1') = 'ok'
+                     and public.contact_send('Fan', 'fan@test.com', 'fan', 'other', null, 'Four', 'c1') = 'ok'
+                     and public.contact_send('Fan', 'fan@test.com', 'fan', 'other', null, 'Five', 'c1') = 'ok'
+                     and public.contact_send('Fan', 'fan@test.com', 'fan', 'other', null, 'Six', 'c1') = 'slow_down',
+  'one visitor can send 5 messages an hour');
+select pg_temp.check(not has_table_privilege('anon', 'public.contact_messages', 'select'), 'visitors cannot read contact messages');
+reset role;
+do $$ begin
+  begin
+    set local role anon;
+    insert into public.contact_messages (name, email, message) values ('x', 'x@test.com', 'direct');
+    raise exception 'direct insert worked';
+  exception when insufficient_privilege then null;
+  end;
+  reset role;
+end $$;
+select pg_temp.check(true, 'visitors cannot insert contact messages directly');
+select pg_temp.check((select count(*) = 5 and bool_and(email = 'fan@test.com') from public.contact_messages), 'contact messages are saved, email in lower case');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(not exists (select 1 from public.contact_messages), 'a creator cannot read contact messages');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select count(*) = 5 from public.contact_messages), 'the super admin reads contact messages');
+update public.contact_messages set status = 'replied' where message = 'Two';
+select pg_temp.check((select status = 'replied' from public.contact_messages where message = 'Two'), 'the super admin marks a message replied');
+set local request.jwt.claim.aal = '';
+reset role;
+
 -- ---------------------------------------------------------------- admin spotlight
 update public.shows set status = 'published', starts_at = now() + interval '5 days' where id = '40000000-0000-0000-0000-000000000001';
 set local role authenticated;

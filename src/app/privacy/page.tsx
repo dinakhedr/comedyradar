@@ -101,6 +101,10 @@ export default function PrivacyPage() {
                 <strong className="text-white">Claiming a profile.</strong> To claim a comedian or group page, you may
                 send us proof that the page is yours. We use it only to check the claim.
               </p>
+              <p>
+                <strong className="text-white">Messages.</strong> When you use the Contact page, we keep your name,
+                email, the link you add and your message so we can reply.
+              </p>
             </Section>
 
             <Section n={3}>
@@ -169,7 +173,8 @@ export default function PrivacyPage() {
             <Section n={7}>
               <p>
                 We keep account information while your account is open, newsletter emails until you unsubscribe, and
-                claim proof only as long as we need it to check the claim. Google Analytics data is kept for the period
+                claim proof only as long as we need it to check the claim. Contact messages are kept as long as we need
+                them to answer you. Google Analytics data is kept for the period
                 set in our Google Analytics account.
               </p>
             </Section>
