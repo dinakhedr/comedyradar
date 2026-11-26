@@ -667,4 +667,24 @@ select pg_temp.check((select count(*) >= 1 from jsonb_array_elements(public.admi
 set local request.jwt.claim.aal = '';
 reset role;
 
+-- ---------------------------------------------------------------- admin settings
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_settings() is null and public.admin_save_setting('track_count', '8') = 'forbidden',
+  'only the super admin reads and changes settings');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check(public.admin_save_setting('track_count', '8') = 'ok', 'the super admin changes a homepage setting');
+select pg_temp.check((select value = '8'::jsonb from public.site_settings where key = 'track_count'), 'a saved setting is stored');
+select pg_temp.check(public.admin_save_setting('track_count', '99') = 'bad_value'
+                     and public.admin_save_setting('is_super_admin', 'true') = 'bad_value'
+                     and public.admin_save_setting('default_city', '"atlantis"') = 'bad_value',
+  'settings stay within their limits and known keys');
+select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', '  New   Giza ') = 'ok', 'the super admin adds a city');
+select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', 'new giza') = 'exists', 'a city is added only once');
+select pg_temp.check((select slug = 'new-giza' and name = 'New Giza' from public.cities where name = 'New Giza'), 'a new city gets a clean name and address');
+select pg_temp.check(jsonb_array_length(public.admin_settings() -> 'super_admins') >= 1, 'the settings list the super admins');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;
