@@ -22,19 +22,22 @@ const h2 = "font-display text-[28px] leading-none md:text-display-md";
 
 const RANGES = [
   {
-    name: "Local Range",
-    text: "Every stand-up show in Egypt.",
-    example: "A Thursday night show in Cairo or Alexandria.",
+    kicker: "Close to home",
+    title: "Shows in",
+    accent: "Egypt",
+    text: "Every stand-up show across Egypt's cities in one place: who's performing, where, when, and how to get tickets.",
   },
   {
-    name: "Outbound Range",
-    text: "Egyptian comedians performing abroad.",
-    example: "An Egyptian comedian on stage in Dubai or London.",
+    kicker: "Around the world",
+    title: "Egyptian comedians",
+    accent: "on tour",
+    text: "Follow your favourite Egyptian comedians across the region and around the world, date by date.",
   },
   {
-    name: "Inbound Range",
-    text: "International and Arab comedians performing in Egypt.",
-    example: "A visiting comedian's night in Cairo.",
+    kicker: "Coming to town",
+    title: "Comedians visiting",
+    accent: "Egypt",
+    text: "Arab and international comedians coming to a stage near you, spotted before tickets run out.",
   },
 ];
 
@@ -102,15 +105,18 @@ export default function AboutPage() {
           <ul className="grid gap-3.5 md:grid-cols-3 md:gap-5">
             {RANGES.map((r) => (
               <li
-                key={r.name}
-                className="flex flex-col gap-2 rounded-card bg-radar-plum p-5 md:p-6"
+                key={r.kicker}
+                className="flex flex-col gap-2.5 rounded-card bg-radar-plum p-5 md:p-6"
               >
-                <h3 className="font-display text-[24px] leading-none text-spotlight-yellow">
-                  {r.name}
+                <p className="text-label font-extrabold tracking-[0.15em] text-laugh-pink uppercase">
+                  {r.kicker}
+                </p>
+                <h3 className="font-display text-[26px] leading-none md:text-[30px]">
+                  {r.title}{" "}
+                  <span className="text-spotlight-yellow">{r.accent}</span>
                 </h3>
-                <p className="text-base font-bold">{r.text}</p>
-                <p className="text-sm text-lavender-text">
-                  For example: {r.example}
+                <p className="text-[15px] leading-relaxed text-lavender">
+                  {r.text}
                 </p>
               </li>
             ))}
