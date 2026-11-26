@@ -208,7 +208,21 @@ exception when insufficient_privilege then
   raise notice 'ok - anon cannot read profile access';
 end $$;
 
-insert into public.newsletter_subscribers (email) values ('fan@test');
+-- Newsletter: only through newsletter_subscribe(), never a direct insert.
+do $$ begin
+  insert into public.newsletter_subscribers (email) values ('direct@test.com');
+  raise exception 'FAILED: anon inserted a subscriber directly';
+exception when insufficient_privilege then
+  raise notice 'ok - anon cannot insert subscribers directly';
+end $$;
+select pg_temp.check(public.newsletter_subscribe(' Fan@Test.com ', 'h1') = 'ok', 'newsletter sign-up works');
+select pg_temp.check(public.newsletter_subscribe('fan@test.com', 'h1') = 'ok', 'repeat sign-up looks the same');
+select pg_temp.check(public.newsletter_subscribe('not-an-email', 'h1') = 'invalid', 'newsletter rejects a bad email');
+select pg_temp.check(public.newsletter_subscribe('a@test.com', 'h1') = 'ok', 'third attempt is fine');
+select pg_temp.check(public.newsletter_subscribe('b@test.com', 'h1') = 'ok', 'fourth attempt is fine');
+select pg_temp.check(public.newsletter_subscribe('c@test.com', 'h1') = 'ok', 'fifth attempt is fine');
+select pg_temp.check(public.newsletter_subscribe('d@test.com', 'h1') = 'slow_down', 'newsletter limits one visitor');
+select pg_temp.check(public.newsletter_subscribe('d@test.com', 'h2') = 'ok', 'another visitor can still sign up');
 do $$ begin
   perform * from public.newsletter_subscribers;
   raise exception 'FAILED: anon read subscribers';
