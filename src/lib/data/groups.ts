@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import { whenRange } from "@/lib/dates";
+import { cleanStyles, isGroupLanguage } from "@/lib/group-styles";
 import type { ListedGroup } from "@/lib/groups-filters";
 import { LISTING_CACHE } from "./home";
 import type { Person } from "./show";
@@ -31,7 +32,7 @@ export async function getGroupsListing(): Promise<GroupsListing> {
     db
       .from("comedy_groups")
       .select(
-        "id, name, slug, photo_url, created_at, " +
+        "id, name, slug, photo_url, created_at, styles, performing_language, " +
           "group_members(display_order, left_on, link_status, comedians(id, name, slug, photo_url, status))",
       )
       .eq("status", "published")
@@ -52,6 +53,8 @@ export async function getGroupsListing(): Promise<GroupsListing> {
     slug: string;
     photo_url: string | null;
     created_at: string;
+    styles: string[] | null;
+    performing_language: string | null;
     group_members: {
       display_order: number;
       left_on: string | null;
@@ -73,6 +76,8 @@ export async function getGroupsListing(): Promise<GroupsListing> {
       slug: g.slug,
       photo_url: g.photo_url,
       created_at: g.created_at,
+      styles: cleanStyles(g.styles),
+      performing_language: isGroupLanguage(g.performing_language) ? g.performing_language : null,
       members,
       member_names: members.map((m) => m.name),
       next_show_at: next?.starts_at ?? null,

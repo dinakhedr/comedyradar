@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/badge";
+import { languageLine, styleLabel } from "@/lib/group-styles";
 import { Avatar } from "@/components/lineup-card";
 import { NewsletterBand } from "@/components/newsletter-band";
 import { CoverImage } from "@/components/placeholder-image";
@@ -120,6 +121,16 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                 {g.tours.length > 0 && (
                   <Badge tone="pink" size="md">
                     On tour
+                  </Badge>
+                )}
+                {g.styles.map((s) => (
+                  <Badge key={s} tone="purple" size="md">
+                    {styleLabel(s)}
+                  </Badge>
+                ))}
+                {g.performing_language && (
+                  <Badge tone="outline" size="md">
+                    {languageLine(g.performing_language)}
                   </Badge>
                 )}
               </div>

@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
+import { cleanStyles, isGroupLanguage, type GroupLanguage, type GroupStyle } from "@/lib/group-styles";
 import { LISTING_CACHE, SHOW_COLUMNS } from "./home";
 import type { Person } from "./show";
 import type { ShowRow, TourRow } from "./types";
@@ -21,6 +22,8 @@ export type GroupDetail = Socials & {
   bio: string | null;
   photo_url: string | null;
   country_name: string | null;
+  styles: GroupStyle[];
+  performing_language: GroupLanguage | null;
   members: GroupMember[];
   shows: ShowRow[];
   tours: TourRow[];
@@ -45,7 +48,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
   const { data, error } = await db
     .from("comedy_groups")
     .select(
-      "id, name, slug, bio, photo_url, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
+      "id, name, slug, bio, photo_url, styles, performing_language, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
         "group_members(display_order, left_on, comedians(id, name, slug, photo_url, status))",
     )
     .eq("slug", slug)
@@ -60,6 +63,8 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
     bio: string | null;
     photo_url: string | null;
     countries: { name: string } | null;
+    styles: string[] | null;
+    performing_language: string | null;
     group_members: { display_order: number; left_on: string | null; comedians: RawPerson | null }[];
   };
 
@@ -100,6 +105,8 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
     bio: g.bio,
     photo_url: g.photo_url,
     country_name: g.countries?.name ?? null,
+    styles: cleanStyles(g.styles),
+    performing_language: isGroupLanguage(g.performing_language) ? g.performing_language : null,
     instagram_url: g.instagram_url,
     tiktok_url: g.tiktok_url,
     youtube_url: g.youtube_url,

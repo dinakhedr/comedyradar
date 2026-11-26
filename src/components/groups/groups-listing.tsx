@@ -7,6 +7,7 @@ import { ProfilesSwitch } from "../profiles-switch";
 import { NavSelect } from "../shows/nav-controls";
 import { getGroupsListing, type GroupListItem } from "@/lib/data/groups";
 import { formatShowDate } from "@/lib/dates";
+import { GROUP_LANGUAGES, GROUP_STYLES, languageLine, styleLabel } from "@/lib/group-styles";
 import {
   filterGroups,
   groupsHref,
@@ -35,6 +36,12 @@ function GroupCard({ g }: { g: GroupListItem }) {
         <div className="flex flex-wrap gap-1.5">
           <Badge tone="yellow">Group</Badge>
           {g.on_tour && <Badge tone="pink">On tour</Badge>}
+          {g.styles.slice(0, 2).map((s) => (
+            <Badge key={s} tone="purple">
+              {styleLabel(s)}
+            </Badge>
+          ))}
+          {g.styles.length > 2 && <Badge tone="purple">+{g.styles.length - 2}</Badge>}
           {!g.next_show_at && <Badge tone="outline">No dates yet</Badge>}
         </div>
         <h2 className="font-display text-[24px] leading-tight md:text-[28px]">
@@ -53,6 +60,9 @@ function GroupCard({ g }: { g: GroupListItem }) {
             </ul>
             <span className="text-[13px] font-bold md:text-sm">
               {g.members.length} {g.members.length === 1 ? "comedian" : "comedians"}
+              {g.performing_language && (
+                <span className="font-normal text-lavender-text"> · {languageLine(g.performing_language)}</span>
+              )}
             </span>
           </div>
         )}
@@ -154,6 +164,27 @@ export async function GroupsListing({ searchParams }: { searchParams: SP }) {
             </Link>
           ))}
         </div>
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+        <NavSelect
+          id="groups-style"
+          label="Style"
+          value={f.style ?? ""}
+          options={[
+            { value: "", label: "All styles", href: groupsHref(f, { style: null }) },
+            ...GROUP_STYLES.map((s) => ({ value: s.value, label: s.label, href: groupsHref(f, { style: s.value }) })),
+          ]}
+          selectClassName="bg-radar-plum"
+        />
+        <NavSelect
+          id="groups-lang"
+          label="Language"
+          value={f.lang ?? ""}
+          options={[
+            { value: "", label: "Any language", href: groupsHref(f, { lang: null }) },
+            ...GROUP_LANGUAGES.map((l) => ({ value: l.value, label: l.label, href: groupsHref(f, { lang: l.value }) })),
+          ]}
+          selectClassName="bg-radar-plum"
+        />
         <NavSelect
           id="groups-sort"
           label="Sort by"
@@ -162,6 +193,7 @@ export async function GroupsListing({ searchParams }: { searchParams: SP }) {
           options={GROUPS_SORT_OPTIONS.map((s) => ({ value: s.value, label: s.label, href: groupsHref(f, { sort: s.value }) }))}
           selectClassName="bg-radar-plum"
         />
+        </div>
       </section>
 
       <section aria-label="Groups" className={`${container} flex flex-col gap-3.5 pb-10 md:gap-5`}>
