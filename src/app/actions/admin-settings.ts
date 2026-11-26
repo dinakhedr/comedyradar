@@ -24,6 +24,12 @@ async function run(fn: string, args: Record<string, unknown>): Promise<string> {
   return String(data);
 }
 
+/** Keeps the country the super admin was working in open after saving. */
+const openParam = (form: FormData) => {
+  const code = text(form.get("open"));
+  return /^[A-Z]{2}$/.test(code) ? `open=${code}&` : "";
+};
+
 /** Saves the numbers and the default city of one settings card. */
 export async function saveSettings(form: FormData): Promise<void> {
   await requireSuperAdmin();
@@ -64,7 +70,7 @@ export async function addCity(form: FormData): Promise<void> {
     p_name: text(form.get("name")).slice(0, 80),
   });
   redirect(
-    `/admin/settings?msg=${r === "ok" ? "city_added" : r === "exists" ? "city_exists" : r === "bad_value" ? "bad_value" : "error"}#locations`,
+    `/admin/settings?${openParam(form)}msg=${r === "ok" ? "city_added" : r === "exists" ? "city_exists" : r === "bad_value" ? "city_bad" : "error"}#locations`,
   );
 }
 
@@ -72,7 +78,7 @@ export async function addCity(form: FormData): Promise<void> {
 export async function addVenue(form: FormData): Promise<void> {
   await requireSuperAdmin();
   const back = (msg: string) =>
-    redirect(`/admin/settings?msg=${msg}#locations`);
+    redirect(`/admin/settings?${openParam(form)}msg=${msg}#locations`);
   let city = text(form.get("city_id"));
   const newCity = text(form.get("new_city"))
     .replace(/\s+/g, " ")
@@ -109,6 +115,8 @@ export async function addVenue(form: FormData): Promise<void> {
     p_name: text(form.get("name")).slice(0, 140),
     p_website: text(form.get("website")).trim().slice(0, 500) || null,
     p_map_url: text(form.get("map_url")).trim().slice(0, 500),
+    p_instagram: text(form.get("instagram")).trim().slice(0, 300) || null,
+    p_facebook: text(form.get("facebook")).trim().slice(0, 300) || null,
   });
   back(
     r === "ok"
@@ -120,5 +128,36 @@ export async function addVenue(form: FormData): Promise<void> {
         : r === "bad_value"
           ? "venue_bad"
           : "error",
+  );
+}
+
+/** Edits a venue's details from Shows and tours > Venues. */
+export async function updateVenue(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const id = text(form.get("id"));
+  const ret = text(form.get("ret"));
+  const base = ret.startsWith("/admin/shows?")
+    ? ret
+    : "/admin/shows?tab=venues";
+  const go = (msg: string, keep: boolean) => {
+    const u = new URL(base, "http://x");
+    if (!keep) u.searchParams.delete("edit");
+    u.searchParams.set("msg", msg);
+    redirect(`${u.pathname}?${u.searchParams.toString()}`);
+  };
+  if (!UUID.test(id)) return go("error", false);
+  const r = await run("admin_update_venue", {
+    p_id: id,
+    p_name: text(form.get("name")).slice(0, 140),
+    p_address: text(form.get("address")).slice(0, 220),
+    p_website: text(form.get("website")).trim().slice(0, 500) || null,
+    p_map_url: text(form.get("map_url")).trim().slice(0, 500),
+    p_instagram: text(form.get("instagram")).trim().slice(0, 300) || null,
+    p_facebook: text(form.get("facebook")).trim().slice(0, 300) || null,
+  });
+  if (r === "ok") return go("venue_saved", false);
+  go(
+    r === "exists" ? "venue_exists" : r === "bad_value" ? "venue_bad" : "error",
+    true,
   );
 }

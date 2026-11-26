@@ -15,10 +15,12 @@ const CONTENT_KINDS = ["tour", "podcast", "venue"];
 /** Back to the same list, with a message. */
 function back(form: FormData, msg: string) {
   const ret = text(form.get("ret"));
-  const base = ret.startsWith("/admin/shows") ? ret : "/admin/shows";
+  // Venue statuses can also be changed from Settings > Locations and venues.
+  const settings = ret.startsWith("/admin/settings");
+  const base = ret.startsWith("/admin/shows") || settings ? ret : "/admin/shows";
   const u = new URL(base, "http://x");
-  u.searchParams.set("msg", msg);
-  redirect(`${u.pathname}?${u.searchParams}`);
+  u.searchParams.set("msg", settings && msg === "saved" ? "venue_status" : msg);
+  redirect(`${u.pathname}?${u.searchParams}${settings ? "#locations" : ""}`);
 }
 
 async function run(fn: string, args: Record<string, unknown>): Promise<string | null> {

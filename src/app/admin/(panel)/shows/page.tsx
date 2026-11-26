@@ -9,6 +9,7 @@ import {
   setShowStatus,
   setTicketLink,
 } from "@/app/actions/admin-shows";
+import { updateVenue } from "@/app/actions/admin-settings";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import {
   card,
@@ -22,6 +23,7 @@ import {
   EditIcon,
   ExternalIcon,
   StarIcon,
+  SaveIcon,
 } from "@/components/icons";
 import {
   CONTENT_STATUSES,
@@ -47,6 +49,7 @@ import {
   getAdminTours,
   getAdminVenues,
   type AdminShowRow,
+  type AdminVenueRow,
 } from "@/lib/data/admin";
 import { formatShowDate } from "@/lib/dates";
 import { UUID } from "@/lib/profile-server";
@@ -60,6 +63,10 @@ const MSG: Record<string, string> = {
   declined: "Signal change request declined. The signal stays as it is.",
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
+  venue_saved: "Venue saved.",
+  venue_exists: "That city already has a venue with this name.",
+  venue_bad:
+    "Check the venue: a name, a Google Maps link (google.com/maps or maps.app.goo.gl) and, if you add them, a website starting with https://, an Instagram handle or link and a Facebook page link.",
   error: "Something went wrong. Please try again.",
 };
 const iconBtn =
@@ -142,7 +149,13 @@ function StatusForm({
           </option>
         ))}
       </select>
-      <button className={smallBtn}>Save</button>
+      <button
+        className={`${outlineBtn} h-11 w-11 shrink-0 px-0`}
+        aria-label={`Save status of ${name}`}
+        title="Save status"
+      >
+        <SaveIcon />
+      </button>
     </form>
   );
 }
@@ -234,7 +247,13 @@ function ShowPanel({
                 </option>
               ))}
             </select>
-            <button className={yellowBtn}>Save</button>
+            <button
+              className={`${yellowBtn} h-11 w-11 shrink-0 px-0`}
+              aria-label="Save status"
+              title="Save status"
+            >
+              <SaveIcon />
+            </button>
           </div>
           <p className="text-xs text-radar-purple/70">
             Draft takes the show off the public pages. Cancelled keeps it listed
@@ -995,113 +1014,282 @@ async function PodcastsTab({ sp, link }: Ctx) {
 async function VenuesTab({ sp, link }: Ctx) {
   const q = one(sp.q).slice(0, 80);
   const status = contentStatusOf(one(sp.status));
-  const rows = await getAdminVenues(q, status);
-  const ret = link({ tab: "venues", q, status });
+  const all = await getAdminVenues(q, status);
+  const countries = [
+    ...new Map(all.map((v) => [v.country_code, v.country_name])).entries(),
+  ];
+  const country = countries.some(([c]) => c === one(sp.country))
+    ? one(sp.country)
+    : "";
+  const inCountry = all.filter((v) => !country || v.country_code === country);
+  const cities = [
+    ...new Map(inCountry.map((v) => [v.city_id, v.city])).entries(),
+  ];
+  const city =
+    country && cities.some(([c]) => c === one(sp.city)) ? one(sp.city) : "";
+  const rows = inCountry.filter((v) => !city || v.city_id === city);
+  const base = { tab: "venues", q, status, country, city };
+  const ret = link(base);
+  const editId = one(sp.edit);
+  const editing = rows.find((v) => v.id === editId);
+  const chip = (on: boolean) =>
+    `inline-flex min-h-11 shrink-0 items-center rounded-full border-2 px-4 text-sm font-extrabold ${on ? "border-radar-purple bg-radar-purple text-white" : "border-radar-purple/20 hover:border-radar-purple"}`;
+  const count = (
+    list: AdminVenueRow[],
+    key: "country_code" | "city_id",
+    v: string,
+  ) => list.filter((x) => x[key] === v).length;
+  return (
+    <>
+      {editing && (
+        <VenueEditForm
+          v={editing}
+          ret={link({ ...base, edit: editing.id })}
+          close={ret}
+        />
+      )}
+      <section
+        aria-labelledby="list"
+        className={`${card} flex min-w-0 flex-col gap-4`}
+      >
+        <h2 id="list" className="sr-only">
+          Venues
+        </h2>
+        <SimpleFilters
+          tab="venues"
+          q={q}
+          status={status}
+          link={link}
+          placeholder="Venue or city"
+        />
+        {countries.length > 0 && (
+          <nav aria-label="Filter by country" className="flex flex-wrap gap-2">
+            <Link
+              href={link({ tab: "venues", q, status })}
+              aria-current={!country ? "page" : undefined}
+              className={chip(!country)}
+            >
+              All countries ({all.length})
+            </Link>
+            {countries.map(([code, name]) => (
+              <Link
+                key={code}
+                href={link({ tab: "venues", q, status, country: code })}
+                aria-current={country === code ? "page" : undefined}
+                className={chip(country === code)}
+              >
+                {flagOf(code)} {name} ({count(all, "country_code", code)})
+              </Link>
+            ))}
+          </nav>
+        )}
+        {country && cities.length > 1 && (
+          <nav aria-label="Filter by city" className="flex flex-wrap gap-2">
+            <Link
+              href={link({ tab: "venues", q, status, country })}
+              aria-current={!city ? "page" : undefined}
+              className={chip(!city)}
+            >
+              All cities
+            </Link>
+            {cities.map(([id, name]) => (
+              <Link
+                key={id}
+                href={link({ tab: "venues", q, status, country, city: id })}
+                aria-current={city === id ? "page" : undefined}
+                className={chip(city === id)}
+              >
+                {name} ({count(inCountry, "city_id", id)})
+              </Link>
+            ))}
+          </nav>
+        )}
+        {rows.length === 0 ? (
+          <p className="text-radar-purple/80">
+            {q || status || country
+              ? "No venues match these filters."
+              : "No venues yet."}
+          </p>
+        ) : (
+          <div className="relative -mx-4 overflow-x-auto md:mx-0">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
+                  <th className="px-4 py-2 font-extrabold md:px-2">Venue</th>
+                  <th className={th}>City</th>
+                  <th className={`${th} text-right`}>Upcoming</th>
+                  <th className={th}>Added by</th>
+                  <th className={th}>Status</th>
+                  <th className="px-2 py-2">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((v) => (
+                  <tr key={v.id} className="border-b border-radar-purple/10">
+                    <td className="max-w-72 px-4 py-2 md:px-2">
+                      <span className="block font-extrabold break-words">
+                        {v.name}
+                      </span>
+                      {v.name_ar && (
+                        <span
+                          dir="rtl"
+                          lang="ar"
+                          className="block text-xs text-radar-purple/70"
+                        >
+                          {v.name_ar}
+                        </span>
+                      )}
+                      {v.address && (
+                        <span className="block text-xs break-words text-radar-purple/70">
+                          {v.address}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      {flagOf(v.country_code)} {v.city}
+                    </td>
+                    <td className="px-2 py-2 text-right">{v.upcoming}</td>
+                    <td className="max-w-40 px-2 py-2 text-xs break-words">
+                      {v.added_by ?? "Comedy Radar"}
+                    </td>
+                    <td className="px-2 py-2">{contentStatusTag(v.status)}</td>
+                    <td className="px-2 py-1">
+                      <span className="flex items-center justify-end gap-1">
+                        <StatusForm
+                          kind="venue"
+                          id={v.id}
+                          status={v.status}
+                          ret={ret}
+                          name={v.name}
+                        />
+                        <Link
+                          href={link({ ...base, edit: v.id })}
+                          scroll={false}
+                          className={iconBtn}
+                          aria-label={`Edit ${v.name}`}
+                          title="Edit the venue"
+                        >
+                          <EditIcon />
+                        </Link>
+
+                        {v.map_url && /^https?:\/\//.test(v.map_url) && (
+                          <a
+                            href={v.map_url}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className={iconBtn}
+                            aria-label={`Map for ${v.name}`}
+                            title="Open the map"
+                          >
+                            <ExternalIcon />
+                          </a>
+                        )}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+
+const venueFields = [
+  ["name", "Venue name", "", true, 120],
+  ["address", "Address (optional)", "Street and area", false, 200],
+  ["map_url", "Google Maps link", "https://maps.app.goo.gl/…", true, 500],
+  ["website", "Website (optional)", "https://", false, 500],
+  [
+    "instagram",
+    "Instagram (optional)",
+    "@venue or instagram.com/venue",
+    false,
+    300,
+  ],
+  ["facebook", "Facebook (optional)", "facebook.com/venue", false, 300],
+] as const;
+
+/** Edit a venue's name, address and links. */
+function VenueEditForm({
+  v,
+  ret,
+  close,
+}: {
+  v: AdminVenueRow;
+  ret: string;
+  close: string;
+}) {
+  const value: Record<(typeof venueFields)[number][0], string> = {
+    name: v.name,
+    address: v.address ?? "",
+    map_url: v.map_url ?? "",
+    website: v.website ?? "",
+    instagram: v.instagram_url ?? "",
+    facebook: v.facebook_url ?? "",
+  };
   return (
     <section
-      aria-labelledby="list"
-      className={`${card} flex min-w-0 flex-col gap-4`}
+      aria-labelledby="venue-edit"
+      className={`${card} flex flex-col gap-4`}
     >
-      <h2 id="list" className="sr-only">
-        Venues
-      </h2>
-      <SimpleFilters
-        tab="venues"
-        q={q}
-        status={status}
-        link={link}
-        placeholder="Venue or city"
-      />
-      {rows.length === 0 ? (
-        <p className="text-radar-purple/80">
-          {q || status ? "No venues match these filters." : "No venues yet."}
-        </p>
-      ) : (
-        <div className="relative -mx-4 overflow-x-auto md:mx-0">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
-                <th className="px-4 py-2 font-extrabold md:px-2">Venue</th>
-                <th className={th}>City</th>
-                <th className={`${th} text-right`}>Upcoming</th>
-                <th className={th}>Added by</th>
-                <th className={th}>Status</th>
-                <th className="px-2 py-2">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((v) => (
-                <tr key={v.id} className="border-b border-radar-purple/10">
-                  <td className="max-w-72 px-4 py-2 md:px-2">
-                    <span className="block font-extrabold break-words">
-                      {v.name}
-                    </span>
-                    {v.name_ar && (
-                      <span
-                        dir="rtl"
-                        lang="ar"
-                        className="block text-xs text-radar-purple/70"
-                      >
-                        {v.name_ar}
-                      </span>
-                    )}
-                    {v.address && (
-                      <span className="block text-xs break-words text-radar-purple/70">
-                        {v.address}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap">
-                    {flagOf(v.country_code)} {v.city}
-                  </td>
-                  <td className="px-2 py-2 text-right">{v.upcoming}</td>
-                  <td className="max-w-40 px-2 py-2 text-xs break-words">
-                    {v.added_by ?? "Comedy Radar"}
-                  </td>
-                  <td className="px-2 py-2">{contentStatusTag(v.status)}</td>
-                  <td className="px-2 py-1">
-                    <span className="flex items-center justify-end gap-1">
-                      <StatusForm
-                        kind="venue"
-                        id={v.id}
-                        status={v.status}
-                        ret={ret}
-                        name={v.name}
-                      />
-                      {v.website && /^https?:\/\//.test(v.website) && (
-                        <a
-                          href={v.website}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className={`${iconBtn} text-xs font-extrabold`}
-                          aria-label={`Website of ${v.name}`}
-                          title="Open the website"
-                        >
-                          www
-                        </a>
-                      )}
-                      {v.map_url && /^https?:\/\//.test(v.map_url) && (
-                        <a
-                          href={v.map_url}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className={iconBtn}
-                          aria-label={`Map for ${v.name}`}
-                          title="Open the map"
-                        >
-                          <ExternalIcon />
-                        </a>
-                      )}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 id="venue-edit" className="text-lg font-extrabold">
+            Edit venue
+          </h2>
+          <p className="text-sm text-radar-purple/75">
+            {flagOf(v.country_code)} {v.city} ·{" "}
+            <Link href={`/venues/${v.slug}`} className="font-bold underline">
+              See the public page
+            </Link>
+          </p>
         </div>
-      )}
+        <Link
+          href={close}
+          scroll={false}
+          className={iconBtn}
+          aria-label="Close without saving"
+          title="Close"
+        >
+          <CloseIcon />
+        </Link>
+      </div>
+      <form action={updateVenue} className="grid gap-3 sm:grid-cols-2">
+        <input type="hidden" name="id" value={v.id} />
+        <input type="hidden" name="ret" value={ret} />
+        {venueFields.map(([name, label, ph, req, max]) => (
+          <div key={name} className="flex flex-col gap-1">
+            <label htmlFor={`ve-${name}`} className={labelCls}>
+              {label}
+            </label>
+            <input
+              id={`ve-${name}`}
+              name={name}
+              type={name === "map_url" || name === "website" ? "url" : "text"}
+              required={req}
+              maxLength={max}
+              placeholder={ph || undefined}
+              defaultValue={value[name]}
+              className={`${inputCls} min-h-11`}
+            />
+          </div>
+        ))}
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <button className={outlineBtn}>Save venue</button>
+          <Link
+            href={close}
+            scroll={false}
+            className="text-sm font-bold underline"
+          >
+            Cancel
+          </Link>
+        </div>
+      </form>
     </section>
   );
 }
@@ -1131,7 +1319,7 @@ async function Content({
       {msg && (
         <p
           role="status"
-          className={`rounded-card px-4 py-3 font-extrabold ${msgKey === "saved" || msgKey === "declined" ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}
+          className={`rounded-card px-4 py-3 font-extrabold ${msgKey === "saved" || msgKey === "declined" || msgKey === "venue_saved" ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}
         >
           {msg}
         </p>

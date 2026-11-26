@@ -136,13 +136,16 @@ export function TourResult({ tour }: { tour: TourRow }) {
   );
 }
 
-/** Venue row. Venue pages come in phase 2, so this is not a link yet. */
+/** Venue row: opens the venue page with all its shows. */
 export function VenueResult({ venue }: { venue: SearchVenue }) {
   return (
-    <div className="flex flex-col gap-1 rounded-[18px] bg-radar-plum p-4">
+    <Link
+      href={`/venues/${venue.slug}`}
+      className="group flex flex-col gap-1 rounded-[18px] bg-radar-plum p-4"
+    >
       <Badge tone="outline">Venue</Badge>
-      <span className="mt-1 text-base font-extrabold">{venue.name}</span>
+      <span className="mt-1 text-base font-extrabold group-hover:text-spotlight-yellow">{venue.name}</span>
       {venue.city_name && <span className="text-[13px] text-lavender-text">{venue.city_name}</span>}
-    </div>
+    </Link>
   );
 }

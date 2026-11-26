@@ -9,7 +9,7 @@ import {
 } from "@/app/actions/admin-accounts";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag } from "@/components/dashboard/ui";
-import { CloseIcon, EditIcon } from "@/components/icons";
+import { CloseIcon, EditIcon, SaveIcon } from "@/components/icons";
 import {
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
@@ -250,7 +250,13 @@ async function SidePanel({
                 <option value="comedian">Comedian</option>
                 <option value="manager">Manager or agent</option>
               </select>
-              <button className={`${outlineBtn} bg-white`}>Save</button>
+              <button
+                className={`${outlineBtn} h-11 w-11 shrink-0 bg-white px-0`}
+                aria-label="Save account type"
+                title="Save account type"
+              >
+                <SaveIcon />
+              </button>
             </div>
           </form>
           <form action={sendPasswordReset}>

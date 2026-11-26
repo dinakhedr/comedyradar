@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { changeAccess, grantAccess, setProfileStatus } from "@/app/actions/admin-profiles";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
-import { CloseIcon, EditIcon, ExternalIcon } from "@/components/icons";
+import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 
 export const metadata: Metadata = { title: "Profiles" };
@@ -92,7 +92,9 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           </select>
           <p className="text-xs text-radar-purple/70">Archived hides the profile everywhere. Nothing is deleted.</p>
         </div>
-        <button className={`${yellowBtn} self-start`}>Save</button>
+        <button className={`${yellowBtn} h-11 w-11 self-start px-0`} aria-label="Save status" title="Save status">
+          <SaveIcon />
+        </button>
       </form>
 
       <section aria-labelledby="access" className="flex flex-col gap-2">
@@ -122,7 +124,9 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
                     <option value="admin">Admin</option>
                     <option value="moderator">Moderator</option>
                   </select>
-                  <button className={`${outlineBtn} min-h-11 px-3 text-sm`}>Save</button>
+                  <button className={`${outlineBtn} h-11 w-11 shrink-0 px-0`} aria-label="Save role" title="Save role">
+                    <SaveIcon />
+                  </button>
                 </form>
                 <form action={changeAccess}>
                   <input type="hidden" name="access_id" value={a.id} />

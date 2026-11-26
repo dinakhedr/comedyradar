@@ -197,3 +197,12 @@ export function ArrowDownIcon({ className, size = 18 }: IconProps) {
     </svg>
   );
 }
+
+/** A tick: the Save action on a row or a small form. */
+export function SaveIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <path d="M5 12.5 L10 17.5 L19 7" />
+    </svg>
+  );
+}

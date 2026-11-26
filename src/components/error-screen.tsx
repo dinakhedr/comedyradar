@@ -1,5 +1,5 @@
-import { MicIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
+import { LogoMark } from "@/components/logo-mark";
 import { errorReference } from "@/lib/error-ref";
 
 const EMAIL = "comedyradarnetwork@gmail.com";
@@ -20,7 +20,7 @@ export function ErrorScreen({
         <Logo />
       </header>
       <main className="mx-auto flex max-w-[720px] flex-col items-center gap-5 px-[18px] py-16 text-center">
-        <MicIcon size={96} className="text-lavender-text" />
+        <LogoMark size={120} />
         <p className="text-label font-extrabold tracking-widest text-laugh-pink">
           ERROR 500
         </p>

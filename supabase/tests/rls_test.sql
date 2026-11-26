@@ -713,7 +713,8 @@ set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
 select pg_temp.check(public.admin_settings() is null and public.admin_save_setting('track_count', '8') = 'forbidden',
   'only the super admin reads and changes settings');
-select pg_temp.check(public.admin_add_venue('10000000-0000-0000-0000-000000000001', 'X venue', null, 'https://maps.app.goo.gl/x') = 'forbidden',
+select pg_temp.check(public.admin_add_venue('10000000-0000-0000-0000-000000000001', 'X venue', null, 'https://maps.app.goo.gl/x', null, null) = 'forbidden'
+                     and public.admin_update_venue('10000000-0000-0000-0000-000000000001', 'X', null, null, 'https://maps.app.goo.gl/x', null, null) = 'forbidden',
   'only the super admin adds venues here');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = 'aal2';
@@ -727,14 +728,27 @@ select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001
 select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', 'new giza') = 'exists', 'a city is added only once');
 select pg_temp.check((select slug = 'new-giza' and name = 'New Giza' from public.cities where name = 'New Giza'), 'a new city gets a clean name and address');
 select pg_temp.check(jsonb_array_length(public.admin_settings() -> 'super_admins') >= 1, 'the settings list the super admins');
-select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'The Room', 'https://theroom.example', 'https://maps.app.goo.gl/abc123') = 'ok',
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'The Room', 'https://theroom.example', 'https://maps.app.goo.gl/abc123', null, null) = 'ok',
   'the super admin adds a venue');
-select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'the room', null, 'https://maps.app.goo.gl/abc123') = 'exists'
-                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', null, 'https://evil.example/maps') = 'bad_value'
-                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', 'javascript:alert(1)', 'https://www.google.com/maps/place/x') = 'bad_value',
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'the room', null, 'https://maps.app.goo.gl/abc123', null, null) = 'exists'
+                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', null, 'https://evil.example/maps', null, null) = 'bad_value'
+                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', 'javascript:alert(1)', 'https://www.google.com/maps/place/x', null, null) = 'bad_value',
   'a venue needs a new name, a Google Maps link and a web address');
 select pg_temp.check((select status = 'published' and slug = 'the-room-new-giza' and website = 'https://theroom.example' from public.venues where name = 'The Room'),
   'a venue added by the super admin is published');
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Club Two', null, 'https://maps.app.goo.gl/z', '@club.two', 'facebook.com/clubtwo/') = 'ok',
+  'a venue can have Instagram and Facebook');
+select pg_temp.check((select instagram_url = 'https://www.instagram.com/club.two' and facebook_url = 'https://www.facebook.com/clubtwo' from public.venues where name = 'Club Two'),
+  'Instagram and Facebook are saved as clean links');
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Club Three', null, 'https://maps.app.goo.gl/z', 'https://evil.example/x', null) = 'bad_value'
+                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Club Three', null, 'https://maps.app.goo.gl/z', null, 'javascript:alert(1)') = 'bad_value',
+  'Instagram and Facebook must be real links or names');
+select pg_temp.check(public.admin_update_venue((select id from public.venues where name = 'Club Two'), 'Club 2', '5 Main St', 'https://club2.example', 'https://www.google.com/maps/place/club', 'https://instagram.com/club2', '') = 'ok',
+  'the super admin edits a venue');
+select pg_temp.check((select name = 'Club 2' and address = '5 Main St' and instagram_url = 'https://www.instagram.com/club2' and facebook_url is null from public.venues where slug = 'club-two-new-giza'),
+  'venue edits are saved and the address stays');
+select pg_temp.check(public.admin_update_venue((select id from public.venues where name = 'Club 2'), 'The Room', null, null, 'https://maps.app.goo.gl/z', null, null) = 'exists',
+  'a venue cannot take the name of another venue in its city');
 set local request.jwt.claim.aal = '';
 reset role;
 
