@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SearchIcon } from "../icons";
+import { Pagination } from "../pagination";
 import { ShowCard } from "../show-card";
 import { getCities } from "@/lib/data/home";
 import { countUpcomingShows, getPerformerOptions, getShowsPage, type PerformerOption } from "@/lib/data/shows";
@@ -10,7 +11,6 @@ import {
   countMoreFilters,
   datesLabel,
   LANGUAGE_OPTIONS,
-  pageList,
   parseShowsFilters,
   SHOWS_PER_PAGE,
   showingLine,
@@ -239,68 +239,6 @@ function SortSelect({ c, id, mobile }: { c: Ctx; id: string; mobile?: boolean })
   );
 }
 
-function Pagination({ c, total }: { c: Ctx; total: number }) {
-  const pages = Math.ceil(total / SHOWS_PER_PAGE);
-  if (pages <= 1) return null;
-  const page = Math.min(c.f.page, pages);
-  const step = "inline-flex min-h-11 items-center rounded-button border-2 px-4 text-[15px]";
-  const prev =
-    page > 1 ? (
-      <Link href={href(c, { page: page - 1 })} className={`${step} border-spotlight-yellow font-extrabold text-spotlight-yellow hover:bg-spotlight-yellow hover:text-radar-purple`}>
-        ‹ <span className="ml-1 md:hidden">Prev</span>
-        <span className="ml-1 hidden md:inline">Previous</span>
-      </Link>
-    ) : (
-      <span className={`${step} border-plum-line font-bold text-lavender-text`} aria-disabled="true">
-        ‹ <span className="ml-1 md:hidden">Prev</span>
-        <span className="ml-1 hidden md:inline">Previous</span>
-      </span>
-    );
-  const next =
-    page < pages ? (
-      <Link href={href(c, { page: page + 1 })} className={`${step} border-spotlight-yellow font-extrabold text-spotlight-yellow hover:bg-spotlight-yellow hover:text-radar-purple`}>
-        Next ›
-      </Link>
-    ) : (
-      <span className={`${step} border-plum-line font-bold text-lavender-text`} aria-disabled="true">
-        Next ›
-      </span>
-    );
-  return (
-    <nav aria-label="Pagination" className="flex items-center justify-between gap-2 pt-2 md:justify-center">
-      {prev}
-      <span className="text-sm font-bold md:hidden">
-        Page {page} of {pages}
-      </span>
-      <ul className="hidden items-center gap-2 md:flex">
-        {pageList(page, pages).map((n, i) =>
-          n === "…" ? (
-            <li key={`gap${i}`} className="px-1 text-lavender-text" aria-hidden="true">
-              …
-            </li>
-          ) : (
-            <li key={n}>
-              <Link
-                href={href(c, { page: n })}
-                aria-current={n === page ? "page" : undefined}
-                aria-label={`Page ${n}`}
-                className={`inline-flex h-11 min-w-11 items-center justify-center rounded-button border-2 px-3 text-[15px] font-extrabold ${
-                  n === page
-                    ? "border-spotlight-yellow bg-spotlight-yellow text-radar-purple"
-                    : "border-plum-line text-white hover:border-spotlight-yellow"
-                }`}
-              >
-                {n}
-              </Link>
-            </li>
-          ),
-        )}
-      </ul>
-      {next}
-    </nav>
-  );
-}
-
 /** All shows (docs/website-spec.md, 7.1), also used by /shows/city/[city] with the city preset. */
 export async function ShowsListing({ searchParams, city }: { searchParams: SP; city?: City }) {
   const f = parseShowsFilters(await searchParams, city ? { city: city.slug } : {});
@@ -448,7 +386,7 @@ export async function ShowsListing({ searchParams, city }: { searchParams: SP; c
             ))}
           </div>
         )}
-        <Pagination c={{ ...c, f: { ...f, page } }} total={total} />
+        <Pagination page={page} pages={pages} href={(n) => href(c, { page: n })} />
       </section>
     </>
   );
