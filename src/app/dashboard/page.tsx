@@ -1,24 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CoverImage } from "@/components/placeholder-image";
-import { firstName, pickProfile, profileStatus, ROLE_LABELS, SHOW_STATUS_LABELS, type ManagedProfile } from "@/lib/dashboard";
+import { card, ProfileCard, Tag, yellowBtn } from "@/components/dashboard/ui";
+import { firstName, pickProfile, SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
 import { countIncomingRequests, getMyProfiles, getOverview, requireAccount, type DashboardShow } from "@/lib/data/dashboard";
 
 export const metadata: Metadata = { title: "Overview" };
-
-const card = "rounded-card bg-white p-4 md:p-6";
-const tones = {
-  pink: "bg-laugh-pink text-radar-purple",
-  yellow: "bg-spotlight-yellow text-radar-purple",
-  purple: "bg-radar-purple text-white",
-  outline: "border border-radar-purple/30 text-radar-purple",
-};
-
-function Tag({ tone, children }: { tone: keyof typeof tones; children: React.ReactNode }) {
-  return <span className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-extrabold tracking-wider uppercase ${tones[tone]}`}>{children}</span>;
-}
 
 function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {
   return (
@@ -27,32 +15,6 @@ function StatTile({ label, value, note }: { label: string; value: number; note?:
       <span className="font-display text-[34px] leading-none md:text-[40px]">{value.toLocaleString("en")}</span>
       {note && <span className="text-xs text-radar-purple/70">{note}</span>}
     </div>
-  );
-}
-
-function ProfileCard({ p }: { p: ManagedProfile }) {
-  const status = profileStatus(p);
-  const href = p.status === "published" ? `/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}` : null;
-  return (
-    <li className="flex items-center gap-3 rounded-card border border-radar-purple/10 bg-white p-3">
-      <span className="h-14 w-14 shrink-0 overflow-hidden rounded-full">
-        <CoverImage src={p.photo_url} alt="" iconSize={24} className="h-full w-full" tone="deep" />
-      </span>
-      <span className="flex min-w-0 flex-col gap-1">
-        <span className="truncate font-extrabold">{p.name}</span>
-        <span className="text-sm text-radar-purple/75">
-          {p.kind === "group" ? "Group" : "Comedian"} · {ROLE_LABELS[p.role]}
-        </span>
-        <span className="flex flex-wrap items-center gap-2">
-          <Tag tone={status.tone}>{status.label}</Tag>
-          {href && (
-            <Link href={href} className="text-sm font-extrabold underline">
-              View page
-            </Link>
-          )}
-        </span>
-      </span>
-    </li>
   );
 }
 
@@ -166,7 +128,9 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
         <div className="flex flex-wrap gap-2.5">
           <SoonButton>Add a show</SoonButton>
           <SoonButton>Add a tour</SoonButton>
-          <SoonButton>Create or claim a profile</SoonButton>
+          <Link href="/dashboard/profiles/new" className={yellowBtn}>
+            Create or claim a profile
+          </Link>
         </div>
       </section>
 
@@ -176,8 +140,11 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
         </h2>
         {profiles.length === 0 ? (
           <p className="text-base text-radar-purple/80">
-            You don&apos;t manage any profile yet. Soon you will be able to create your comedian or group page, or claim
-            the one already on Comedy Radar, right from here.
+            You don&apos;t manage any profile yet.{" "}
+            <Link href="/dashboard/profiles/new" className="font-extrabold underline">
+              Create your comedian or group page, or claim the one already on Comedy Radar
+            </Link>
+            .
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

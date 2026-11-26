@@ -635,6 +635,8 @@ create table access_requests (
   proof_value text,                   -- the official handle messaged from, the confirmer's phone/email, the business email, or notes
   proof_file_path text,               -- private storage bucket 'claim-documents' (super admin read only)
   confirmed_at timestamptz,           -- set when the comedian / business email link is confirmed
+  confirm_token uuid unique,          -- secret of the "comedian confirms" link (/claim/confirm/[token]); claimant and super admin only
+  confirmed_by_name text,             -- name typed by the person who confirmed
   status text default 'pending',      -- 'pending' | 'approved' | 'rejected' | 'expired'
   decided_by uuid references accounts(id),
   decision_reason text,               -- reason sent with a rejection or a request for more proof
