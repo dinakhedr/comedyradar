@@ -226,6 +226,21 @@ select pg_temp.check((select show_count = 1 and upcoming_count = 1 and cities = 
                      'tour view counts shows and cities');
 select pg_temp.check((select count(*) = 1 from public.v_comedian_shows), 'comedian shows view');
 
+-- Search (runs as anon: only published things can be found)
+set local role anon;
+select pg_temp.check((select count(*) = 1 from public.search_radar('comic') where kind = 'comedian'),
+                     'search finds the published comedian only');
+select pg_temp.check((select score = 1 from public.search_radar('COMICA') where kind = 'comedian'),
+                     'search ignores case and spaces');
+select pg_temp.check((select count(*) = 1 from public.search_radar('comuc a') where kind = 'comedian'),
+                     'search survives a typo');
+select pg_temp.check((select count(*) = 1 from public.search_radar('late show') where kind = 'show'),
+                     'search finds an upcoming show by title');
+select pg_temp.check((select count(*) = 1 from public.search_radar('tour a') where kind = 'tour'),
+                     'search finds a published tour');
+select pg_temp.check((select count(*) = 0 from public.search_radar('a')), 'one-letter search returns nothing');
+select pg_temp.check((select count(*) = 0 from public.search_radar('zzqqxx')), 'no match returns nothing');
+
 reset role;
 select pg_temp.check((select count(*) > 0 from public.activity_log), 'activity is logged');
 

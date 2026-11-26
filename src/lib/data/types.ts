@@ -37,6 +37,7 @@ export type TourRow = {
   show_count: number;
   country_count: number;
   cities: string[];
+  next_city_name?: string | null;
 };
 
 export type City = { id: string; name: string; slug: string; country_code: string; country_name: string };

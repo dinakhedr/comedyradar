@@ -9,6 +9,7 @@ do $$ begin
 end $$;
 
 create schema extensions;
+grant usage on schema extensions to anon, authenticated, service_role;  -- as on Supabase
 create schema auth;
 create table auth.users (
   id uuid primary key default gen_random_uuid(),
