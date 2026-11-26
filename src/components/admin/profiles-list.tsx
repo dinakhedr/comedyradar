@@ -8,6 +8,7 @@ import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons"
 import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const STATUSES = [
@@ -35,9 +36,7 @@ const pageOf = (p: AdminProfileRow) => `/${p.kind === "group" ? "groups" : "come
 
 
 function statusTag(p: AdminProfileRow) {
-  if (p.status === "published") return <Tag tone="yellow">Published</Tag>;
-  if (p.status === "pending") return <Tag tone="pink">Pending</Tag>;
-  return <Tag tone="outline">{p.status === "draft" ? "Draft" : "Archived"}</Tag>;
+  return <StatusPill status={p.status} />;
 }
 
 async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; close: string }) {

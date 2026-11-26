@@ -1,13 +1,14 @@
 import { leavePodcast, removeGroupMember } from "@/app/actions/profile-edit";
-import { card, Tag } from "@/components/dashboard/ui";
+import { card } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { AddMembersForm, PodcastForm } from "@/components/profiles/edit-forms";
 import { getComedianPodcasts, getGroupMembers, type EditableProfile } from "@/lib/data/profile-edit";
 import { PODCAST_LINKS } from "@/lib/profile-forms";
+import { StatusPill } from "@/components/status";
 
 /** Group members and podcasts on Edit profile: shared by the creator dashboard and Admin > Profiles > Edit. */
 
-const LINK_STATUS = { accepted: { label: "Accepted", tone: "yellow" }, pending: { label: "Waiting for answer", tone: "pink" }, declined: { label: "Declined", tone: "outline" } } as const;
+const LINK_STATUS = { accepted: { label: "Accepted" }, pending: { label: "Waiting for answer" }, declined: { label: "Declined" } } as const;
 
 export function Hidden({ p }: { p: EditableProfile }) {
   return (
@@ -36,7 +37,7 @@ export async function Members({ p }: { p: EditableProfile }) {
               <li key={m.comedian_id} className="flex flex-wrap items-center justify-between gap-2 rounded-button bg-lavender px-3 py-2">
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="font-bold">{m.name}</span>
-                  <Tag tone={s.tone}>{s.label}</Tag>
+                  <StatusPill status={m.link_status} label={s.label} />
                   {m.status === "draft" && <span className="text-sm">draft page</span>}
                 </span>
                 {admin && (

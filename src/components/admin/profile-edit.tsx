@@ -10,6 +10,7 @@ import { getProfileForSuperAdmin } from "@/lib/data/profile-edit";
 import { getCountries } from "@/lib/data/profiles";
 import { UUID } from "@/lib/profile-server";
 import { adminListPath } from "@/lib/admin-paths";
+import { StatusPill } from "@/components/status";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -75,7 +76,7 @@ async function Content({ kind, params, searchParams }: { kind: "comedian" | "gro
         <p className="text-sm font-extrabold tracking-wider text-radar-purple/75 uppercase">Edit {p.kind === "group" ? "group" : "comedian"}</p>
         <h1 className="font-display text-[32px] leading-none break-words md:text-[44px]">{p.name.toUpperCase()}</h1>
         <p className="flex flex-wrap items-center gap-2 text-sm">
-          <Tag tone={p.status === "published" ? "yellow" : p.status === "pending" ? "pink" : "outline"}>{STATUS[p.status]}</Tag>
+          <StatusPill status={p.status} label={STATUS[p.status]} />
           {p.verified && <Tag tone="purple">Verified</Tag>}
           {p.status === "published" && (
             <Link href={`/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}`} className="font-extrabold underline">

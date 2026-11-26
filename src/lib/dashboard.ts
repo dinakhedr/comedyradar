@@ -1,5 +1,7 @@
 /** Helpers for the creator dashboard (docs/website-spec.md 11.4). */
 
+import type { StatusKind } from "@/lib/status";
+
 export type ManagedProfile = {
   kind: "comedian" | "group";
   id: string;
@@ -23,12 +25,12 @@ export function pickProfile(profiles: ManagedProfile[], raw: unknown): ManagedPr
   return profiles.find((p) => profileKey(p) === v) ?? null;
 }
 
-/** Status line of a profile card: Verified / Live / Pending review / Draft / Archived. */
-export function profileStatus(p: Pick<ManagedProfile, "status" | "verified">): { label: string; tone: "pink" | "yellow" | "purple" | "outline" } {
-  if (p.status === "published") return p.verified ? { label: "Verified", tone: "yellow" } : { label: "Live", tone: "purple" };
-  if (p.status === "pending") return { label: "Pending review", tone: "pink" };
-  if (p.status === "archived") return { label: "Archived", tone: "outline" };
-  return { label: "Draft", tone: "outline" };
+/** Status line of a profile card: Verified / Live / Pending review / Draft / Archived. Colour comes from `kind`. */
+export function profileStatus(p: Pick<ManagedProfile, "status" | "verified">): { label: string; kind: StatusKind } {
+  if (p.status === "published") return { label: p.verified ? "Verified" : "Live", kind: "published" };
+  if (p.status === "pending") return { label: "Pending review", kind: "pending" };
+  if (p.status === "archived") return { label: "Archived", kind: "archived" };
+  return { label: "Draft", kind: "draft" };
 }
 
 export const SHOW_STATUS_LABELS: Record<string, string> = {

@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ExternalIcon } from "@/components/icons";
-import { card, ProfileCard, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
+import { card, ProfileCard, StatTile, yellowBtn } from "@/components/dashboard/ui";
 import { firstName, pickProfile, SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
 import { countIncomingRequests, getMyProfiles, getOverview, requireAccount, type DashboardShow } from "@/lib/data/dashboard";
 import { getMyInvites } from "@/lib/data/team";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { ShowStatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -39,7 +40,7 @@ function ShowsTable({ shows }: { shows: DashboardShow[] }) {
                 </td>
                 <td className="py-3 pr-3">{s.performers.join(", ") || "—"}</td>
                 <td className="py-3 pr-3">
-                  <Tag tone={s.status === "pending" ? "pink" : live ? "yellow" : "outline"}>{SHOW_STATUS_LABELS[s.status] ?? s.status}</Tag>
+                  <ShowStatusPill status={s.status} label={SHOW_STATUS_LABELS[s.status]} />
                 </td>
                 <td className="py-3 pr-3 text-right font-bold">{s.clicks}</td>
                 <td className="py-3 text-right whitespace-nowrap">

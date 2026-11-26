@@ -13,81 +13,21 @@ import {
   type VenueFormState,
 } from "@/lib/venue-forms";
 import { ErrorNote } from "@/components/status-note";
+import { StatusIcon } from "@/components/status";
+import { STATUS_LABELS } from "@/lib/status";
+
 
 type Country = AdminSettings["countries"][number];
 type City = Country["cities"][number];
 
-const STATUS = {
-  published: { label: "Published", cls: "bg-[#1f9d55] text-white" },
-  pending: { label: "Pending", cls: "bg-spotlight-yellow text-radar-purple" },
-  archived: { label: "Archived", cls: "bg-[#e2e0e6] text-[#55506a]" },
-  draft: {
-    label: "Draft",
-    cls: "border-2 border-dashed border-[#a39cb3] bg-white text-[#7d7590]",
-  },
-} as const;
+// Venues use four of the five statuses (no Rejected). Colours and icons: src/components/status.tsx.
+const VENUE_STATUSES = ["published", "pending", "archived", "draft"] as const;
+const STATUS = Object.fromEntries(VENUE_STATUSES.map((s) => [s, { label: STATUS_LABELS[s] }])) as Record<
+  (typeof VENUE_STATUSES)[number],
+  { label: string }
+>;
 type Status = keyof typeof STATUS;
 const statusOf = (s: string): Status => (s in STATUS ? (s as Status) : "draft");
-
-function StatusGlyph({ s }: { s: Status }) {
-  const p = {
-    width: 14,
-    height: 14,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    "aria-hidden": true,
-  };
-  if (s === "published")
-    return (
-      <svg {...p} strokeWidth={3.2}>
-        <path d="M5 12.5l4.5 4.5L19 7.5" />
-      </svg>
-    );
-  if (s === "pending")
-    return (
-      <svg {...p} strokeWidth={2.6}>
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 7.5V12l3 2" />
-      </svg>
-    );
-  if (s === "archived")
-    return (
-      <svg {...p} strokeWidth={2.4}>
-        <rect x="3" y="4" width="18" height="5" rx="1" />
-        <path d="M5 9v10h14V9M10 13h4" />
-      </svg>
-    );
-  return (
-    <svg {...p} width={12} height={12} strokeWidth={2.6}>
-      <path d="M5 12h.01M12 12h.01M19 12h.01" />
-    </svg>
-  );
-}
-
-/** A small coloured status icon; its name shows on hover and keyboard focus. */
-export function StatusIcon({ status }: { status: string }) {
-  const s = statusOf(status);
-  const { label, cls } = STATUS[s];
-  return (
-    <span
-      role="img"
-      aria-label={label}
-      tabIndex={0}
-      className={`group/st relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${cls}`}
-    >
-      <StatusGlyph s={s} />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded-md bg-radar-purple px-2 py-1 text-xs font-bold whitespace-nowrap text-white group-hover/st:block group-focus/st:block"
-      >
-        {label}
-      </span>
-    </span>
-  );
-}
 
 function PlusIcon() {
   return (

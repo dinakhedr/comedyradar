@@ -55,6 +55,7 @@ import {
 import { formatShowDate } from "@/lib/dates";
 import { UUID } from "@/lib/profile-server";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { ShowStatusPill, StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Shows and tours" };
 
@@ -88,16 +89,10 @@ const day = (iso: string | null) =>
     : "";
 
 function showStatusTag(s: string) {
-  if (s === "published") return <Tag tone="yellow">Published</Tag>;
-  if (s === "sold_out") return <Tag tone="purple">Sold out</Tag>;
-  if (s === "pending") return <Tag tone="pink">In review</Tag>;
-  if (s === "cancelled") return <Tag tone="pink">Cancelled</Tag>;
-  return <Tag tone="outline">Draft</Tag>;
+  return <ShowStatusPill status={s} />;
 }
 function contentStatusTag(s: string) {
-  if (s === "published") return <Tag tone="yellow">Published</Tag>;
-  if (s === "pending") return <Tag tone="pink">Pending</Tag>;
-  return <Tag tone="outline">{labelOf(CONTENT_STATUSES, s)}</Tag>;
+  return <StatusPill status={s} label={labelOf(CONTENT_STATUSES, s)} />;
 }
 function TicketTag({ url }: { url: string | null }) {
   const c = ticketCheck(url);

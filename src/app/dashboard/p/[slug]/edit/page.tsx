@@ -9,6 +9,7 @@ import { Hidden, Members, Podcasts } from "@/components/profiles/edit-sections";
 import { profileStatus, ROLE_LABELS } from "@/lib/dashboard";
 import { getEditableProfile, type EditableProfile } from "@/lib/data/profile-edit";
 import { getCountries } from "@/lib/data/profiles";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Edit profile" };
 
@@ -23,7 +24,7 @@ function SidePanel({ p }: { p: EditableProfile }) {
       <section className={`${card} flex flex-col gap-3`}>
         <h2 className="text-lg font-extrabold">Status</h2>
         <div className="flex flex-wrap gap-2">
-          <Tag tone={status.tone}>{status.label}</Tag>
+          <StatusPill status={status.kind} label={status.label} />
           {!p.verified && <Tag tone="outline">Not verified</Tag>}
           {p.verified && p.status !== "published" && <Tag tone="purple">Verified</Tag>}
         </div>
