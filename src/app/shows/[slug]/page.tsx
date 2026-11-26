@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { contactHref } from "@/lib/contact";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/badge";
@@ -190,6 +191,12 @@ function DetailsPanel({ show }: { show: ShowDetail }) {
           )}
         </>
       )}
+      <Link
+        href={contactHref("wrong_detail", `${SITE_URL}/shows/${show.slug}`)}
+        className="self-center text-xs font-bold text-lavender-text underline hover:text-white md:text-[13px]"
+      >
+        Something wrong? Report a correction
+      </Link>
     </div>
   );
 }

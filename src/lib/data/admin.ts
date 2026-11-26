@@ -499,3 +499,60 @@ export async function getAdminSettings(): Promise<AdminSettings> {
     super_admins: [],
   }) as AdminSettings;
 }
+
+export type AdminMessage = {
+  id: string;
+  name: string;
+  email: string;
+  sender_type: string | null;
+  topic: string | null;
+  page_url: string | null;
+  message: string;
+  status: "new" | "replied" | "closed";
+  created_at: string;
+};
+
+/** Contact form messages, newest first (super admin only, through RLS). */
+export async function getAdminMessages(opts: {
+  status: string;
+  q: string;
+  limit: number;
+}): Promise<{
+  rows: AdminMessage[];
+  counts: Record<"new" | "replied" | "closed", number>;
+  more: boolean;
+}> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  let query = supabase
+    .from("contact_messages")
+    .select(
+      "id, name, email, sender_type, topic, page_url, message, status, created_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(opts.limit + 1);
+  if (opts.status) query = query.eq("status", opts.status);
+  const q = opts.q.replace(/[%_,()\\]/g, " ").trim();
+  if (q)
+    query = query.or(
+      `name.ilike.%${q}%,email.ilike.%${q}%,message.ilike.%${q}%`,
+    );
+  const count = (s: string) =>
+    supabase
+      .from("contact_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("status", s);
+  const [list, n, r, c] = await Promise.all([
+    query,
+    count("new"),
+    count("replied"),
+    count("closed"),
+  ]);
+  if (list.error) console.error("contact_messages", list.error.message);
+  const rows = (list.data ?? []) as AdminMessage[];
+  return {
+    rows: rows.slice(0, opts.limit),
+    counts: { new: n.count ?? 0, replied: r.count ?? 0, closed: c.count ?? 0 },
+    more: rows.length > opts.limit,
+  };
+}
