@@ -91,3 +91,51 @@ export function MicIcon({ className, size = 64 }: IconProps) {
     </svg>
   );
 }
+
+export function EditIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M4 20 H8 L19 9 A2.8 2.8 0 0 0 15 5 L4 16 Z" />
+      <path d="M13.5 6.5 L17.5 10.5" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15 H4.5 A1.5 1.5 0 0 1 3 13.5 V4.5 A1.5 1.5 0 0 1 4.5 3 H13.5 A1.5 1.5 0 0 1 15 4.5 V5" />
+    </svg>
+  );
+}
+
+/** A ticket, for "back on sale". */
+export function TicketIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z" transform="translate(0 1.5)" />
+      <path d="M14 6.5 V17.5" strokeDasharray="2 2" />
+    </svg>
+  );
+}
+
+/** A crossed-out ticket, for "mark sold out". */
+export function SoldOutIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z" transform="translate(0 1.5)" />
+      <path d="M4 21 L20 2" />
+    </svg>
+  );
+}
+
+export function ExternalIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M14 4 H20 V10" />
+      <path d="M20 4 L11 13" />
+      <path d="M18 14 V19 A1 1 0 0 1 17 20 H5 A1 1 0 0 1 4 19 V7 A1 1 0 0 1 5 6 H10" />
+    </svg>
+  );
+}
