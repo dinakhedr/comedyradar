@@ -8,6 +8,7 @@ const ITEMS: { href: string; label: string; soon?: boolean }[] = [
   { href: "/admin/review", label: "Review queue" },
   { href: "/admin/profiles", label: "Profiles" },
   { href: "/admin/shows", label: "Shows and tours" },
+  { href: "/admin/import", label: "Bulk import" },
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/spotlight", label: "Spotlight" },
   { href: "/admin/messages", label: "Messages" },
