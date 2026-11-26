@@ -276,4 +276,35 @@ exception when check_violation then
   raise notice 'ok - unknown performing languages are refused';
 end $$;
 
+-- Page views and ticket clicks (dashboard part 1).
+update public.comedy_groups set status = 'published' where slug = 'style-test';
+insert into public.profile_access (account_id, group_id, role)
+select '00000000-0000-0000-0000-00000000000a', id, 'admin' from public.comedy_groups where slug = 'style-test';
+
+set local role anon;
+select public.record_page_stat('group_view', (select id from public.comedy_groups where slug = 'style-test'));
+select public.record_page_stat('group_view', (select id from public.comedy_groups where slug = 'style-test'));
+select public.record_page_stat('comedian_view', '30000000-0000-0000-0000-0000000000ff'); -- no such profile
+select public.record_page_stat('bogus', '30000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform 1 from public.page_stats;
+  raise exception 'FAILED: anon read page stats';
+exception when insufficient_privilege then
+  raise notice 'ok - anon cannot read page stats';
+end $$;
+reset role;
+select pg_temp.check((select count(*) = 1 and sum(count) = 2 from public.page_stats),
+  'views are counted per day, only for public pages');
+
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.check((select total = 2 from public.my_page_stats(current_date - 30) where kind = 'group_view'),
+  'a profile admin sees the views of their pages');
+select pg_temp.check((select count(*) = 2 from public.my_profiles()),
+  'my_profiles lists the comedian and the group the account manages');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select count(*) = 0 from public.my_page_stats(current_date - 30)),
+  'other accounts do not see those views');
+reset role;
+
 rollback;

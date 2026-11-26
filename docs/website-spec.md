@@ -691,6 +691,16 @@ create table tracks (                 -- phase 2: follow a comedian or a group (
   unique (user_id, comedian_id),
   unique (user_id, group_id)
 );
+
+create table page_stats (             -- dashboard: daily totals, no visitor data
+  day date default (now() at time zone 'Africa/Cairo')::date,
+  kind text check (kind in ('comedian_view','group_view','show_view','tour_view','ticket_click')),
+  entity_id uuid,                     -- the comedian, group, show or tour
+  count integer default 0,
+  primary key (entity_id, kind, day)
+);
+-- Written only by record_page_stat() (public pages and "Get tickets" clicks);
+-- read only by my_page_stats(), which returns the totals of pages the account manages.
 ```
 
 **Helper views**

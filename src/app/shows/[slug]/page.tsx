@@ -16,6 +16,7 @@ import { getRelatedShows, getShow, type Person, type ShowDetail } from "@/lib/da
 import type { ShowRow } from "@/lib/data/types";
 import { audienceLine, formatLongDate, formatPrice, paragraphs, showBadges, ticketSite, timeLine } from "@/lib/show-page";
 import { SITE_URL } from "@/lib/site";
+import { TrackView } from "@/components/page-tracker";
 
 const container = "mx-auto max-w-[1280px] px-[18px] md:px-8";
 const h2 = "font-display text-[24px] md:text-[32px]";
@@ -84,6 +85,7 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
       href={show.ticket_url}
       target="_blank"
       rel="noopener"
+      data-ticket-show={show.id}
       className={`block rounded-[14px] bg-spotlight-yellow text-center font-extrabold text-radar-purple hover:bg-white ${
         compact ? "px-[18px] py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"
       }`}
@@ -325,6 +327,7 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
 
   return (
     <>
+      <TrackView kind="show_view" id={show.id} />
       <script
         type="application/ld+json"
         // JSON-LD for search engines; "<" is escaped so the text cannot close the script tag.
