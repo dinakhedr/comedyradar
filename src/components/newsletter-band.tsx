@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { subscribeToNewsletter } from "@/app/actions/newsletter";
 import { NEWSLETTER_IDLE } from "@/lib/newsletter";
 
@@ -8,7 +8,15 @@ import { NEWSLETTER_IDLE } from "@/lib/newsletter";
 export function NewsletterBand() {
   const [state, action, pending] = useActionState(subscribeToNewsletter, NEWSLETTER_IDLE);
   // When the form appeared; forms sent within a second or two are treated as bots.
-  const [started] = useState(() => Date.now());
+  // Set after the page loads (not while rendering) and added when the form is sent.
+  const started = useRef(0);
+  useEffect(() => {
+    started.current = Date.now();
+  }, []);
+  const send = (form: FormData) => {
+    form.set("started", String(started.current || ""));
+    return action(form);
+  };
   const done = state.status === "ok";
 
   return (
@@ -20,7 +28,7 @@ export function NewsletterBand() {
           </h2>
           <p className="text-base md:text-lg">New shows and tours in your inbox, every Thursday.</p>
         </div>
-        <form action={action} className="flex flex-[1_1_380px] flex-col gap-2">
+        <form action={send} className="flex flex-[1_1_380px] flex-col gap-2">
           {!done && (
             <div className="flex flex-wrap gap-2.5">
               <label htmlFor="newsletter-email" className="sr-only">
@@ -43,7 +51,6 @@ export function NewsletterBand() {
                 <label htmlFor="newsletter-website">Website</label>
                 <input id="newsletter-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
               </div>
-              <input type="hidden" name="started" value={started} />
               <button
                 type="submit"
                 disabled={pending}
