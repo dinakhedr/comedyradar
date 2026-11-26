@@ -13,7 +13,7 @@ import { AGE_RATINGS, cairoToIso, CURRENCIES, isoToCairo, MAX_GOOD_TO_KNOW, SHOW
 
 const Optional = () => <span className="font-bold text-radar-purple/70"> (optional)</span>;
 
-function Field({ label, error, hint, optional, children }: { label: string; error?: string; hint?: string; optional?: boolean; children: (id: string, describedBy?: string) => React.ReactNode }) {
+export function Field({ label, error, hint, optional, children }: { label: string; error?: string; hint?: string; optional?: boolean; children: (id: string, describedBy?: string) => React.ReactNode }) {
   const id = useId();
   const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-err` : null].filter(Boolean).join(" ") || undefined;
   return (
@@ -60,6 +60,8 @@ export function ShowForm({
   const [state, action, pending] = useActionState<ShowState, FormData>(saveShow, {});
   const e = state.errors ?? {};
   const src = show ?? copy ?? null;
+  // What was typed, sent back when the form had errors (React clears the other fields after a submit).
+  const back = state.input;
   const when = show ? isoToCairo(show.starts_at) : { date: "", time: copy ? isoToCairo(copy.starts_at).time : "" };
   const doors = show?.doors_at ? isoToCairo(show.doors_at).time : copy?.doors_at ? isoToCairo(copy.doors_at).time : "";
 
@@ -175,7 +177,7 @@ export function ShowForm({
             {(id, d) => <input id={id} name="title" maxLength={120} value={title} onChange={(ev) => setTitle(ev.target.value)} aria-describedby={d} aria-invalid={e.title ? true : undefined} className={inputCls} />}
           </Field>
           <Field label="Description" error={e.description} optional>
-            {(id, d) => <textarea id={id} name="description" rows={4} maxLength={2000} defaultValue={src?.description ?? ""} aria-describedby={d} className={`${inputCls} py-3`} />}
+            {(id, d) => <textarea id={id} name="description" rows={4} maxLength={2000} defaultValue={back?.description ?? src?.description ?? ""} aria-describedby={d} className={`${inputCls} py-3`} />}
           </Field>
           <Field label="Poster" error={e.poster} optional hint="Portrait 4:5 works best (for example 1080 × 1350). JPG, PNG or WebP, up to 10 MB.">
             {(id, d) => (
@@ -208,7 +210,7 @@ export function ShowForm({
               {(id, d) => <input id={id} name="time" type="time" value={time} onChange={(ev) => setTime(ev.target.value)} aria-describedby={d} aria-invalid={e.time ? true : undefined} className={inputCls} />}
             </Field>
             <Field label="Doors open" error={e.doors} optional>
-              {(id, d) => <input id={id} name="doors" type="time" defaultValue={doors} aria-describedby={d} aria-invalid={e.doors ? true : undefined} className={inputCls} />}
+              {(id, d) => <input id={id} name="doors" type="time" defaultValue={back?.doors ?? doors} aria-describedby={d} aria-invalid={e.doors ? true : undefined} className={inputCls} />}
             </Field>
           </div>
           <Field label="City" error={e.city_id}>
@@ -258,7 +260,7 @@ export function ShowForm({
                 {(id) => <input id={id} name="venue_name" maxLength={80} value={venueName} onChange={(ev) => setVenueName(ev.target.value)} className={inputCls} />}
               </Field>
               <Field label="Address" optional>
-                {(id) => <input id={id} name="venue_address" maxLength={200} className={inputCls} />}
+                {(id) => <input id={id} name="venue_address" maxLength={200} defaultValue={back?.venue_address ?? ""} className={inputCls} />}
               </Field>
             </div>
           )}
@@ -273,14 +275,14 @@ export function ShowForm({
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Price from" optional error={e.price}>
-              {(id, d) => <input id={id} name="price_min" inputMode="decimal" maxLength={10} defaultValue={src?.price_min ?? ""} aria-describedby={d} className={inputCls} />}
+              {(id, d) => <input id={id} name="price_min" inputMode="decimal" maxLength={10} defaultValue={back?.price_min ?? src?.price_min ?? ""} aria-describedby={d} className={inputCls} />}
             </Field>
             <Field label="Price to" optional>
-              {(id) => <input id={id} name="price_max" inputMode="decimal" maxLength={10} defaultValue={src?.price_max ?? ""} className={inputCls} />}
+              {(id) => <input id={id} name="price_max" inputMode="decimal" maxLength={10} defaultValue={back?.price_max ?? src?.price_max ?? ""} className={inputCls} />}
             </Field>
             <Field label="Currency" error={e.currency}>
               {(id) => (
-                <select id={id} name="currency" defaultValue={src?.currency ?? "EGP"} className={inputCls}>
+                <select id={id} name="currency" defaultValue={back?.currency ?? src?.currency ?? "EGP"} className={inputCls}>
                   {CURRENCIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
@@ -298,7 +300,7 @@ export function ShowForm({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Language" optional error={e.language}>
               {(id) => (
-                <select id={id} name="language" defaultValue={src?.language ?? ""} className={inputCls}>
+                <select id={id} name="language" defaultValue={back?.language ?? src?.language ?? ""} className={inputCls}>
                   <option value="">Choose a language</option>
                   {SHOW_LANGUAGES.map((l) => (
                     <option key={l}>{l}</option>
@@ -308,7 +310,7 @@ export function ShowForm({
             </Field>
             <Field label="Age" optional error={e.age_rating}>
               {(id) => (
-                <select id={id} name="age_rating" defaultValue={src?.age_rating ?? ""} className={inputCls}>
+                <select id={id} name="age_rating" defaultValue={back?.age_rating ?? src?.age_rating ?? ""} className={inputCls}>
                   <option value="">Choose an age</option>
                   {AGE_RATINGS.map((a) => (
                     <option key={a}>{a}</option>
@@ -318,12 +320,12 @@ export function ShowForm({
             </Field>
           </div>
           <Field label="Good to know" optional error={e.good_to_know} hint={`One per line, up to ${MAX_GOOD_TO_KNOW}: seating, parking, refunds, photo rules…`}>
-            {(id, d) => <textarea id={id} name="good_to_know" rows={3} maxLength={900} defaultValue={(src?.good_to_know ?? []).join("\n")} aria-describedby={d} className={`${inputCls} py-3`} />}
+            {(id, d) => <textarea id={id} name="good_to_know" rows={3} maxLength={900} defaultValue={back?.good_to_know ?? (src?.good_to_know ?? []).join("\n")} aria-describedby={d} className={`${inputCls} py-3`} />}
           </Field>
           {pickedTours.length > 0 && (
             <Field label="Part of a tour" optional error={e.tour_id}>
               {(id) => (
-                <select id={id} name="tour_id" defaultValue={src?.tour_id ?? ""} className={inputCls}>
+                <select id={id} name="tour_id" defaultValue={back?.tour_id ?? src?.tour_id ?? ""} className={inputCls}>
                   <option value="">Not part of a tour</option>
                   {pickedTours.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -336,7 +338,7 @@ export function ShowForm({
           )}
           <Field label="Signal" optional hint="New shows get the “New” signal. Ask for Strong or Fading and Comedy Radar decides.">
             {(id, d) => (
-              <select id={id} name="signal_request" defaultValue={src?.signal_request ?? ""} aria-describedby={d} className={inputCls}>
+              <select id={id} name="signal_request" defaultValue={back?.signal_request ?? src?.signal_request ?? ""} aria-describedby={d} className={inputCls}>
                 <option value="">No request</option>
                 {SIGNAL_REQUESTS.map((s) => (
                   <option key={s.value} value={s.value}>

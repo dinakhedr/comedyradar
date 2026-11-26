@@ -93,6 +93,7 @@ export async function getEditableShow(id: string): Promise<EditableShow | null> 
 
 export type ListedShow = {
   id: string;
+  tour_id: string | null;
   slug: string;
   title: string;
   starts_at: string;
@@ -107,7 +108,7 @@ export type ListedShow = {
   clicks: number;
 };
 
-export type ShowsListFilters = { tab: ShowTab; q: string; profile: ManagedProfile | null; city: string | null };
+export type ShowsListFilters = { tab: ShowTab; q: string; profile: ManagedProfile | null; city: string | null; tour?: string | null };
 
 export type ShowsList = {
   shows: ListedShow[];
@@ -149,7 +150,7 @@ export async function getMyShows(f: ShowsListFilters): Promise<ShowsList> {
     supabase
       .from("shows")
       .select(
-        "id, slug, title, starts_at, status, signal, signal_request, ticket_url, city_id, cities(name), venues(name), tours(name), " +
+        "id, slug, title, starts_at, status, signal, signal_request, ticket_url, tour_id, city_id, cities(name), venues(name), tours(name), " +
           "show_performers(billing_order, comedians(name), comedy_groups(name))",
       )
       .in("id", ids.slice(0, 1000))
@@ -172,6 +173,7 @@ export async function getMyShows(f: ShowsListFilters): Promise<ShowsList> {
     city_id: s.city_id,
     row: {
       id: s.id,
+      tour_id: s.tour_id,
       slug: s.slug,
       title: s.title,
       starts_at: s.starts_at,
@@ -201,7 +203,7 @@ export async function getMyShows(f: ShowsListFilters): Promise<ShowsList> {
 
   const q = f.q.trim().toLowerCase();
   const shows = all
-    .filter(({ row, city_id }) => tabOf(row) === f.tab && (!f.city || city_id === f.city))
+    .filter(({ row, city_id }) => tabOf(row) === f.tab && (!f.city || city_id === f.city) && (!f.tour || row.tour_id === f.tour))
     .map(({ row }) => row)
     .filter((s) => !q || [s.title, s.venue_name, s.city_name, s.tour_name, ...s.performers].some((v) => v?.toLowerCase().includes(q)));
   if (f.tab === "past" || f.tab === "cancelled") shows.reverse();

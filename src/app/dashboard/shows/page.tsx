@@ -6,6 +6,7 @@ import { ShowsTable } from "@/components/shows/shows-table";
 import { pickProfile, profileKey } from "@/lib/dashboard";
 import { getMyProfiles } from "@/lib/data/dashboard";
 import { getMyShows } from "@/lib/data/my-shows";
+import { getMyTourOptions } from "@/lib/data/my-tours";
 import { inputCls, labelCls } from "@/components/auth/fields";
 import { SHOW_TABS, showTab } from "@/lib/show-forms";
 
@@ -30,7 +31,10 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
   const q = (one(sp.q) ?? "").slice(0, 100);
   const cityRaw = one(sp.city);
   const city = cityRaw && UUID.test(cityRaw) ? cityRaw : null;
-  const list = await getMyShows({ tab, q, profile, city });
+  const tourRaw = one(sp.tour);
+  const tour = tourRaw && UUID.test(tourRaw) ? tourRaw : null;
+  const [list, allTours] = await Promise.all([getMyShows({ tab, q, profile, city, tour }), getMyTourOptions()]);
+  const tours = profile ? allTours.filter((t) => t.owner === `${profile.kind === "group" ? "g" : "c"}:${profile.id}`) : allTours;
   const saved = one(sp.as);
 
   // Keeps the other filters when switching tabs.
@@ -40,10 +44,11 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
     if (profile) u.set("p", profileKey(profile));
     if (q) u.set("q", q);
     if (city) u.set("city", city);
+    if (tour) u.set("tour", tour);
     const s = u.toString();
     return `/dashboard/shows${s ? `?${s}` : ""}`;
   };
-  const filtered = !!(q || city || profile);
+  const filtered = !!(q || city || profile || tour);
 
   return (
     <>
@@ -81,7 +86,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
           })}
         </nav>
 
-        <form method="get" action="/dashboard/shows" className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto] md:items-end">
+        <form method="get" action="/dashboard/shows" className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_auto] md:items-end">
           {tab !== "upcoming" && <input type="hidden" name="tab" value={tab} />}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="shows-q" className={labelCls}>
@@ -119,6 +124,21 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
               </select>
             </div>
           )}
+          {tours.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="shows-tour" className={labelCls}>
+                Tour
+              </label>
+              <select id="shows-tour" name="tour" defaultValue={tour ?? ""} className={inputCls}>
+                <option value="">All tours</option>
+                {tours.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex gap-2">
             <button type="submit" className={outlineBtn}>
               Filter
@@ -136,7 +156,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
             {filtered ? "No shows match these filters." : tab === "upcoming" ? "No upcoming shows yet." : `No shows in ${SHOW_TABS.find((t) => t.value === tab)!.label}.`}
           </p>
         ) : (
-          <ShowsTable shows={list.shows} past={tab === "past"} />
+          <ShowsTable shows={list.shows} past={tab === "past"} tours={tours} />
         )}
       </section>
     </>
