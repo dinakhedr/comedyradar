@@ -782,6 +782,12 @@ select pg_temp.check((select array_agg(coalesce(c.name, '') order by sp.billing_
                       from public.show_performers sp join public.shows s on s.id = sp.show_id left join public.comedians c on c.id = sp.comedian_id
                       where s.slug = 'import-night-2030-01-10'),
   'imported performers keep their order');
+-- Admin > Profiles > Edit: the super admin changes any profile directly, even a verified one's name.
+update public.comedians set verified = true where name = 'Import One';
+update public.comedians set name = 'Import Uno', bio = 'Edited by the super admin' where name = 'Import One';
+select pg_temp.check((select bio = 'Edited by the super admin' from public.comedians where name = 'Import Uno')
+                     and not exists (select 1 from public.profile_name_changes pc join public.comedians c on c.id = pc.comedian_id where c.name = 'Import Uno'),
+  'the super admin edits a verified profile and the new name saves at once');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 select pg_temp.check(public.admin_import_comedians('[{"name":"Sneaky"}]'::jsonb) is null and public.admin_import_shows('[]'::jsonb) is null,
   'only the super admin can bulk import');

@@ -18,6 +18,15 @@ export const requireSuperAdmin = cache(async () => {
   return account;
 });
 
+/** True when the signed-in account is the super admin with 2-step done. Never redirects (for server actions). */
+export const isSuperAdminNow = cache(async (): Promise<boolean> => {
+  const account = await requireAccount();
+  if (!account.is_super_admin || account.is_suspended) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  return data?.currentLevel === "aal2";
+});
+
 /** For the 2-step page: a super admin, signed in, any level. */
 export const requireSuperAdminAccount = cache(async () => {
   const account = await requireAccount();
