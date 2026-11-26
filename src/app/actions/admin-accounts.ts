@@ -88,3 +88,19 @@ export async function sendPasswordReset(form: FormData): Promise<void> {
       : "reset_sent",
   );
 }
+
+/** Changes the account type (Comedian / Manager or agent). It gives no rights by itself. */
+export async function setAccountType(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const id = text(form.get("id"));
+  const type = text(form.get("type"));
+  if (!UUID.test(id) || (type !== "comedian" && type !== "manager")) return;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_account_type", {
+    p_id: id,
+    p_type: type,
+  });
+  if (error) console.error("admin_set_account_type", error.message);
+  refresh();
+  back(form, !error && data === "ok" ? "type_saved" : "error");
+}

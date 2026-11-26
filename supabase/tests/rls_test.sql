@@ -587,7 +587,8 @@ set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
 select pg_temp.check(public.admin_accounts('', '', '') is null
                      and public.admin_account('00000000-0000-0000-0000-00000000000a') is null
-                     and public.admin_account_action('00000000-0000-0000-0000-00000000000a', 'suspend') = 'forbidden',
+                     and public.admin_account_action('00000000-0000-0000-0000-00000000000a', 'suspend') = 'forbidden'
+                     and public.admin_set_account_type('00000000-0000-0000-0000-00000000000a', 'manager') = 'forbidden',
   'only the super admin lists and suspends accounts');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = 'aal2';
@@ -604,11 +605,15 @@ select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin
                       where r ->> 'id' = '00000000-0000-0000-0000-00000000000b'),
   'suspended accounts can be listed');
 select pg_temp.check(public.admin_account_action('00000000-0000-0000-0000-00000000000b', 'unsuspend') = 'ok', 'the super admin lifts a suspension');
+select pg_temp.check(public.admin_set_account_type('00000000-0000-0000-0000-00000000000b', 'boss') = 'bad_value', 'only the two account types can be set');
+select pg_temp.check(public.admin_set_account_type('00000000-0000-0000-0000-00000000000b', 'manager') = 'ok', 'the super admin changes an account type');
 set local request.jwt.claim.aal = '';
 reset role;
 select pg_temp.check((select count(*) = 0 from auth.sessions where user_id = '00000000-0000-0000-0000-00000000000b'),
   'suspending signs the account out of every device');
 select pg_temp.check((select not is_suspended from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'an unsuspended account works again');
+select pg_temp.check((select account_type = 'manager' from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'the new account type is saved');
+update public.accounts set account_type = 'comedian' where id = '00000000-0000-0000-0000-00000000000b';
 
 -- ---------------------------------------------------------------- admin spotlight
 update public.shows set status = 'published', starts_at = now() + interval '5 days' where id = '40000000-0000-0000-0000-000000000001';
