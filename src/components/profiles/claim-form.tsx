@@ -6,6 +6,7 @@ import { claimProfile, type ClaimState } from "@/app/actions/profiles";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { AVAILABLE_PROOFS, CLAIM_RELATIONS, PROOF_METHODS, type ProfileKind } from "@/lib/profile-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 const INSTAGRAM = "https://instagram.com/comedy_radar";
 
@@ -228,9 +229,9 @@ export function ClaimForm({
         <p className="text-sm text-radar-purple/75">Business email confirmation is coming soon.</p>
       </fieldset>
 
-      <button type="submit" disabled={pending} className={`${yellowBtn} min-h-12 self-start px-6`}>
+      <SubmitButton type="submit" disabled={pending} className={`${yellowBtn} min-h-12 self-start px-6`}>
         {pending ? "Sending…" : "Send my claim"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

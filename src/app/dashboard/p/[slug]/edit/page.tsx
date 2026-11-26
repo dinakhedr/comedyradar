@@ -9,6 +9,7 @@ import { Hidden, Members, Podcasts } from "@/components/profiles/edit-sections";
 import { profileStatus, ROLE_LABELS } from "@/lib/dashboard";
 import { getEditableProfile, type EditableProfile } from "@/lib/data/profile-edit";
 import { getCountries } from "@/lib/data/profiles";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Edit profile" };
 
@@ -40,7 +41,7 @@ function SidePanel({ p }: { p: EditableProfile }) {
           <form action={setProfileStatus}>
             <Hidden p={p} />
             <input type="hidden" name="to" value="pending" />
-            <button className={`${outlineBtn} w-full`}>Send for review</button>
+            <SubmitButton className={`${outlineBtn} w-full`}>Send for review</SubmitButton>
           </form>
         )}
         {p.status === "published" && (
@@ -90,7 +91,7 @@ function SidePanel({ p }: { p: EditableProfile }) {
               <p className="text-sm">You asked to archive this profile on {when(p.archive_requested_at)}. Comedy Radar will take care of it.</p>
               <form action={setArchiveRequest}>
                 <Hidden p={p} />
-                <button className={`${outlineBtn} w-full`}>Cancel the request</button>
+                <SubmitButton className={`${outlineBtn} w-full`}>Cancel the request</SubmitButton>
               </form>
             </>
           ) : (
@@ -101,7 +102,7 @@ function SidePanel({ p }: { p: EditableProfile }) {
               <form action={setArchiveRequest}>
                 <Hidden p={p} />
                 <input type="hidden" name="request" value="on" />
-                <button className={`${outlineBtn} w-full`}>Request archive</button>
+                <SubmitButton className={`${outlineBtn} w-full`}>Request archive</SubmitButton>
               </form>
             </>
           )}

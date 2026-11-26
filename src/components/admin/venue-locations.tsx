@@ -8,11 +8,11 @@ import { flagOf } from "@/lib/countries";
 import type { AdminSettings, AdminVenueRow } from "@/lib/data/admin";
 import {
   EMPTY_VENUE_STATE,
-  okText,
   type VenueField,
   type VenueFormState,
 } from "@/lib/venue-forms";
-import { ErrorNote } from "@/components/status-note";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
 
 type Country = AdminSettings["countries"][number];
 type City = Country["cities"][number];
@@ -330,7 +330,7 @@ export function VenueLocations({
   // One form open at a time: "add:<city id>" or "edit:<venue id>".
   const [form, setForm] = useState<string | null>(null);
   // The last green message, shown under its city or above its venue.
-  const [notice, setNotice] = useState<{ at: string; text: string } | null>(
+  const [notice, setNotice] = useState<{ at: string; text: string; n: number } | null>(
     null,
   );
   const byCity = new Map<string, AdminVenueRow[]>();
@@ -342,18 +342,14 @@ export function VenueLocations({
   };
   const done = (at: string) => (text: string) => {
     setForm(null);
-    setNotice({ at, text });
+    setNotice((old) => ({ at, text, n: (old?.n ?? 0) + 1 }));
   };
   const close = () => setForm(null);
   const noticeAt = (at: string) =>
     notice?.at === at ? (
-      <p
-        role="status"
-        className={`${okText} flex items-center gap-1.5 bg-white px-3 pt-2 pb-1 sm:pl-7`}
-      >
-        <SaveIcon size={16} />
+      <SuccessNote key={notice.n} className="bg-white px-3 pt-2 pb-1 text-sm sm:pl-7">
         {notice.text}
-      </p>
+      </SuccessNote>
     ) : null;
 
   return (
@@ -486,9 +482,9 @@ export function VenueLocations({
                     placeholder={`New city in ${c.name}`}
                     className={`${inputCls} min-h-11! flex-1`}
                   />
-                  <button className={`${purpleBtn} text-spotlight-yellow!`}>
+                  <SubmitButton className={`${purpleBtn} text-spotlight-yellow!`}>
                     <PlusIcon /> Add city
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             </details>

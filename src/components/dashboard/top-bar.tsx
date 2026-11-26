@@ -4,6 +4,7 @@ import { signOut } from "@/app/actions/auth";
 import { profileKey } from "@/lib/dashboard";
 import { countIncomingRequests, getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { ProfileSwitcher } from "./profile-switcher";
+import { SubmitButton } from "@/components/submit-button";
 
 /** Top bar: profile switcher, the signed-in account and Sign out. */
 export async function TopBar() {
@@ -28,9 +29,9 @@ export async function TopBar() {
           Signed in as <strong>{account.display_name || account.email}</strong>
         </span>
         <form action={signOut}>
-          <button type="submit" className="min-h-11 rounded-button border-2 border-radar-purple/20 bg-white px-4 text-sm font-extrabold hover:border-radar-purple">
+          <SubmitButton type="submit" className="min-h-11 rounded-button border-2 border-radar-purple/20 bg-white px-4 text-sm font-extrabold hover:border-radar-purple">
             Sign out
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

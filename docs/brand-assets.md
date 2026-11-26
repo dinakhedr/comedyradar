@@ -53,6 +53,8 @@ Decided by Dina, 2026-11-26. Success and error messages are never shown in a pil
 - Error: red #D12A1F with a circled "!" icon.
 - Both pass contrast on white and Lavender. Not for use on Radar Purple.
 - Pills stay only for status tags (Published yellow, Pending pink, Archived outline).
+- They disappear by themselves: success after about 4 seconds, errors after about 8 (longer messages stay a bit longer). Notes that describe the page itself (e.g. a suspended account) stay.
+- Buttons that save, delete or change something show a small spinner and are greyed out while they work (`SubmitButton` in `src/components/submit-button.tsx`). Edit icons that open a page show the spinner while it loads (`LinkPending`).
 - In code: `SuccessNote` and `ErrorNote` in `src/components/status-note.tsx`; forms use `FormMessage`.
 
 ## Design references

@@ -86,7 +86,7 @@ async function Content({ params }: { params: PageProps<"/team/invite/[token]">["
       ) : invite.for_me ? (
         <AnswerForm token={token} />
       ) : (
-        <ErrorNote>
+        <ErrorNote stay>
           This invitation was sent to {invite.invite_email}, not to the email you are signed in with. Sign out and sign in with {invite.invite_email} to accept it.
         </ErrorNote>
       )}

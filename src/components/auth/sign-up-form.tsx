@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { ACCOUNT_TYPES } from "@/lib/auth-forms";
 import { errorCls, Field, FormMessage, PasswordField, primaryBtn } from "./fields";
+import { SubmitButton } from "@/components/submit-button";
 
 export function SignUpForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, {});
@@ -96,9 +97,9 @@ export function SignUpForm() {
       </div>
 
       <FormMessage message={state.message} />
-      <button type="submit" disabled={pending} className={primaryBtn}>
+      <SubmitButton type="submit" disabled={pending} className={primaryBtn}>
         {pending ? "Creating your account…" : "Create free account"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

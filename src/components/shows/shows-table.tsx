@@ -9,6 +9,8 @@ import { outlineBtn, Tag, type Tone } from "@/components/dashboard/ui";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import type { ListedShow } from "@/lib/data/my-shows";
 import { formatShowDate } from "@/lib/dates";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 /** The dashboard Shows table with bulk select and row actions (spec 11.4 item 9). */
 
@@ -53,9 +55,9 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
           {[...picked].map((id) => (
             <input key={id} type="hidden" name="show_ids" value={id} />
           ))}
-          <button name="action" value="sold_out" disabled={!picked.size} className={`${outlineBtn} bg-white`}>
+          <SubmitButton name="action" value="sold_out" disabled={!picked.size} className={`${outlineBtn} bg-white`}>
             Mark sold out
-          </button>
+          </SubmitButton>
           {tours.length > 0 && (
             <span className="flex flex-wrap items-center gap-2">
               <label htmlFor="bulk-tour" className="sr-only">
@@ -70,7 +72,7 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
                 ))}
                 <option value="none">Not on a tour</option>
               </select>
-              <button
+              <SubmitButton
                 formAction={async (f) => {
                   await setShowsTour(f);
                   done();
@@ -79,16 +81,16 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
                 className={`${outlineBtn} bg-white`}
               >
                 {tour === "none" ? "Take off the tour" : "Add to the tour"}
-              </button>
+              </SubmitButton>
             </span>
           )}
           <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
             <input type="checkbox" name="confirm_cancel" value="yes" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="h-5 w-5 accent-radar-purple" />
             Yes, cancel them
           </label>
-          <button name="action" value="cancel" disabled={!picked.size || !confirm} className={`${outlineBtn} bg-white`}>
+          <SubmitButton name="action" value="cancel" disabled={!picked.size || !confirm} className={`${outlineBtn} bg-white`}>
             Cancel shows
-          </button>
+          </SubmitButton>
         </form>
       )}
 
@@ -153,7 +155,7 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
                   <td className="py-3">
                     <div className="-mt-2.5 flex items-center gap-1">
                       <Link href={`/dashboard/shows/${s.id}/edit`} className={iconBtn} aria-label={`Edit ${s.title}`} title="Edit">
-                        <EditIcon />
+                        <LinkPending><EditIcon /></LinkPending>
                       </Link>
                       <Link href={`/dashboard/shows/new?from=${s.id}`} className={iconBtn} aria-label={`Duplicate ${s.title}`} title="Duplicate">
                         <CopyIcon />
@@ -162,13 +164,13 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
                         <form action={updateShowStatus} className="contents">
                           <input type="hidden" name="show_ids" value={s.id} />
                           {s.status === "published" ? (
-                            <button name="action" value="sold_out" className={iconBtn} aria-label={`Mark ${s.title} sold out`} title="Mark sold out">
+                            <SubmitButton name="action" value="sold_out" className={iconBtn} aria-label={`Mark ${s.title} sold out`} title="Mark sold out">
                               <SoldOutIcon />
-                            </button>
+                            </SubmitButton>
                           ) : (
-                            <button name="action" value="on_sale" className={iconBtn} aria-label={`Put ${s.title} back on sale`} title="Back on sale">
+                            <SubmitButton name="action" value="on_sale" className={iconBtn} aria-label={`Put ${s.title} back on sale`} title="Back on sale">
                               <TicketIcon />
-                            </button>
+                            </SubmitButton>
                           )}
                         </form>
                       )}

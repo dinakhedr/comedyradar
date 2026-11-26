@@ -26,6 +26,8 @@ import {
 } from "@/lib/data/admin";
 import { UUID } from "@/lib/profile-server";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 export const metadata: Metadata = { title: "Accounts" };
 
@@ -251,29 +253,29 @@ async function SidePanel({
                 <option value="comedian">Comedian</option>
                 <option value="manager">Manager or agent</option>
               </select>
-              <button
+              <SubmitButton
                 className={`${outlineBtn} h-11 w-11 shrink-0 bg-white px-0!`}
                 aria-label="Save account type"
                 title="Save account type"
               >
                 <SaveIcon />
-              </button>
+              </SubmitButton>
             </div>
           </form>
           <form action={sendPasswordReset}>
             {hidden}
-            <button className={`${outlineBtn} w-full bg-white`}>
+            <SubmitButton className={`${outlineBtn} w-full bg-white`}>
               Send password reset link
-            </button>
+            </SubmitButton>
           </form>
           {canAct && (
             <>
               <form action={accountAction}>
                 {hidden}
                 <input type="hidden" name="action" value="signout" />
-                <button className={`${outlineBtn} w-full bg-white`}>
+                <SubmitButton className={`${outlineBtn} w-full bg-white`}>
                   Sign out of all devices
-                </button>
+                </SubmitButton>
               </form>
               <form action={accountAction}>
                 {hidden}
@@ -282,13 +284,13 @@ async function SidePanel({
                   name="action"
                   value={a.suspended ? "unsuspend" : "suspend"}
                 />
-                <button
+                <SubmitButton
                   className={
                     a.suspended ? `${outlineBtn} w-full bg-white` : suspendBtn
                   }
                 >
                   {a.suspended ? "Lift the suspension" : "Suspend account"}
-                </button>
+                </SubmitButton>
               </form>
             </>
           )}
@@ -507,7 +509,7 @@ async function Content({
                           aria-label={`Manage ${a.name ?? a.email}`}
                           title="Manage"
                         >
-                          <EditIcon />
+                          <LinkPending><EditIcon /></LinkPending>
                         </Link>
                       </td>
                     </tr>

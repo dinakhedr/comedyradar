@@ -38,7 +38,7 @@ async function Content({ params }: { params: PageProps<"/dashboard/profiles/clai
         </p>
       )}
       {account.is_suspended ? (
-        <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
+        <ErrorNote stay>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
       ) : (
         <ClaimForm kind={kind} profileId={target.id} profileName={target.name} email={account.email} />
       )}

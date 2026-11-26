@@ -4,6 +4,7 @@ import { CoverImage } from "@/components/placeholder-image";
 import { AddMembersForm, PodcastForm } from "@/components/profiles/edit-forms";
 import { getComedianPodcasts, getGroupMembers, type EditableProfile } from "@/lib/data/profile-edit";
 import { PODCAST_LINKS } from "@/lib/profile-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 /** Group members and podcasts on Edit profile: shared by the creator dashboard and Admin > Profiles > Edit. */
 
@@ -43,9 +44,9 @@ export async function Members({ p }: { p: EditableProfile }) {
                   <form action={removeGroupMember}>
                     <Hidden p={p} />
                     <input type="hidden" name="comedian_id" value={m.comedian_id} />
-                    <button className="min-h-11 rounded-button px-3 text-sm font-extrabold underline">
+                    <SubmitButton className="min-h-11 rounded-button px-3 text-sm font-extrabold underline">
                       Remove<span className="sr-only"> {m.name}</span>
-                    </button>
+                    </SubmitButton>
                   </form>
                 )}
               </li>
@@ -102,7 +103,7 @@ export async function Podcasts({ p }: { p: EditableProfile }) {
                     <form action={leavePodcast} className="border-t border-radar-purple/10 pt-3">
                       <Hidden p={p} />
                       <input type="hidden" name="podcast_id" value={pod.id} />
-                      <button className="min-h-11 text-sm font-extrabold underline">Take {p.name} off this podcast</button>
+                      <SubmitButton className="min-h-11 text-sm font-extrabold underline">Take {p.name} off this podcast</SubmitButton>
                     </form>
                   </div>
                 </details>

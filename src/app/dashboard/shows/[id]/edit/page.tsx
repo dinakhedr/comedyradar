@@ -7,6 +7,7 @@ import { card, outlineBtn, Tag } from "@/components/dashboard/ui";
 import { ShowForm } from "@/components/shows/show-form";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { getEditableShow, getShowFormOptions } from "@/lib/data/my-shows";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Edit show" };
 
@@ -41,7 +42,7 @@ async function Content({ params }: { params: PageProps<"/dashboard/shows/[id]/ed
             <form action={updateShowStatus}>
               <input type="hidden" name="action" value="cancel" />
               <input type="hidden" name="show_ids" value={show.id} />
-              <button className={outlineBtn}>Cancel the show</button>
+              <SubmitButton className={outlineBtn}>Cancel the show</SubmitButton>
             </form>
           </section>
         </>

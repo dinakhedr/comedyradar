@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { subscribeToNewsletter } from "@/app/actions/newsletter";
 import { trackNewsletterSignup } from "@/lib/analytics";
 import { NEWSLETTER_IDLE } from "@/lib/newsletter";
+import { SubmitButton } from "@/components/submit-button";
 
 /** Yellow newsletter band (spec 5.7): saves the email in newsletter_subscribers. */
 export function NewsletterBand() {
@@ -56,13 +57,13 @@ export function NewsletterBand() {
                 <label htmlFor="newsletter-website">Website</label>
                 <input id="newsletter-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
               </div>
-              <button
+              <SubmitButton
                 type="submit"
                 disabled={pending}
                 className="min-h-12 rounded-button bg-radar-purple px-6 text-base font-extrabold text-spotlight-yellow hover:bg-radar-plum disabled:opacity-70"
               >
                 {pending ? "Subscribing…" : "Subscribe"}
-              </button>
+              </SubmitButton>
             </div>
           )}
           <p id="newsletter-note" role="status" className="min-h-5 text-small font-bold md:text-base">

@@ -55,6 +55,8 @@ import {
 import { formatShowDate } from "@/lib/dates";
 import { UUID } from "@/lib/profile-server";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 export const metadata: Metadata = { title: "Shows and tours" };
 
@@ -229,13 +231,13 @@ function ShowPanel({
                 </option>
               ))}
             </select>
-            <button
+            <SubmitButton
               className={`${yellowBtn} h-11 w-11 shrink-0 px-0!`}
               aria-label="Save status"
               title="Save status"
             >
               <SaveIcon />
-            </button>
+            </SubmitButton>
           </div>
           <p className="text-xs text-radar-purple/70">
             Draft takes the show off the public pages. Cancelled keeps it listed
@@ -265,7 +267,7 @@ function ShowPanel({
                   </option>
                 ))}
               </select>
-              <button className={yellowBtn}>Set</button>
+              <SubmitButton className={yellowBtn}>Set</SubmitButton>
             </div>
             {asked && (
               <p className="text-sm font-bold">
@@ -277,9 +279,9 @@ function ShowPanel({
           {asked && (
             <form action={declineSignalRequest}>
               <Hidden ret={ret} more={{ id: s.id }} />
-              <button className={`${outlineBtn} w-full`}>
+              <SubmitButton className={`${outlineBtn} w-full`}>
                 Decline the request
-              </button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -315,7 +317,7 @@ function ShowPanel({
                 Open the link
               </a>
             )}
-            <button className={`${outlineBtn} ml-auto`}>Save link</button>
+            <SubmitButton className={`${outlineBtn} ml-auto`}>Save link</SubmitButton>
           </div>
         </form>
       </div>
@@ -556,17 +558,17 @@ async function ShowsTab({ sp, link }: Ctx) {
                     </option>
                   ))}
                 </select>
-                <button formAction={setShowSignal} className={smallBtn}>
+                <SubmitButton formAction={setShowSignal} name="bulk" value="signal" className={smallBtn}>
                   Set signal
-                </button>
-                <button
+                </SubmitButton>
+                <SubmitButton
                   formAction={setShowStatus}
                   name="status"
                   value="draft"
                   className={smallBtn}
                 >
                   Unpublish
-                </button>
+                </SubmitButton>
               </form>
               <div className="relative -mx-4 overflow-x-auto md:mx-0">
                 <table className="w-full min-w-[960px] text-left text-sm">
@@ -672,7 +674,7 @@ async function ShowsTab({ sp, link }: Ctx) {
                                   </option>
                                 ))}
                               </select>
-                              <button className={smallBtn}>Set</button>
+                              <SubmitButton className={smallBtn}>Set</SubmitButton>
                             </form>
                             {asked && (
                               <span className="mt-1 block text-xs font-extrabold text-laugh-pink-deep">
@@ -718,7 +720,7 @@ async function ShowsTab({ sp, link }: Ctx) {
                                 aria-label={`Manage ${r.title}`}
                                 title="Manage"
                               >
-                                <EditIcon />
+                                <LinkPending><EditIcon /></LinkPending>
                               </Link>
                             </span>
                           </td>
@@ -1155,7 +1157,7 @@ async function VenuesTab({ sp, link }: Ctx) {
                           aria-label={`Edit ${v.name}`}
                           title="Edit the venue"
                         >
-                          <EditIcon />
+                          <LinkPending><EditIcon /></LinkPending>
                         </Link>
 
                         {v.map_url && /^https?:\/\//.test(v.map_url) && (
@@ -1264,7 +1266,7 @@ function VenueEditForm({
           </div>
         ))}
         <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-          <button className={outlineBtn}>Save venue</button>
+          <SubmitButton className={outlineBtn}>Save venue</SubmitButton>
           <Link
             href={close}
             scroll={false}

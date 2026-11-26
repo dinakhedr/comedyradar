@@ -8,6 +8,7 @@ import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { DEFAULT_COVER } from "@/lib/covers";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 type Country = { id: string; name: string };
 
@@ -372,12 +373,12 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
       </section>
 
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-        <button type="submit" name="intent" value="review" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
+        <SubmitButton type="submit" name="intent" value="review" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
           {pending ? "Saving…" : "Send for review"}
-        </button>
-        <button type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
+        </SubmitButton>
+        <SubmitButton type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
           Save draft
-        </button>
+        </SubmitButton>
         <p className="text-sm text-radar-purple/75">Comedy Radar checks new profiles before they go live.</p>
       </div>
     </form>

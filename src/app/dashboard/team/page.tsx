@@ -11,6 +11,7 @@ import { EditAccessForm, InviteForm } from "@/components/team/team-forms";
 import { pickProfile, profileKey } from "@/lib/dashboard";
 import { getTeam, type TeamMember } from "@/lib/data/team";
 import { ROLES } from "@/lib/team-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Team and access" };
 
@@ -47,7 +48,7 @@ function RemoveButton({ m, label }: { m: TeamMember; label: string }) {
       <form action={removeMember} className="absolute right-0 z-10 mt-1 flex w-64 flex-col gap-2 rounded-card border border-radar-purple/15 bg-white p-3 shadow-lg">
         <input type="hidden" name="member_id" value={m.id} />
         <p className="text-sm">{m.status === "active" ? `${m.name ?? m.email} loses access at once. Their history stays.` : "The link stops working."}</p>
-        <button className={`${outlineBtn} min-h-10`}>{label}</button>
+        <SubmitButton className={`${outlineBtn} min-h-10`}>{label}</SubmitButton>
       </form>
     </details>
   );
@@ -149,7 +150,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/t
                       </div>
                       <form action={resendInvite}>
                         <input type="hidden" name="member_id" value={m.id} />
-                        <button className={`${outlineBtn} min-h-11 px-3 text-sm`}>Send again</button>
+                        <SubmitButton className={`${outlineBtn} min-h-11 px-3 text-sm`}>Send again</SubmitButton>
                       </form>
                       <RemoveButton m={m} label="Cancel invitation" />
                     </div>

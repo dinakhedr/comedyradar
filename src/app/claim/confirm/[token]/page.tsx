@@ -42,7 +42,7 @@ async function Content({ params }: { params: PageProps<"/claim/confirm/[token]">
       <p className="text-sm font-extrabold tracking-wider text-radar-purple/75 uppercase">Comedy Radar</p>
       <h1 className="font-display text-[32px] leading-none md:text-[40px]">CONFIRM A MANAGER</h1>
       {row.confirmed ? (
-        <SuccessNote>This request is already confirmed. Thank you!</SuccessNote>
+        <SuccessNote stay>This request is already confirmed. Thank you!</SuccessNote>
       ) : (
         <>
           <p className="text-base">

@@ -11,6 +11,7 @@ import { getMyTours, type ListedTour } from "@/lib/data/my-tours";
 import { formatMonthRange, formatShowDate } from "@/lib/dates";
 import { TOUR_TABS, tourTab } from "@/lib/tour-forms";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { LinkPending } from "@/components/link-pending";
 
 export const metadata: Metadata = { title: "Tours" };
 
@@ -113,7 +114,7 @@ function TourRowCard({ t }: { t: ListedTour }) {
         </Link>
         <div className="flex">
           <Link href={`/dashboard/tours/${t.id}/edit`} className={iconBtn} aria-label={`Edit ${t.name}`} title="Edit tour">
-            <EditIcon />
+            <LinkPending><EditIcon /></LinkPending>
           </Link>
           {t.status === "published" && (
             <Link href={`/tours/${t.slug}`} className={iconBtn} aria-label={`View the public page of ${t.name}`} title="View page">
