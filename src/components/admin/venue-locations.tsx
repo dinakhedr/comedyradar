@@ -15,6 +15,8 @@ import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { StatusIcon } from "@/components/status";
 import { STATUS_LABELS } from "@/lib/status";
 import { SubmitButton } from "@/components/submit-button";
+import { LogoPicker } from "@/components/admin/logo-picker";
+import { PinIcon } from "@/components/icons";
 
 
 type Country = AdminSettings["countries"][number];
@@ -75,12 +77,15 @@ function VenueForm({
   mode,
   city,
   venue,
+  areas,
   onDone,
   onCancel,
 }: {
   mode: "add" | "edit";
   city: City;
   venue?: AdminVenueRow;
+  /** Areas already used in this city, offered as suggestions. */
+  areas: string[];
   onDone: (message: string) => void;
   onCancel: () => void;
 }) {
@@ -96,6 +101,7 @@ function VenueForm({
   const start: Partial<Record<VenueField, string>> = venue
     ? {
         name: venue.name,
+        area: venue.area ?? "",
         address: venue.address ?? "",
         map_url: venue.map_url ?? "",
         website: venue.website ?? "",
@@ -112,6 +118,7 @@ function VenueForm({
     req = false,
     type = "text",
     max = 300,
+    list?: string,
   ) => (
     <div className="flex flex-col gap-1">
       <label htmlFor={`${id}-${name}`} className="text-sm font-extrabold">
@@ -125,6 +132,7 @@ function VenueForm({
         maxLength={max}
         placeholder={ph}
         defaultValue={val(name)}
+        list={list}
         className={`${inputCls} min-h-11!`}
       />
     </div>
@@ -152,6 +160,7 @@ function VenueForm({
         <input type="hidden" name="city_id" value={city.id} />
       )}
       <div className="grid gap-3 sm:grid-cols-2">
+        <LogoPicker id={id} current={venue?.logo_url ?? null} name={venue?.name ?? ""} />
         {field(
           "name",
           "Venue name",
@@ -160,11 +169,25 @@ function VenueForm({
           "text",
           120,
         )}
+        {field(
+          "area",
+          "Area (optional)",
+          city.name === "Giza" ? "e.g. Sheikh Zayed" : "e.g. New Cairo, Zamalek",
+          false,
+          "text",
+          60,
+          `${id}-areas`,
+        )}
+        <datalist id={`${id}-areas`}>
+          {areas.map((a) => (
+            <option key={a} value={a} />
+          ))}
+        </datalist>
         {venue &&
           field(
             "address",
             "Address (optional)",
-            "Street and area",
+            "Street and building",
             false,
             "text",
             200,
@@ -234,7 +257,16 @@ function VenueRow({
     <li className="flex min-h-11 items-center justify-between gap-2 border-b border-radar-purple/10 bg-white py-0.5 pr-1 pl-3 sm:pl-7">
       <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
         <StatusIcon status={v.status} />
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-radar-purple/15 bg-white">
+          {v.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- logos come from Supabase Storage
+            <img src={v.logo_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+          ) : (
+            <PinIcon size={16} className="text-radar-purple/40" />
+          )}
+        </span>
         <span className="font-bold break-words">{v.name}</span>
+        {v.area && <span className="text-xs text-radar-purple/70">{v.area}</span>}
         {v.upcoming > 0 && (
           <span className="text-xs text-radar-purple/70">
             {v.upcoming === 1
@@ -337,6 +369,7 @@ export function VenueLocations({
                 {c.cities.map((x) => {
                   const list = byCity.get(x.id) ?? [];
                   const addKey = `add:${x.id}`;
+                  const areas = [...new Set(list.map((v) => v.area).filter((a): a is string => !!a))].sort();
                   return (
                     <section key={x.id} aria-labelledby={`city-${x.id}`}>
                       <div className="flex min-h-11 items-center justify-between gap-2 bg-lavender py-1 pr-1 pl-3">
@@ -366,6 +399,7 @@ export function VenueLocations({
                         <VenueForm
                           mode="add"
                           city={x}
+                          areas={areas}
                           onDone={done(x.id)}
                           onCancel={close}
                         />
@@ -391,6 +425,7 @@ export function VenueLocations({
                                       mode="edit"
                                       city={x}
                                       venue={v}
+                                      areas={areas}
                                       onDone={done(v.id)}
                                       onCancel={close}
                                     />

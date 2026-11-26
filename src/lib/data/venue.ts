@@ -12,6 +12,8 @@ export type VenueDetail = {
   name_ar: string | null;
   slug: string;
   address: string | null;
+  area: string | null;
+  logo_url: string | null;
   map_url: string | null;
   website: string | null;
   instagram_url: string | null;
@@ -35,7 +37,7 @@ export async function getVenue(slug: string): Promise<VenueDetail | null> {
   const { data, error } = await db
     .from("venues")
     .select(
-      "id, name, name_ar, slug, address, map_url, website, instagram_url, facebook_url, cities!inner(name, slug, countries!inner(name, code))",
+      "id, name, name_ar, slug, address, area, logo_url, map_url, website, instagram_url, facebook_url, cities!inner(name, slug, countries!inner(name, code))",
     )
     .eq("slug", slug)
     .eq("status", "published")

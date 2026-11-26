@@ -12,6 +12,7 @@ const COLUMNS = [
       { href: "/tours", label: "Tours" },
       { href: "/comedians", label: "Comedians" },
       { href: "/groups", label: "Groups" },
+      { href: "/venues", label: "Venues" },
     ],
   },
   {

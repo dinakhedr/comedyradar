@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ICON_BTN } from "@/components/icon-link";
+import { ShareIcon, WhatsAppIcon } from "@/components/icons";
 import { buildIcs } from "@/lib/show-page";
 
 const btn =
   "flex min-h-11 flex-1 items-center justify-center rounded-button border-2 border-plum-line px-3 py-2.5 text-sm font-bold hover:border-spotlight-yellow md:text-[15px]";
 
-/** Add to calendar (.ics), Share (copy link) and WhatsApp (spec 6.1, item 8). */
+/** Add to calendar (.ics), then Share (copy link) and WhatsApp as icon buttons (spec 6.1, item 8). */
 export function ShowActions({
   id,
   slug,
@@ -65,17 +67,22 @@ export function ShowActions({
         <span className="md:hidden">Calendar</span>
         <span className="hidden md:inline">Add to calendar</span>
       </button>
-      <button type="button" onClick={share} className={btn} aria-live="polite">
-        {copied ? "Link copied" : "Share"}
+      <button type="button" onClick={share} className={ICON_BTN} aria-label="Share" title="Share">
+        <ShareIcon />
       </button>
       <a
         href={`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`}
         target="_blank"
         rel="noopener"
-        className={btn}
+        className={ICON_BTN}
+        aria-label="Share on WhatsApp"
+        title="Share on WhatsApp"
       >
-        WhatsApp
+        <WhatsAppIcon />
       </a>
+      <span aria-live="polite" className={copied ? "self-center text-sm font-bold text-lavender-text" : "sr-only"}>
+        {copied ? "Link copied" : ""}
+      </span>
     </div>
   );
 }

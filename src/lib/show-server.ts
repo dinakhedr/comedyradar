@@ -44,27 +44,6 @@ export async function placeShow(
   return { cityId: city.id, zone: showZone(cityInMarket, home.inMarket), market };
 }
 
-/** A new venue suggested by a creator; it waits for Comedy Radar (spec 11.4 item 4). */
-export async function suggestVenue(db: Db, accountId: string, cityId: string, venue: { name: string; address: string | null }): Promise<string | null> {
-  const { data, error } = await db
-    .from("venues")
-    .insert({
-      name: venue.name,
-      address: venue.address,
-      city_id: cityId,
-      slug: `${slugify(venue.name, "venue")}-${Math.random().toString(36).slice(2, 7)}`,
-      status: "pending",
-      created_by: accountId,
-    })
-    .select("id")
-    .single();
-  if (error || !data) {
-    console.error("suggest venue", error?.message);
-    return null;
-  }
-  return (data as { id: string }).id;
-}
-
 /** Inserts a show as a draft with a free slug ("title-2026-12-04"). */
 export async function insertShow(db: Db, accountId: string, row: Record<string, unknown> & { title: string; starts_at: string }): Promise<{ id: string; slug: string } | null> {
   const base = `${slugify(row.title, "show")}-${row.starts_at.slice(0, 10)}`;

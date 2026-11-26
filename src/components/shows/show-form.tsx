@@ -72,7 +72,6 @@ export function ShowForm({
   const [time, setTime] = useState(when.time);
   const [cityId, setCityId] = useState(src?.city_id ?? "");
   const [venueId, setVenueId] = useState(src?.venue_id ?? "");
-  const [venueName, setVenueName] = useState("");
   const [ticket, setTicket] = useState(src?.ticket_url ?? "");
   const [poster, setPoster] = useState<string | null>(src?.poster_url ?? null);
   const [lineup, setLineup] = useState(show?.lineup ?? []);
@@ -109,7 +108,7 @@ export function ShowForm({
     city_name: city?.name ?? "City",
     city_slug: "preview",
     country_code: "",
-    venue_name: venueId === "new" ? venueName.trim() || null : (venues.find((v) => v.id === venueId)?.name ?? null),
+    venue_name: venues.find((v) => v.id === venueId)?.name ?? null,
     headliner_type: picked?.kind ?? null,
     headliner_name: picked?.name ?? null,
     headliner_slug: null,
@@ -241,7 +240,7 @@ export function ShowForm({
               </select>
             )}
           </Field>
-          <Field label="Venue" error={e.venue} optional hint={cityId ? "Pick the venue, or suggest a new one. New venues are checked by Comedy Radar." : "Choose the city first."}>
+          <Field label="Venue" error={e.venue} optional hint={cityId ? "Pick the venue. Not on the list? Contact Comedy Radar and we will add it." : "Choose the city first."}>
             {(id, d) => (
               <select id={id} name="venue_id" value={venueId} disabled={!cityId} onChange={(ev) => setVenueId(ev.target.value)} aria-describedby={d} className={inputCls}>
                 <option value="">No venue yet</option>
@@ -251,20 +250,9 @@ export function ShowForm({
                     {v.pending ? " (waiting for review)" : ""}
                   </option>
                 ))}
-                <option value="new">+ Suggest a new venue</option>
               </select>
             )}
           </Field>
-          {venueId === "new" && (
-            <div className="grid gap-4 rounded-button bg-lavender p-3 sm:grid-cols-2">
-              <Field label="New venue name">
-                {(id) => <input id={id} name="venue_name" maxLength={80} value={venueName} onChange={(ev) => setVenueName(ev.target.value)} className={inputCls} />}
-              </Field>
-              <Field label="Address" optional>
-                {(id) => <input id={id} name="venue_address" maxLength={200} defaultValue={back?.venue_address ?? ""} className={inputCls} />}
-              </Field>
-            </div>
-          )}
         </section>
 
         <section aria-labelledby="tickets" className={`${card} flex flex-col gap-4`}>

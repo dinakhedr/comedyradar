@@ -1,28 +1,26 @@
+import type { ComponentType } from "react";
 import type { Socials } from "@/lib/data/group";
+import { IconLink } from "./icon-link";
+import { FacebookIcon, InstagramIcon, TikTokIcon, YouTubeIcon } from "./icons";
 
-const LABELS: [keyof Socials, string][] = [
-  ["instagram_url", "Instagram"],
-  ["tiktok_url", "TikTok"],
-  ["youtube_url", "YouTube"],
-  ["facebook_url", "Facebook"],
+const LINKS: [keyof Socials, string, ComponentType<{ className?: string; size?: number }>][] = [
+  ["instagram_url", "Instagram", InstagramIcon],
+  ["tiktok_url", "TikTok", TikTokIcon],
+  ["youtube_url", "YouTube", YouTubeIcon],
+  ["facebook_url", "Facebook", FacebookIcon],
 ];
 
-/** Links to a profile's own accounts. Only the ones that exist are shown. */
+/** Icon links to a profile's own accounts. Only the ones that exist are shown. */
 export function SocialLinks({ socials, name }: { socials: Socials; name: string }) {
-  const links = LABELS.filter(([key]) => !!socials[key]);
+  const links = LINKS.filter(([key]) => !!socials[key]);
   if (links.length === 0) return null;
   return (
-    <ul className="flex flex-wrap gap-2" aria-label={`${name} online`}>
-      {links.map(([key, label]) => (
+    <ul className="flex flex-wrap gap-2.5" aria-label={`${name} online`}>
+      {links.map(([key, label, Icon]) => (
         <li key={key}>
-          <a
-            href={socials[key]!}
-            target="_blank"
-            rel="noopener"
-            className="inline-flex min-h-11 items-center rounded-button border-2 border-plum-line px-3.5 text-sm font-bold hover:border-spotlight-yellow"
-          >
-            {label}
-          </a>
+          <IconLink href={socials[key]!} label={`${name} on ${label}`}>
+            <Icon />
+          </IconLink>
         </li>
       ))}
     </ul>

@@ -243,6 +243,8 @@ export type AdminVenueRow = {
   website: string | null;
   instagram_url: string | null;
   facebook_url: string | null;
+  area: string | null;
+  logo_url: string | null;
   slug: string;
   upcoming: number;
   added_by: string | null;

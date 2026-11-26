@@ -4,24 +4,25 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/badge";
 import { NewsletterBand } from "@/components/newsletter-band";
+import { IconLink } from "@/components/icon-link";
+import { FacebookIcon, GlobeIcon, InstagramIcon } from "@/components/icons";
 import { ShareButton } from "@/components/share-button";
 import { ShowCard } from "@/components/show-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { VenueLogo, venuePlace } from "@/components/venue-logo";
 import { getVenue, type VenueDetail } from "@/lib/data/venue";
 import { formatShowDate } from "@/lib/dates";
 import { SITE_URL } from "@/lib/site";
 
 const container = "mx-auto max-w-[1280px] px-[18px] md:px-8";
 const h2 = "font-display text-[26px] md:text-[36px]";
-const linkBtn =
-  "inline-flex min-h-11 items-center rounded-button border-2 border-plum-line px-3.5 text-sm font-bold hover:border-spotlight-yellow";
 const web = (u: string | null) => (u && /^https:\/\//i.test(u) ? u : null);
 
 export async function generateMetadata({ params }: PageProps<"/venues/[slug]">): Promise<Metadata> {
   const v = await getVenue((await params).slug);
   if (!v) return { title: "Venue not found" };
-  const title = `${v.name}, ${v.city.name} — comedy shows`;
+  const title = `${v.name}, ${venuePlace(v.area, v.city.name)} — comedy shows`;
   const description = `Upcoming stand-up comedy shows at ${v.name} in ${v.city.name}, with directions and links.`;
   return { title, description, alternates: { canonical: `/venues/${v.slug}` }, openGraph: { title, description } };
 }
@@ -58,10 +59,11 @@ function jsonLd(v: VenueDetail) {
     address: {
       "@type": "PostalAddress",
       ...(v.address ? { streetAddress: v.address } : {}),
-      addressLocality: v.city.name,
+      addressLocality: venuePlace(v.area, v.city.name),
       addressCountry: v.city.country_code,
     },
     ...(web(v.map_url) ? { hasMap: v.map_url } : {}),
+    ...(v.logo_url ? { logo: v.logo_url, image: v.logo_url } : {}),
     ...(sameAs.length ? { sameAs } : {}),
   };
 }
@@ -71,12 +73,12 @@ async function VenueContent({ params }: { params: PageProps<"/venues/[slug]">["p
   const v = await getVenue(slug);
   if (!v) notFound();
   const now = new Date();
+  const directions = web(v.map_url);
   const links = [
-    { label: "Get directions", href: web(v.map_url) },
-    { label: "Website", href: web(v.website) },
-    { label: "Instagram", href: web(v.instagram_url) },
-    { label: "Facebook", href: web(v.facebook_url) },
-  ].filter((l): l is { label: string; href: string } => !!l.href);
+    { label: "Website", href: web(v.website), Icon: GlobeIcon },
+    { label: "Instagram", href: web(v.instagram_url), Icon: InstagramIcon },
+    { label: "Facebook", href: web(v.facebook_url), Icon: FacebookIcon },
+  ].filter((l) => !!l.href);
 
   return (
     <>
@@ -86,51 +88,49 @@ async function VenueContent({ params }: { params: PageProps<"/venues/[slug]">["p
           Home
         </Link>{" "}
         <span aria-hidden="true">›</span>{" "}
-        <Link href="/shows" className="hover:text-white">
-          Shows
+        <Link href="/venues" className="hover:text-white">
+          Venues
         </Link>{" "}
         <span aria-hidden="true">›</span> <span className="font-bold text-white">{v.name}</span>
       </nav>
 
       <section className={`${container} pb-8 md:pb-10`}>
-        <div className="flex flex-col gap-4 rounded-[22px] bg-radar-plum p-5 md:rounded-[28px] md:p-9">
-          <div className="flex flex-wrap gap-2">
-            <Badge tone="pink" size="md">
-              Venue
-            </Badge>
-            <Badge tone="purple" size="md">
-              {v.city.name}, {v.city.country_name}
-            </Badge>
-            {v.shows.length > 0 && (
-              <Badge tone="yellow" size="md">
-                {v.shows.length === 1 ? "1 show coming up" : `${v.shows.length} shows coming up`}
+        <div className="flex flex-col gap-5 rounded-[22px] bg-radar-plum p-5 md:flex-row md:items-center md:gap-8 md:rounded-[28px] md:p-9">
+          {v.logo_url && <VenueLogo src={v.logo_url} name={v.name} eager className="w-[120px] md:w-[180px]" />}
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="pink" size="md">
+                Venue
               </Badge>
+              <Badge tone="purple" size="md">
+                {venuePlace(v.area, v.city.name)}, {v.city.country_name}
+              </Badge>
+            </div>
+            <h1 className="font-display text-[40px] leading-none md:text-[60px]">{v.name}</h1>
+            {v.name_ar && (
+              <p dir="rtl" lang="ar" className="self-start text-lg font-bold text-lavender">
+                {v.name_ar}
+              </p>
             )}
-          </div>
-          <h1 className="font-display text-[40px] leading-none md:text-[60px]">{v.name}</h1>
-          {v.name_ar && (
-            <p dir="rtl" lang="ar" className="self-start text-lg font-bold text-lavender">
-              {v.name_ar}
-            </p>
-          )}
-          {v.address && <p className="text-base text-lavender md:text-lg">{v.address}</p>}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {links.map((l, i) => (
-              <a
-                key={l.label}
-                href={l.href}
-                target="_blank"
-                rel="noopener"
-                className={
-                  i === 0 && l.label === "Get directions"
-                    ? "inline-flex min-h-11 items-center rounded-button bg-spotlight-yellow px-4 text-sm font-extrabold text-radar-purple hover:bg-white"
-                    : linkBtn
-                }
-              >
-                {l.label}
-              </a>
-            ))}
-            <ShareButton title={v.name} url={`${SITE_URL}/venues/${v.slug}`} className={linkBtn} />
+            {v.address && <p className="text-base text-lavender md:text-lg">{v.address}</p>}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {directions && (
+                <a
+                  href={directions}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-button bg-spotlight-yellow px-4 text-sm font-extrabold text-radar-purple hover:bg-white sm:w-auto"
+                >
+                  Get directions
+                </a>
+              )}
+              {links.map(({ label, href, Icon }) => (
+                <IconLink key={label} href={href!} label={`${v.name} ${label === "Website" ? "website" : `on ${label}`}`}>
+                  <Icon />
+                </IconLink>
+              ))}
+              <ShareButton title={v.name} url={`${SITE_URL}/venues/${v.slug}`} label={`Share ${v.name}`} />
+            </div>
           </div>
         </div>
       </section>

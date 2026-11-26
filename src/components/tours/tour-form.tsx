@@ -90,15 +90,20 @@ export function TourForm({
 
   const addPasted = () => {
     const { rows: found, skipped } = parsePastedDates(paste, cities);
+    const unknown: string[] = [];
     const made = found.map((f) => {
-      // A venue name that is on the list is picked; any other name is suggested as new.
+      // A venue name that is on the list is picked; any other name is left empty (only Comedy Radar adds venues).
       const known = f.venue_name ? venues.find((v) => v.city_id === f.city_id && v.name.toLowerCase() === f.venue_name.toLowerCase()) : undefined;
-      return blank(nextKey.current++, { ...f, venue_id: known ? known.id : f.venue_name ? "new" : "", venue_name: known ? "" : f.venue_name });
+      if (f.venue_name && !known) unknown.push(f.venue_name);
+      return blank(nextKey.current++, { ...f, venue_id: known ? known.id : "", venue_name: "" });
     });
     setRows((rs) => [...rs.filter((r) => !isBlankDate(r)), ...made].slice(0, MAX_TOUR_DATES) as Row[]);
     setPasteNote(
       `${made.length === 1 ? "1 date added" : `${made.length} dates added`}.` +
-        (skipped.length ? ` We couldn't read: ${skipped.slice(0, 3).join(" / ")}${skipped.length > 3 ? "…" : ""}. Each line needs a date and a city from the list.` : ""),
+        (skipped.length ? ` We couldn't read: ${skipped.slice(0, 3).join(" / ")}${skipped.length > 3 ? "…" : ""}. Each line needs a date and a city from the list.` : "") +
+        (unknown.length
+          ? ` Not on our venue list yet: ${[...new Set(unknown)].slice(0, 3).join(" / ")}${unknown.length > 3 ? "…" : ""}. Those dates have no venue for now; contact Comedy Radar to add it.`
+          : ""),
     );
     if (made.length) setPaste("");
   };
@@ -135,7 +140,7 @@ export function TourForm({
     { ok: !!name.trim() && !!poster, label: "Name and poster" },
     { ok: total > 0, label: "At least one date" },
     { ok: total > 0 && filled.every((r) => r.ticket_status !== "on_sale" || !!r.ticket_url.trim()), label: "Ticket links for dates on sale" },
-    { ok: filled.every((r) => !!r.venue_id && (r.venue_id !== "new" || !!r.venue_name.trim())), label: "Venues" },
+    { ok: filled.every((r) => !!r.venue_id), label: "Venues" },
   ];
 
   const live = tour && tour.status !== "draft";
@@ -489,22 +494,12 @@ function DateRow({
                 {v.pending ? " (waiting for review)" : ""}
               </option>
             ))}
-            <option value="new">+ Suggest a new venue</option>
           </select>
           {/* A disabled select sends nothing; keep every column the same length. */}
           {!row.city_id && <input type="hidden" name="d_venue" value="" />}
         </div>
       </div>
-      {row.venue_id === "new" ? (
-        <div className="flex flex-col gap-1">
-          <label htmlFor={f("vname")} className={small}>
-            New venue name
-          </label>
-          <input id={f("vname")} name="d_venue_name" maxLength={80} value={row.venue_name} onChange={(ev) => onChange({ venue_name: ev.target.value })} className={inputCls} />
-        </div>
-      ) : (
-        <input type="hidden" name="d_venue_name" value="" />
-      )}
+      <input type="hidden" name="d_venue_name" value="" />
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px]">
         <div className="flex flex-col gap-1">
           <label htmlFor={f("ticket")} className={small}>

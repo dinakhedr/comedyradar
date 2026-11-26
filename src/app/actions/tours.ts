@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { slugify } from "@/lib/profile-forms";
 import { photoError, text, UUID } from "@/lib/profile-server";
-import { insertShow, performerHome, placeShow, publishShow, savePerformers, suggestVenue, uploadPoster, type Db, type Performer } from "@/lib/show-server";
+import { insertShow, performerHome, placeShow, publishShow, savePerformers, uploadPoster, type Db, type Performer } from "@/lib/show-server";
 import type { ShowErrors } from "@/lib/show-forms";
 import { createClient } from "@/lib/supabase/server";
 import { checkTour, type TourDateInput, type TourErrors, type TourSame } from "@/lib/tour-forms";
@@ -124,7 +124,6 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
   // 2. Each new date is its own show on the tour (spec 11.4 item 8).
   const home = await performerHome(supabase, performer);
   const guests = form.getAll("member_ids").map(String);
-  const newVenues = new Map<string, string>(); // the same new venue typed on several dates is suggested once
   const failed: string[] = [];
   const made: { id: string; soldOut: boolean }[] = [];
   for (const v of checked.values) {
@@ -133,12 +132,8 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
       failed.push(v.title);
       continue;
     }
-    let venueId = v.venue_id;
-    if (v.new_venue) {
-      const k = `${place.cityId}|${v.new_venue.name.toLowerCase()}`;
-      venueId = newVenues.get(k) ?? (await suggestVenue(supabase, account.id, place.cityId, v.new_venue));
-      if (venueId) newVenues.set(k, venueId);
-    }
+    // Only Comedy Radar adds venues (Dina, 2026-11-26): a typed new venue is left empty.
+    const venueId = v.new_venue ? null : v.venue_id;
     const show = await insertShow(supabase, account.id, {
       title: v.title,
       description: details.description,

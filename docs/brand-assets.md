@@ -46,6 +46,12 @@ Rules: never yellow text on white; never white text on yellow. Proportions about
 - Primary CTA "Get tickets"; tour cards "View tour"; sold out "Join waitlist". No prices on cards (show page only).
 - Social posts: purple background with faint radar waves, logo top left, one big headline with one yellow line, photo in a rounded frame, one yellow call to action.
 
+## Link and share buttons (public pages)
+
+- Website, Instagram, Facebook, TikTok, YouTube, WhatsApp and Share are **square outline icon buttons** (44 × 44, plum border, yellow on hover) with a hover name and a screen-reader label. Only real actions with words stay as text buttons (Get directions, Add to calendar, See all dates).
+- In code: `IconLink` / `ICON_BTN` in `src/components/icon-link.tsx`, `ShareButton`, `SocialLinks`; icons in `src/components/icons.tsx`.
+- Venue logos: square, "Clean" style (rounded corners, soft shadow, no frame), `VenueLogo` in `src/components/venue-logo.tsx`.
+
 ## Messages (success and error)
 Decided by Dina, 2026-11-26. Success and error messages are never shown in a pill, banner or coloured box.
 - Plain bold text (Nunito 700, 16px; 14–15px inside small forms) with a small line icon on the left, right under the page title or under the form that caused it.

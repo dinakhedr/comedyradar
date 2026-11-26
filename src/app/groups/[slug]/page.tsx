@@ -153,7 +153,6 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                 <ShareButton
                   title={g.name}
                   url={`${SITE_URL}/groups/${g.slug}`}
-                  className="inline-flex min-h-11 items-center rounded-button border-2 border-plum-line px-[18px] text-[15px] font-bold hover:border-spotlight-yellow"
                 />
                 <SocialLinks socials={g} name={g.name} />
               </div>

@@ -231,7 +231,6 @@ async function ComedianContent({ params }: { params: PageProps<"/comedians/[slug
               <ShareButton
                 title={c.name}
                 url={`${SITE_URL}/comedians/${c.slug}`}
-                className="inline-flex min-h-11 items-center rounded-button border-2 border-plum-line px-[18px] text-[15px] font-bold hover:border-spotlight-yellow"
               />
               <SocialLinks socials={c} name={c.name} />
             </div>
