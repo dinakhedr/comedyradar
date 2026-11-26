@@ -27,7 +27,17 @@ export async function updateSession(request: NextRequest) {
 
   // Do not run code between createServerClient and getClaims():
   // getClaims() refreshes the session when it has expired.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+
+  // The creator dashboard needs a signed-in account (pages check again on the server).
+  const path = request.nextUrl.pathname;
+  if (!data?.claims && (path === "/dashboard" || path.startsWith("/dashboard/"))) {
+    const to = request.nextUrl.clone();
+    to.pathname = "/signin";
+    to.search = "";
+    to.searchParams.set("next", path + request.nextUrl.search);
+    return NextResponse.redirect(to);
+  }
 
   return supabaseResponse;
 }

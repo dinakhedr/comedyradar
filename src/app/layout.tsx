@@ -4,6 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Analytics } from "@/components/analytics/analytics";
 import { analyticsEnabled } from "@/lib/analytics-events";
+import { TicketClickTracker } from "@/components/page-tracker";
 import { consentDefaultsScript } from "@/lib/consent";
 import { SITE_URL } from "@/lib/site";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </Script>
         )}
         {children}
+        <TicketClickTracker />
         <Analytics />
       </body>
     </html>

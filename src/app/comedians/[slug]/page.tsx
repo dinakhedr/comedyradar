@@ -19,6 +19,7 @@ import { whenRange } from "@/lib/dates";
 import { comedianShowBadge, hasShowBetween, tourLabel } from "@/lib/profile-page";
 import { paragraphs } from "@/lib/show-page";
 import { SITE_URL } from "@/lib/site";
+import { TrackView } from "@/components/page-tracker";
 
 const container = "mx-auto max-w-[1280px] px-[18px] md:px-8";
 const h2 = "font-display text-[26px] md:text-[36px]";
@@ -164,6 +165,7 @@ async function ComedianContent({ params }: { params: PageProps<"/comedians/[slug
 
   return (
     <>
+      <TrackView kind="comedian_view" id={c.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(c)).replace(/</g, "\\u003c") }} />
       <nav aria-label="Breadcrumb" className={`${container} pt-1 pb-3 text-[13px] text-lavender-text md:pt-2 md:pb-5 md:text-small`}>
         <Link href="/" className="hover:text-white">

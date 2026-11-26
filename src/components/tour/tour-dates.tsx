@@ -26,6 +26,7 @@ function Action({ date, performer }: { date: TourDate; performer: string }) {
         href={date.ticket_url}
         target="_blank"
         rel="noopener"
+        data-ticket-show={date.id}
         className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}
         onClick={() => trackTicketsClick({ id: date.id, title: date.title, performer, city: date.city_name, zone: date.zone })}
       >

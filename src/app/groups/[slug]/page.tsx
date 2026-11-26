@@ -20,6 +20,7 @@ import { ticketLink } from "@/lib/show-display";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { ticketsClickEvent } from "@/lib/analytics-events";
 import { SITE_URL } from "@/lib/site";
+import { TrackView } from "@/components/page-tracker";
 
 const container = "mx-auto max-w-[1280px] px-[18px] md:px-8";
 const h2 = "font-display text-[26px] md:text-[36px]";
@@ -93,6 +94,7 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
 
   return (
     <>
+      <TrackView kind="group_view" id={g.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(groupJsonLd(g)).replace(/</g, "\\u003c") }} />
       <nav aria-label="Breadcrumb" className={`${container} pt-1 pb-3 text-[13px] text-lavender-text md:pt-2 md:pb-5 md:text-small`}>
         <Link href="/" className="hover:text-white">
