@@ -11,7 +11,7 @@ const ITEMS: { href: string; label: string; soon?: boolean }[] = [
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/spotlight", label: "Spotlight" },
   { href: "/admin/activity", label: "Activity log" },
-  { href: "/admin/settings", label: "Settings", soon: true },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 /** Admin menu (spec 11.5): Stage Black, yellow active item. Later parts show "Soon". */

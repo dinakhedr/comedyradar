@@ -467,3 +467,34 @@ export async function getAdminActivity(
   await requireSuperAdmin();
   return (await fetchActivity(f)) ?? { rows: [], people: [], more: false };
 }
+
+export type AdminSettings = {
+  settings: Record<string, unknown>;
+  countries: {
+    id: string;
+    code: string;
+    name: string;
+    region: string | null;
+    is_market: boolean;
+    cities: { id: string; name: string; slug: string; venues: number }[];
+  }[];
+  venues: { published: number; pending: number };
+  super_admins: {
+    name: string | null;
+    email: string | null;
+    two_step: boolean;
+  }[];
+};
+
+export async function getAdminSettings(): Promise<AdminSettings> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_settings");
+  if (error) console.error("admin_settings", error.message);
+  return (data ?? {
+    settings: {},
+    countries: [],
+    venues: { published: 0, pending: 0 },
+    super_admins: [],
+  }) as AdminSettings;
+}
