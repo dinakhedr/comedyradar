@@ -304,8 +304,8 @@ Desktop: two columns (poster left ~55%, details right). Mobile: poster on top, t
 
 ### 7.4 All groups (`/groups`) — designed on the canvas
 1. **Breadcrumb:** Home › Groups. **Title** "COMEDY GROUPS" + "Comedians who perform together as one act." + the **Comedians | Groups** switch (Groups selected). Full-width search (group name or a member's name).
-2. **Filter chips:** All groups · Performing this month · On tour. **Sort:** Next show first (default) · A–Z · Newly added.
-3. **Group cards** (3 columns desktop, 1 column mobile): group photo; badges (GROUP, ON TOUR, style tag e.g. IMPROV, NO DATES YET); group name (Luckiest Guy); **overlapping member avatars + "[N] comedians"**; next show line ("Next show: Sat [Date] · Cairo") or tour line ("On tour: [Tour name] · [N] shows"); **View group** + **Track**.
+2. **Filter chips:** All groups · Performing this month · On tour, plus **Style** and **Language** dropdowns (a bilingual group matches Arabic and English). **Sort:** Next show first (default) · A–Z · Newly added.
+3. **Group cards** (3 columns desktop, 1 column mobile): group photo; badges (GROUP, ON TOUR, style tags e.g. IMPROV, NO DATES YET) and the performing language next to the member count; group name (Luckiest Guy); **overlapping member avatars + "[N] comedians"**; next show line ("Next show: Sat [Date] · Cairo") or tour line ("On tour: [Tour name] · [N] shows"); **View group** + **Track**.
 4. **"Load more groups"** (12 at a time).
 5. **"Perform as a group?"** band → "Add your group" (→ sign up → Create or claim a profile → Group, section 11).
 6. Newsletter band and footer.
@@ -419,6 +419,8 @@ create table comedy_groups (
   slug text unique not null,          -- 'highfive'
   bio text,
   photo_url text,
+  styles text[] default '{}',         -- several of: stand-up, improv, sketch, roast, open-mic, storytelling, musical, dark, family
+  performing_language text,           -- 'arabic', 'english' or 'bilingual' (separate from styles)
   home_country_id uuid references countries(id),
   instagram_url text,
   tiktok_url text,

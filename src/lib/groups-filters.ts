@@ -1,15 +1,23 @@
 /**
  * Filters and sort of the All groups page (docs/website-spec.md, 7.4).
- * Everything lives in the address, e.g. /groups?show=tour&sort=az&more=24.
+ * Everything lives in the address, e.g. /groups?show=tour&style=improv&lang=arabic&sort=az&more=24.
  */
+import { isGroupLanguage, isGroupStyle, languageMatches, type GroupLanguage, type GroupStyle } from "./group-styles";
 
 export const GROUPS_STEP = 12;
 
 export type GroupsShow = "all" | "month" | "tour";
 export type GroupsSort = "next" | "az" | "new";
-export type GroupsFilters = { q: string; show: GroupsShow; sort: GroupsSort; count: number };
+export type GroupsFilters = {
+  q: string;
+  show: GroupsShow;
+  style: GroupStyle | null;
+  lang: GroupLanguage | null;
+  sort: GroupsSort;
+  count: number;
+};
 
-export const DEFAULT_GROUPS_FILTERS: GroupsFilters = { q: "", show: "all", sort: "next", count: GROUPS_STEP };
+export const DEFAULT_GROUPS_FILTERS: GroupsFilters = { q: "", show: "all", style: null, lang: null, sort: "next", count: GROUPS_STEP };
 
 export const GROUPS_SHOW_OPTIONS: { value: GroupsShow; label: string; short: string }[] = [
   { value: "all", label: "All groups", short: "All" },
@@ -30,9 +38,13 @@ const oneOf = <T extends string>(v: string, list: { value: T }[], fallback: T): 
 
 export function parseGroupsFilters(raw: Raw): GroupsFilters {
   const count = Number.parseInt(first(raw.more), 10);
+  const style = first(raw.style).toLowerCase();
+  const lang = first(raw.lang).toLowerCase();
   return {
     q: first(raw.q).slice(0, 80),
     show: oneOf(first(raw.show), GROUPS_SHOW_OPTIONS, "all"),
+    style: isGroupStyle(style) ? style : null,
+    lang: isGroupLanguage(lang) ? lang : null,
     sort: oneOf(first(raw.sort), GROUPS_SORT_OPTIONS, "next"),
     count: Number.isFinite(count) && count > GROUPS_STEP ? Math.min(Math.ceil(count / GROUPS_STEP) * GROUPS_STEP, 240) : GROUPS_STEP,
   };
@@ -44,6 +56,8 @@ export function groupsHref(current: GroupsFilters, change: Partial<GroupsFilters
   const p = new URLSearchParams();
   if (f.q) p.set("q", f.q);
   if (f.show !== "all") p.set("show", f.show);
+  if (f.style) p.set("style", f.style);
+  if (f.lang) p.set("lang", f.lang);
   if (f.sort !== "next") p.set("sort", f.sort);
   if (f.count > GROUPS_STEP) p.set("more", String(f.count));
   const qs = p.toString();
@@ -57,6 +71,8 @@ export type ListedGroup = {
   next_show_at: string | null;
   this_month: boolean;
   on_tour: boolean;
+  styles: GroupStyle[];
+  performing_language: GroupLanguage | null;
 };
 
 /** Applies the filters and sort. The search matches the group name or a member's name. */
@@ -65,6 +81,8 @@ export function filterGroups<T extends ListedGroup>(list: T[], f: GroupsFilters)
   const out = list.filter(
     (g) =>
       (!q || [g.name, ...g.member_names].some((n) => n.toLowerCase().includes(q))) &&
+      (!f.style || g.styles.includes(f.style)) &&
+      languageMatches(g.performing_language, f.lang) &&
       (f.show === "all" || (f.show === "month" && g.this_month) || (f.show === "tour" && g.on_tour)),
   );
   const az = (a: T, b: T) => a.name.localeCompare(b.name);

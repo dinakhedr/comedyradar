@@ -258,4 +258,22 @@ select pg_temp.check((select count(*) = 0 from public.search_radar('zzqqxx')), '
 reset role;
 select pg_temp.check((select count(*) > 0 from public.activity_log), 'activity is logged');
 
+-- Group styles and performing language accept only the approved values.
+insert into public.comedy_groups (name, slug, styles, performing_language)
+values ('Style Test', 'style-test', array['improv', 'stand-up'], 'bilingual');
+select pg_temp.check((select styles = array['improv', 'stand-up'] from public.comedy_groups where slug = 'style-test'),
+  'a group keeps its styles');
+do $$ begin
+  update public.comedy_groups set styles = array['mime'] where slug = 'style-test';
+  raise exception 'FAILED: unknown style saved';
+exception when check_violation then
+  raise notice 'ok - unknown styles are refused';
+end $$;
+do $$ begin
+  update public.comedy_groups set performing_language = 'french' where slug = 'style-test';
+  raise exception 'FAILED: unknown language saved';
+exception when check_violation then
+  raise notice 'ok - unknown performing languages are refused';
+end $$;
+
 rollback;
