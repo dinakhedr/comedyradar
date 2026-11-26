@@ -428,3 +428,42 @@ export async function getSpotlightShowOptions(
   if (error) console.error("admin_spotlight_shows", error.message);
   return (data ?? []) as SpotlightShowOption[];
 }
+
+export type AdminActivity = {
+  rows: import("@/lib/admin-activity").ActivityEntry[];
+  people: { id: string; name: string }[];
+  more: boolean;
+};
+export type ActivityFilters = {
+  q: string;
+  who: string;
+  type: string;
+  action: string;
+  period: string;
+  limit: number;
+};
+
+/** One page of the activity log. Null when the database says this is not a super admin with 2-step. */
+export async function fetchActivity(
+  f: ActivityFilters,
+): Promise<AdminActivity | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_activity", {
+    p_q: f.q,
+    p_who: f.who || null,
+    p_type: f.type,
+    p_action: f.action,
+    p_period: f.period,
+    p_before: null,
+    p_limit: f.limit,
+  });
+  if (error) console.error("admin_activity", error.message);
+  return (data ?? null) as AdminActivity | null;
+}
+
+export async function getAdminActivity(
+  f: ActivityFilters,
+): Promise<AdminActivity> {
+  await requireSuperAdmin();
+  return (await fetchActivity(f)) ?? { rows: [], people: [], more: false };
+}
