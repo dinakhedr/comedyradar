@@ -10,9 +10,10 @@ const WHEN_LABELS: { value: WhenFilter; label: string }[] = [
   { value: "month", label: "This month" },
 ];
 
-function href(when: WhenFilter, city: string | null) {
+function href(when: WhenFilter, city: string | null, country: string | null) {
   const p = new URLSearchParams();
   if (when !== "month") p.set("when", when);
+  if (country) p.set("country", country.toLowerCase());
   if (city) p.set("city", city);
   const qs = p.toString();
   return qs ? `/?${qs}#coming-up` : "/#coming-up";
@@ -34,15 +35,18 @@ export async function FilterChips({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   cities: City[];
 }) {
-  const { when, city, defaultCity } = await homeFilters(searchParams);
+  const { when, city, country, defaultCity } = await homeFilters(searchParams);
   const withinRange = city !== null;
+  // The city menu lists the cities of the country picked in the header (Egypt by default).
+  const shown = cities.filter((c) => c.country_code === (country ?? "EG"));
+  const nearest = country ? (shown[0]?.slug ?? null) : defaultCity;
 
   return (
     <div role="group" aria-label="Filter shows" className="no-scrollbar -mx-[18px] flex items-center gap-2 overflow-x-auto px-[18px] pb-1 md:mx-0 md:flex-wrap md:gap-2.5 md:overflow-visible md:px-0">
       {WHEN_LABELS.map((w) => (
         <Link
           key={w.value}
-          href={href(w.value, city)}
+          href={href(w.value, city, country)}
           scroll={false}
           aria-current={when === w.value ? "true" : undefined}
           className={`${chip} ${when === w.value ? on : off}`}
@@ -51,7 +55,7 @@ export async function FilterChips({
         </Link>
       ))}
       <Link
-        href={href(when, withinRange ? null : defaultCity)}
+        href={href(when, withinRange ? null : nearest, country)}
         scroll={false}
         aria-current={withinRange ? "true" : undefined}
         className={`${chip} ${withinRange ? on : off}`}
@@ -59,7 +63,7 @@ export async function FilterChips({
         Within range
       </Link>
       <span className="hidden h-7 w-0.5 bg-plum-line md:block" aria-hidden />
-      <CitySelect cities={cities} variant="chip" id="hero-city" />
+      <CitySelect cities={shown} variant="chip" id="hero-city" />
     </div>
   );
 }
