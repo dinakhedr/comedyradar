@@ -44,16 +44,13 @@ export const getMyProfiles = cache(async (): Promise<ManagedProfile[]> => {
   return (data ?? []) as ManagedProfile[];
 });
 
-/** Pending requests waiting for this account's answer (sidebar count). */
+/** Requests waiting for this account's answer: link requests and team invitations (sidebar count). */
 export const countIncomingRequests = cache(async (): Promise<number> => {
-  const account = await requireAccount();
+  await requireAccount();
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("link_requests")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pending")
-    .neq("from_account_id", account.id);
-  return count ?? 0;
+  const [links, invites] = await Promise.all([supabase.rpc("my_link_requests"), supabase.rpc("my_team_invites")]);
+  const waiting = ((links.data ?? []) as { direction: string; status: string }[]).filter((r) => r.direction === "incoming" && r.status === "pending").length;
+  return waiting + (invites.data?.length ?? 0);
 });
 
 type Performer = { comedian_id: string | null; group_id: string | null; comedians: { name: string } | null; comedy_groups: { name: string } | null };
