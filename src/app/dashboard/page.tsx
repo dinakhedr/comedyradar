@@ -61,15 +61,6 @@ function ShowsTable({ shows }: { shows: DashboardShow[] }) {
   );
 }
 
-function SoonButton({ children }: { children: React.ReactNode }) {
-  return (
-    <span aria-disabled="true" className="inline-flex min-h-11 items-center gap-2 rounded-button bg-spotlight-yellow/50 px-4 text-[15px] font-extrabold text-radar-purple/70">
-      {children}
-      <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] tracking-wider uppercase">Soon</span>
-    </span>
-  );
-}
-
 async function OverviewContent({ searchParams }: { searchParams: PageProps<"/dashboard">["searchParams"] }) {
   const sp = await searchParams;
   const [account, profiles, requests] = await Promise.all([requireAccount(), getMyProfiles(), countIncomingRequests()]);
@@ -125,7 +116,9 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
           <Link href="/dashboard/shows/new" className={yellowBtn}>
             Add a show
           </Link>
-          <SoonButton>Add a tour</SoonButton>
+          <Link href="/dashboard/tours/new" className={yellowBtn}>
+            Add a tour
+          </Link>
           <Link href="/dashboard/profiles/new" className={yellowBtn}>
             Create or claim a profile
           </Link>

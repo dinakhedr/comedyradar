@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { updateShowStatus } from "@/app/actions/shows";
+import { setShowsTour } from "@/app/actions/tours";
 import { CopyIcon, EditIcon, ExternalIcon, SoldOutIcon, TicketIcon } from "@/components/icons";
 import { outlineBtn, Tag, type Tone } from "@/components/dashboard/ui";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
@@ -16,9 +17,15 @@ const SIGNALS: Record<string, string> = { new: "New", strong: "Strong", fading: 
 /** Square icon buttons; the label is read out and shown as a tooltip. */
 const iconBtn = "inline-flex h-11 w-11 items-center justify-center rounded-button text-radar-purple hover:bg-lavender focus-visible:outline-2 focus-visible:outline-radar-purple";
 
-export function ShowsTable({ shows, past }: { shows: ListedShow[]; past: boolean }) {
+export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: boolean; tours: { id: string; name: string }[] }) {
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState(false);
+  const [tour, setTour] = useState("");
+  const done = () => {
+    setPicked(new Set());
+    setConfirm(false);
+    setTour("");
+  };
   const all = shows.length > 0 && picked.size === shows.length;
   const toggle = (id: string) =>
     setPicked((prev) => {
@@ -36,8 +43,7 @@ export function ShowsTable({ shows, past }: { shows: ListedShow[]; past: boolean
           id="bulk"
           action={async (f) => {
             await updateShowStatus(f);
-            setPicked(new Set());
-            setConfirm(false);
+            done();
           }}
           className="flex flex-wrap items-center gap-3 rounded-card bg-lavender px-3 py-2"
         >
@@ -50,6 +56,32 @@ export function ShowsTable({ shows, past }: { shows: ListedShow[]; past: boolean
           <button name="action" value="sold_out" disabled={!picked.size} className={`${outlineBtn} bg-white`}>
             Mark sold out
           </button>
+          {tours.length > 0 && (
+            <span className="flex flex-wrap items-center gap-2">
+              <label htmlFor="bulk-tour" className="sr-only">
+                Tour
+              </label>
+              <select id="bulk-tour" name="tour_id" value={tour} onChange={(e) => setTour(e.target.value)} className="min-h-11 rounded-button border-2 border-radar-purple/25 bg-white px-3 text-[15px] font-bold">
+                <option value="">Choose a tour</option>
+                {tours.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+                <option value="none">Not on a tour</option>
+              </select>
+              <button
+                formAction={async (f) => {
+                  await setShowsTour(f);
+                  done();
+                }}
+                disabled={!picked.size || !tour}
+                className={`${outlineBtn} bg-white`}
+              >
+                {tour === "none" ? "Take off the tour" : "Add to the tour"}
+              </button>
+            </span>
+          )}
           <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
             <input type="checkbox" name="confirm_cancel" value="yes" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="h-5 w-5 accent-radar-purple" />
             Yes, cancel them
