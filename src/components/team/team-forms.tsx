@@ -7,6 +7,7 @@ import { outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import type { ManagedProfile } from "@/lib/dashboard";
 import type { TeamMember } from "@/lib/data/team";
 import { ROLES, type Role } from "@/lib/team-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 const keyOf = (p: { kind: string; id: string }) => `${p.kind === "group" ? "g" : "c"}:${p.id}`;
 const selectCls = "min-h-11 rounded-button border-2 border-radar-purple/25 bg-white px-3 text-[15px] font-bold";
@@ -158,9 +159,9 @@ export function InviteForm({ shareable }: { shareable: ManagedProfile[] }) {
         Only profiles where you are Admin can be shared. A group does not include its members&apos; solo profiles.
       </p>
       <FormMessage message={state.message} tone={state.ok ? "ok" : "error"} />
-      <button type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
+      <SubmitButton type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
         {pending ? "Creating…" : "Create invitation"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -173,9 +174,9 @@ export function EditAccessForm({ member, shareable }: { member: TeamMember; shar
       <input type="hidden" name="member_id" value={member.id} />
       <AccessFields shareable={shareable} initial={member} error={state.errors?.access} />
       <FormMessage message={state.message} tone={state.ok ? "ok" : "error"} />
-      <button type="submit" disabled={pending} className={`${outlineBtn} self-start`}>
+      <SubmitButton type="submit" disabled={pending} className={`${outlineBtn} self-start`}>
         {pending ? "Saving…" : "Save access"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -188,12 +189,12 @@ export function AnswerForm({ token }: { token: string }) {
       <input type="hidden" name="token" value={token} />
       <FormMessage message={state.message} />
       <div className="flex flex-wrap gap-2.5">
-        <button type="submit" name="answer" value="accept" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
+        <SubmitButton type="submit" name="answer" value="accept" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
           {pending ? "Saving…" : "Accept and join"}
-        </button>
-        <button type="submit" name="answer" value="decline" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
+        </SubmitButton>
+        <SubmitButton type="submit" name="answer" value="decline" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
           Decline
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );

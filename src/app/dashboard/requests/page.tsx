@@ -13,6 +13,7 @@ import { getRequests, type IncomingInvite, type SentInvite } from "@/lib/data/re
 import { describe, kindOf, REQUEST_KINDS, REQUEST_TABS, requestKind, requestTab, tabOf, TYPE_LABEL, type LinkRequest, type RequestKind, type RequestTab } from "@/lib/requests";
 import { SuccessNote } from "@/components/status-note";
 import { StatusPill } from "@/components/status";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Requests" };
 
@@ -59,20 +60,20 @@ function LinkCard({ r }: { r: LinkRequest }) {
         {tab === "incoming" && (
           <form action={answerLinkRequest} className="flex gap-2">
             <input type="hidden" name="request_id" value={r.id} />
-            <button name="answer" value="accept" className={`${yellowBtn} px-5`}>
+            <SubmitButton name="answer" value="accept" className={`${yellowBtn} px-5`}>
               Accept
-            </button>
-            <button name="answer" value="decline" className={outlineBtn}>
+            </SubmitButton>
+            <SubmitButton name="answer" value="decline" className={outlineBtn}>
               Decline
-            </button>
+            </SubmitButton>
           </form>
         )}
         {tab === "sent" && (
           <form action={cancelLinkRequest}>
             <input type="hidden" name="request_id" value={r.id} />
-            <button className={iconBtn} aria-label={`Cancel: ${describe(r)}`} title="Cancel request">
+            <SubmitButton className={iconBtn} aria-label={`Cancel: ${describe(r)}`} title="Cancel request">
               <CloseIcon size={20} />
-            </button>
+            </SubmitButton>
           </form>
         )}
       </div>
@@ -120,9 +121,9 @@ function SentInviteCard({ m }: { m: SentInvite }) {
       </div>
       <form action={removeMember}>
         <input type="hidden" name="member_id" value={m.id} />
-        <button className={iconBtn} aria-label={`Cancel the invitation to ${m.invite_email}`} title="Cancel invitation">
+        <SubmitButton className={iconBtn} aria-label={`Cancel the invitation to ${m.invite_email}`} title="Cancel invitation">
           <CloseIcon size={20} />
-        </button>
+        </SubmitButton>
       </form>
     </li>
   );

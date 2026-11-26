@@ -17,6 +17,7 @@ import {
   type AdminVenueRow,
 } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -318,7 +319,7 @@ async function Content({
               </Link>
               . Comedians to track are picked automatically.
             </p>
-            <button className={`${yellowBtn} self-start`}>Save homepage</button>
+            <SubmitButton className={`${yellowBtn} self-start`}>Save homepage</SubmitButton>
           </form>
         </Card>
 
@@ -338,7 +339,7 @@ async function Content({
                 help="Days a new show keeps the New badge"
               />
             </div>
-            <button className={`${yellowBtn} self-start`}>Save</button>
+            <SubmitButton className={`${yellowBtn} self-start`}>Save</SubmitButton>
           </form>
           <Fixed
             rows={[

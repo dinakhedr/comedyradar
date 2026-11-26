@@ -5,6 +5,7 @@ import { importComedians, importShows, type ComedianImportState, type ShowImport
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { errText } from "@/lib/venue-forms";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { Spinner } from "@/components/submit-button";
 
 const START_COMEDIANS: ComedianImportState = { step: "start", message: "", ok: true, rows: [], counts: { ready: 0, skip: 0, error: 0 } };
 const START_SHOWS: ShowImportState = { step: "start", message: "", ok: true, rows: [], counts: { ready: 0, skip: 0, error: 0 }, createMissing: false };
@@ -167,6 +168,7 @@ export function ComedianImport({ initial = START_COMEDIANS }: { initial?: Comedi
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button type="submit" name="intent" value="import" disabled={pending || state.counts.ready === 0} className={`${yellowBtn} px-6`}>
+                {pending && <Spinner />}
                 {pending ? "Importing…" : `Import ${plural(state.counts.ready, "comedian", "comedians")}`}
               </button>
               {state.counts.error > 0 && <p className="text-sm text-radar-purple/75">Rows to fix are left out. Fix them in the file and upload it again: rows already imported are skipped.</p>}
@@ -291,6 +293,7 @@ export function ShowImport({ initial = START_SHOWS }: { initial?: ShowImportStat
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button type="submit" name="intent" value="import" disabled={pending || state.counts.ready === 0} className={`${yellowBtn} px-6`}>
+                {pending && <Spinner />}
                 {pending ? "Importing…" : `Import ${plural(state.counts.ready, "show", "shows")} as Pending`}
               </button>
               {state.counts.error > 0 && <p className="text-sm text-radar-purple/75">Rows to fix are left out. Fix them in the file and upload it again: rows already imported are skipped.</p>}

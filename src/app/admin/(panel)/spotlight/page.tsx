@@ -33,6 +33,8 @@ import { getSpotlight } from "@/lib/data/home";
 import { formatShowDate } from "@/lib/dates";
 import { UUID } from "@/lib/profile-server";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 export const metadata: Metadata = { title: "Spotlight" };
 
@@ -136,26 +138,26 @@ async function LiveNow({
                       <form action={movePlacement}>
                         <input type="hidden" name="id" value={p.id} />
                         <input type="hidden" name="dir" value="up" />
-                        <button
+                        <SubmitButton
                           className={iconBtn}
                           disabled={at <= 0}
                           aria-label={`Move ${s.show.title} earlier`}
                           title="Move earlier"
                         >
                           <ArrowUpIcon />
-                        </button>
+                        </SubmitButton>
                       </form>
                       <form action={movePlacement}>
                         <input type="hidden" name="id" value={p.id} />
                         <input type="hidden" name="dir" value="down" />
-                        <button
+                        <SubmitButton
                           className={iconBtn}
                           disabled={at < 0 || at >= order.length - 1}
                           aria-label={`Move ${s.show.title} later`}
                           title="Move later"
                         >
                           <ArrowDownIcon />
-                        </button>
+                        </SubmitButton>
                       </form>
                       <Link
                         href={`/admin/spotlight?edit=${p.id}#new`}
@@ -163,7 +165,7 @@ async function LiveNow({
                         aria-label={`Edit the placement of ${s.show.title}`}
                         title="Edit"
                       >
-                        <EditIcon />
+                        <LinkPending><EditIcon /></LinkPending>
                       </Link>
                     </div>
                   </>
@@ -436,9 +438,9 @@ async function PlacementForm({
               className={inputCls}
             />
           </div>
-          <button className={`${yellowBtn} self-start px-6`}>
+          <SubmitButton className={`${yellowBtn} self-start px-6`}>
             {edit ? "Save placement" : "Add to the Spotlight"}
-          </button>
+          </SubmitButton>
         </form>
       )}
     </section>
@@ -576,11 +578,11 @@ async function Content({
                                 aria-label={`Edit the placement of ${p.title}`}
                                 title="Edit"
                               >
-                                <EditIcon />
+                                <LinkPending><EditIcon /></LinkPending>
                               </Link>
                               <form action={endPlacement}>
                                 <input type="hidden" name="id" value={p.id} />
-                                <button
+                                <SubmitButton
                                   className={iconBtn}
                                   aria-label={`${p.state === "live" ? "End" : "Remove"} the placement of ${p.title}`}
                                   title={
@@ -588,7 +590,7 @@ async function Content({
                                   }
                                 >
                                   <CloseIcon size={20} />
-                                </button>
+                                </SubmitButton>
                               </form>
                             </>
                           )}
@@ -656,9 +658,9 @@ async function Content({
                 <strong>the soonest upcoming shows</strong>. The carousel is
                 never empty.
               </p>
-              <button className={`${outlineBtn} self-start`}>
+              <SubmitButton className={`${outlineBtn} self-start`}>
                 Save settings
-              </button>
+              </SubmitButton>
             </form>
           </section>
         </div>

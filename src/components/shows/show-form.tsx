@@ -10,6 +10,7 @@ import type { ShowRow } from "@/lib/data/types";
 import type { ManagedProfile } from "@/lib/dashboard";
 import type { CityOption, EditableShow, TourOption, VenueOption } from "@/lib/data/my-shows";
 import { AGE_RATINGS, cairoToIso, CURRENCIES, isoToCairo, MAX_GOOD_TO_KNOW, SHOW_LANGUAGES, SIGNAL_REQUESTS } from "@/lib/show-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 const Optional = () => <span className="font-bold text-radar-purple/70"> (optional)</span>;
 
@@ -351,13 +352,13 @@ export function ShowForm({
         </section>
 
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <button type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
+          <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
             {pending ? "Saving…" : publishLabel}
-          </button>
+          </SubmitButton>
           {(!show || show.status === "draft") && (
-            <button type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
+            <SubmitButton type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
               Save draft
-            </button>
+            </SubmitButton>
           )}
           {picked && !verifiedPick && (!show || show.status === "draft") && (
             <p className="text-sm text-radar-purple/75">{picked.name} isn&apos;t verified yet, so Comedy Radar checks the show before it goes live.</p>

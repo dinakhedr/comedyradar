@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { errorCls, inputCls, labelCls, primaryBtn } from "@/components/auth/fields";
 import { createClient } from "@/lib/supabase/client";
+import { Spinner } from "@/components/submit-button";
 
 type Setup = { factorId: string; qr: string; secret: string } | null;
 
@@ -111,6 +112,7 @@ export function TwoStepForm() {
         )}
       </div>
       <button type="submit" disabled={busy} className={`${primaryBtn} sm:w-auto`}>
+        {busy && <Spinner />}
         {busy ? "Checking…" : mode === "setup" ? "Turn on 2-step and open the panel" : "Open the admin panel"}
       </button>
     </form>

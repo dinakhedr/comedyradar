@@ -16,6 +16,7 @@ import { MemberPicker, TextField } from "@/components/profiles/create-form";
 import { coverOf } from "@/lib/covers";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { PODCAST_LINKS, SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
+import { SubmitButton } from "@/components/submit-button";
 
 type Country = { id: string; name: string };
 
@@ -234,9 +235,9 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
 
       <div className="flex flex-col gap-3">
         <FormMessage message={state.message} tone={state.ok ? "ok" : "error"} />
-        <button type="submit" disabled={pending} className={`${yellowBtn} min-h-12 self-start px-6`}>
+        <SubmitButton type="submit" disabled={pending} className={`${yellowBtn} min-h-12 self-start px-6`}>
           {pending ? "Saving…" : "Save changes"}
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -263,9 +264,9 @@ export function AddMembersForm({ groupId }: { groupId: string }) {
         <textarea id={id} name="new_members" rows={2} maxLength={2000} aria-describedby={`${id}-hint`} className={`${inputCls} py-3`} />
       </div>
       <FormMessage message={state.message} tone={state.ok ? "ok" : "error"} />
-      <button type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
+      <SubmitButton type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
         {pending ? "Adding…" : "Add members"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -306,9 +307,9 @@ export function PodcastForm({ comedianId, podcast }: { comedianId: string; podca
         listLabel="Co-hosts to add"
       />
       <FormMessage message={state.message} tone={state.ok ? "ok" : "error"} />
-      <button type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
+      <SubmitButton type="submit" disabled={pending} className={`${yellowBtn} self-start`}>
         {pending ? "Saving…" : podcast ? "Save podcast" : "Add podcast"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

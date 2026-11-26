@@ -21,7 +21,7 @@ async function Form({ kind }: { kind: "comedian" | "group" }) {
   const [account, countries] = await Promise.all([requireAccount(), getCountries()]);
   if (account.is_suspended) {
     return (
-      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
+      <ErrorNote stay>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   return <CreateProfileForm kind={kind} countries={countries} />;

@@ -92,7 +92,7 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
         </p>
       ))}
       {account.is_suspended && (
-        <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
+        <ErrorNote stay>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
       )}
 
       <div className="flex flex-col gap-1.5">

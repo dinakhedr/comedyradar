@@ -14,7 +14,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/t
   const [account, options] = await Promise.all([requireAccount(), getTourFormOptions()]);
   if (account.is_suspended) {
     return (
-      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
+      <ErrorNote stay>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   if (!options.profiles.length) {

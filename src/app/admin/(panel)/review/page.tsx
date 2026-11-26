@@ -11,6 +11,7 @@ import { formatShowDate } from "@/lib/dates";
 import { claimDocumentUrl, getReviewQueue } from "@/lib/data/admin";
 import { SuccessNote } from "@/components/status-note";
 import { StatusPill } from "@/components/status";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Review queue" };
 
@@ -53,12 +54,12 @@ function Hidden({ item, tab }: { item: ReviewItem; tab: ReviewTab }) {
 function ApproveReject({ approve = "Approve", reject = "Send back" }: { approve?: string; reject?: string }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <button name="decision" value="approve" className={`${yellowBtn} px-5`}>
+      <SubmitButton name="decision" value="approve" className={`${yellowBtn} px-5`}>
         {approve}
-      </button>
-      <button name="decision" value="reject" className={outlineBtn}>
+      </SubmitButton>
+      <SubmitButton name="decision" value="reject" className={outlineBtn}>
         {reject}
-      </button>
+      </SubmitButton>
     </div>
   );
 }
@@ -178,7 +179,7 @@ async function ClaimDetail({ item, tab }: { item: ReviewItem; tab: ReviewTab }) 
           </label>
           <textarea id={`note-${item.id}`} name="note" maxLength={1000} defaultValue={d.claim.admin_note ?? ""} className={textareaCls} />
         </div>
-        <button className={`${yellowBtn} self-start px-6`}>Confirm</button>
+        <SubmitButton className={`${yellowBtn} self-start px-6`}>Confirm</SubmitButton>
       </form>
     </>
   );

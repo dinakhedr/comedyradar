@@ -21,7 +21,7 @@ async function Content({ params, searchParams }: PageProps<"/dashboard/tours/[id
   if (!tour) notFound();
   if (account.is_suspended) {
     return (
-      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
+      <ErrorNote stay>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   return (

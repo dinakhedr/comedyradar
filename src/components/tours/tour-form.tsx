@@ -15,6 +15,8 @@ import type { EditableTour, ImportableShow } from "@/lib/data/my-tours";
 import { formatShowDate } from "@/lib/dates";
 import { AGE_RATINGS, cairoToIso, CURRENCIES, SHOW_LANGUAGES } from "@/lib/show-forms";
 import { DEFAULT_TITLE_PATTERN, DOORS_OPTIONS, isBlankDate, MAX_TOUR_DATES, parsePastedDates, TICKET_STATUSES, type TourDateInput } from "@/lib/tour-forms";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 type Row = TourDateInput & { key: number };
 
@@ -221,7 +223,7 @@ export function TourForm({
                       {d.status === "published" && !d.ticket_url && <span className="text-radar-purple/70"> · No ticket link</span>}
                     </span>
                     <Link href={`/dashboard/shows/${d.id}/edit`} aria-label={`Edit the ${formatShowDate(new Date(d.starts_at))} date`} title="Edit date" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-button hover:bg-lavender">
-                      <EditIcon />
+                      <LinkPending><EditIcon /></LinkPending>
                     </Link>
                   </li>
                 ))}
@@ -359,13 +361,13 @@ export function TourForm({
         </section>
 
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <button type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
+          <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
             {pending ? "Saving…" : publishLabel}
-          </button>
+          </SubmitButton>
           {!live && (
-            <button type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
+            <SubmitButton type="submit" name="intent" value="draft" disabled={pending} className={`${outlineBtn} min-h-12 px-6`}>
               Save draft
-            </button>
+            </SubmitButton>
           )}
           {picked && !picked.verified && !live && <p className="text-sm text-radar-purple/75">{picked.name} isn&apos;t verified yet, so Comedy Radar checks the tour before it goes live.</p>}
         </div>

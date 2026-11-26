@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { PASSWORD_RULES, passwordStrength, STRENGTH_LABELS } from "@/lib/auth-forms";
 
 export { errorCls, inputCls, labelCls, primaryBtn } from "./field-classes";
@@ -143,7 +144,9 @@ export function PasswordField({
 
 /** A form's result: green text with a tick, or red text with "!" (no box). */
 export function FormMessage({ message, tone = "error" }: { message?: string; tone?: "error" | "ok" }) {
-  if (!message) return null;
+  // Hidden while the form is sending, so the next answer shows (and hides) afresh.
+  const { pending } = useFormStatus();
+  if (!message || pending) return null;
   return tone === "ok" ? (
     <SuccessNote className="text-[15px]">{message}</SuccessNote>
   ) : (

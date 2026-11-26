@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { signIn, type AuthState } from "@/app/actions/auth";
 import { Field, FormMessage, PasswordField, primaryBtn } from "./fields";
+import { SubmitButton } from "@/components/submit-button";
 
 export function SignInForm({ next, notice }: { next: string; notice?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(signIn, {});
@@ -17,9 +18,9 @@ export function SignInForm({ next, notice }: { next: string; notice?: string }) 
         Forgot password?
       </Link>
       <FormMessage message={state.message} />
-      <button type="submit" disabled={pending} className={primaryBtn}>
+      <SubmitButton type="submit" disabled={pending} className={primaryBtn}>
         {pending ? "Signing in…" : "Sign in"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

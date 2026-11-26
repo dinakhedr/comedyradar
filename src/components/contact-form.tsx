@@ -8,6 +8,7 @@ import {
   SENDER_TYPES,
   type ContactTopic,
 } from "@/lib/contact";
+import { SubmitButton } from "@/components/submit-button";
 
 const label = "text-[15px] font-extrabold";
 const field =
@@ -228,13 +229,13 @@ export function ContactForm({
         )}
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <button
+        <SubmitButton
           type="submit"
           disabled={pending}
           className="min-h-12 rounded-button bg-spotlight-yellow px-8 text-base font-extrabold text-radar-purple hover:bg-white disabled:opacity-70"
         >
           {pending ? "Sending…" : "Send message"}
-        </button>
+        </SubmitButton>
         <p role="status" className="text-small font-bold text-lavender">
           {state.status !== "idle" ? state.message : ""}
         </p>

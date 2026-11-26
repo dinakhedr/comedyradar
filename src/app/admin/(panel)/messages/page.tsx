@@ -20,6 +20,7 @@ import {
 } from "@/lib/contact";
 import { getAdminMessages, type AdminMessage } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -124,11 +125,11 @@ function Message({ m, ret }: { m: AdminMessage; ret: string }) {
             <input type="hidden" name="id" value={m.id} />
             <input type="hidden" name="status" value={s} />
             <input type="hidden" name="ret" value={ret} />
-            <button
+            <SubmitButton
               className={`${outlineBtn} ${s === "new" ? "border-transparent" : ""}`}
             >
               {btn[s]}
-            </button>
+            </SubmitButton>
           </form>
         ))}
       </div>

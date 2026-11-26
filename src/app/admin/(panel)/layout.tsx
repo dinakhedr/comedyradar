@@ -4,6 +4,7 @@ import { signOut } from "@/app/actions/auth";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { Logo } from "@/components/logo";
 import { requireSuperAdmin } from "@/lib/data/admin";
+import { SubmitButton } from "@/components/submit-button";
 
 async function TopBar() {
   const account = await requireSuperAdmin();
@@ -18,9 +19,9 @@ async function TopBar() {
           Creator dashboard
         </Link>
         <form action={signOut}>
-          <button type="submit" className="min-h-11 rounded-button border-2 border-stage-black/20 bg-white px-4 text-sm font-extrabold hover:border-stage-black">
+          <SubmitButton type="submit" className="min-h-11 rounded-button border-2 border-stage-black/20 bg-white px-4 text-sm font-extrabold hover:border-stage-black">
             Sign out
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

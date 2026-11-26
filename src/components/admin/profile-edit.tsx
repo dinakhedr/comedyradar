@@ -11,6 +11,7 @@ import { getCountries } from "@/lib/data/profiles";
 import { UUID } from "@/lib/profile-server";
 import { adminListPath } from "@/lib/admin-paths";
 import { StatusPill } from "@/components/status";
+import { SubmitButton } from "@/components/submit-button";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -45,9 +46,9 @@ async function DeleteSection({ kind, id, msg }: { kind: "comedian" | "group"; id
         </label>
         {msg === "confirm" && <p className="text-sm font-bold text-[#d12a1f]">Please tick the box first.</p>}
         {msg === "error" && <p className="text-sm font-bold text-[#d12a1f]">We couldn&apos;t delete it. Please try again.</p>}
-        <button className="inline-flex min-h-11 items-center justify-center self-start rounded-button bg-[#d12a1f] px-5 text-[15px] font-extrabold text-white hover:bg-[#b0231a]">
+        <SubmitButton className="inline-flex min-h-11 items-center justify-center self-start rounded-button bg-[#d12a1f] px-5 text-[15px] font-extrabold text-white hover:bg-[#b0231a]">
           Delete {what}
-        </button>
+        </SubmitButton>
       </form>
     </section>
   );

@@ -9,6 +9,8 @@ import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { StatusPill } from "@/components/status";
+import { SubmitButton } from "@/components/submit-button";
+import { LinkPending } from "@/components/link-pending";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const STATUSES = [
@@ -58,7 +60,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           </p>
         </div>
         <Link href={adminEditPath(p.kind, p.id)} className={iconBtn} aria-label={`Edit ${p.name}`} title="Edit">
-          <EditIcon />
+          <LinkPending><EditIcon /></LinkPending>
         </Link>
         {p.status === "published" && (
           <a href={pageOf(p)} target="_blank" rel="noreferrer" className={iconBtn} aria-label="View the public page" title="View the public page">
@@ -91,9 +93,9 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           </select>
           <p className="text-xs text-radar-purple/70">Archived hides the profile everywhere. Nothing is deleted.</p>
         </div>
-        <button className={`${yellowBtn} h-11 w-11 self-start px-0!`} aria-label="Save status" title="Save status">
+        <SubmitButton className={`${yellowBtn} h-11 w-11 self-start px-0!`} aria-label="Save status" title="Save status">
           <SaveIcon />
-        </button>
+        </SubmitButton>
       </form>
 
       <section aria-labelledby="access" className="flex flex-col gap-2">
@@ -123,17 +125,17 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
                     <option value="admin">Admin</option>
                     <option value="moderator">Moderator</option>
                   </select>
-                  <button className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`} aria-label="Save role" title="Save role">
+                  <SubmitButton className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`} aria-label="Save role" title="Save role">
                     <SaveIcon />
-                  </button>
+                  </SubmitButton>
                 </form>
                 <form action={changeAccess}>
                   <input type="hidden" name="access_id" value={a.id} />
                   <input type="hidden" name="ret" value={ret} />
                   <input type="hidden" name="role" value="remove" />
-                  <button className={iconBtn} aria-label={`Remove ${a.name ?? a.email}`} title="Remove access">
+                  <SubmitButton className={iconBtn} aria-label={`Remove ${a.name ?? a.email}`} title="Remove access">
                     <CloseIcon size={20} />
-                  </button>
+                  </SubmitButton>
                 </form>
               </li>
             ))}
@@ -155,7 +157,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
               <option value="admin">Admin</option>
               <option value="moderator">Moderator</option>
             </select>
-            <button className={`${outlineBtn} ml-auto`}>Add</button>
+            <SubmitButton className={`${outlineBtn} ml-auto`}>Add</SubmitButton>
           </div>
           <p className="text-xs text-radar-purple/70">They need a Comedy Radar account with this email. It works at once, with no invitation.</p>
         </form>
@@ -301,7 +303,7 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
                         <td className="px-2 py-2 text-right">{r.upcoming}</td>
                         <td className="px-2 py-1 text-right">
                           <Link href={adminEditPath(r.kind, r.id)} className={iconBtn} aria-label={`Edit ${r.name}`} title="Edit">
-                            <EditIcon />
+                            <LinkPending><EditIcon /></LinkPending>
                           </Link>
                         </td>
                       </tr>
