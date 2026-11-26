@@ -782,9 +782,31 @@ select pg_temp.check((select array_agg(coalesce(c.name, '') order by sp.billing_
                       from public.show_performers sp join public.shows s on s.id = sp.show_id left join public.comedians c on c.id = sp.comedian_id
                       where s.slug = 'import-night-2030-01-10'),
   'imported performers keep their order');
+-- Admin > Profiles > Edit: the super admin changes any profile directly, even a verified one's name.
+update public.comedians set verified = true where name = 'Import One';
+update public.comedians set name = 'Import Uno', bio = 'Edited by the super admin' where name = 'Import One';
+select pg_temp.check((select bio = 'Edited by the super admin' from public.comedians where name = 'Import Uno')
+                     and not exists (select 1 from public.profile_name_changes pc join public.comedians c on c.id = pc.comedian_id where c.name = 'Import Uno'),
+  'the super admin edits a verified profile and the new name saves at once');
+-- Delete a profile for good: solo shows go with it, shared shows stay without it.
+select pg_temp.check((select public.admin_profile_delete_impact('comedian', id) = '{"name": "Brand New Comic", "solo_shows": 1, "shared_shows": 1, "tours": 0, "solo_podcasts": 0}'::jsonb
+                      from public.comedians where name = 'Brand New Comic'),
+  'the delete step says which shows go and which stay');
+select pg_temp.check((select public.admin_delete_profile('comedian', id) = 'ok' from public.comedians where name = 'Brand New Comic'),
+  'the super admin deletes a comedian');
+select pg_temp.check(not exists (select 1 from public.comedians where name = 'Brand New Comic')
+                     and (select count(*) = 1 from public.shows where title = 'Import Night')
+                     and (select count(*) = 1 from public.show_performers sp join public.shows s on s.id = sp.show_id where s.title = 'Import Night'),
+  'the super admin deletes a comedian: their solo show goes, the shared show stays');
+select pg_temp.check(public.admin_delete_profile('comedian', gen_random_uuid()) = 'not_found'
+                     and public.admin_delete_profile('venue', gen_random_uuid()) = 'forbidden',
+  'deleting needs a real comedian or group');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 select pg_temp.check(public.admin_import_comedians('[{"name":"Sneaky"}]'::jsonb) is null and public.admin_import_shows('[]'::jsonb) is null,
   'only the super admin can bulk import');
+select pg_temp.check(public.admin_delete_profile('comedian', (select id from public.comedians where name = 'Import Uno')) = 'forbidden'
+                     and public.admin_profile_delete_impact('comedian', (select id from public.comedians where name = 'Import Uno')) is null,
+  'only the super admin can delete a profile');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = '';
 reset role;

@@ -3,6 +3,7 @@ import type { GroupLanguage, GroupStyle } from "@/lib/group-styles";
 import type { ProfileRole } from "@/lib/dashboard";
 import type { ProfileKind } from "@/lib/profile-forms";
 import { createClient } from "@/lib/supabase/server";
+import { isSuperAdminNow } from "./admin";
 import { getMyProfiles } from "./dashboard";
 
 /** Data for Edit profile (spec 11.4 item 5). Runs as the signed-in account. */
@@ -53,7 +54,16 @@ export async function getEditableProfile(slug: string, type?: string): Promise<E
   const mine = (await getMyProfiles()).filter((p) => p.slug === slug);
   const picked = mine.find((p) => p.kind === (type === "group" ? "group" : "comedian")) ?? mine[0];
   if (!picked) return null;
+  return loadEditable(picked);
+}
 
+/** Any profile, for the super admin (Admin > Profiles > Edit), with full admin rights. Null for everyone else. */
+export async function getProfileForSuperAdmin(kind: ProfileKind, id: string): Promise<EditableProfile | null> {
+  if (!(await isSuperAdminNow())) return null;
+  return loadEditable({ kind, id, role: "admin" });
+}
+
+async function loadEditable(picked: { kind: ProfileKind; id: string; role: ProfileRole }): Promise<EditableProfile | null> {
   const supabase = await createClient();
   const table = picked.kind === "group" ? "comedy_groups" : "comedians";
   const cols =

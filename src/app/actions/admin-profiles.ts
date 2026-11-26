@@ -56,3 +56,17 @@ export async function changeAccess(form: FormData): Promise<void> {
   const r = await run("admin_change_access", { p_access_id: id, p_role: text(form.get("role")) });
   back(form, r === "ok" ? "saved" : "error");
 }
+
+/** Deletes a comedian or group for good (Admin > Profiles > Edit). Needs the "I understand" tick. */
+export async function deleteProfile(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const kind = text(form.get("kind"));
+  const id = text(form.get("id"));
+  if (!KINDS.includes(kind) || !UUID.test(id)) return;
+  if (form.get("confirm") !== "yes") redirect(`/admin/profiles/edit/${kind}/${id}?msg=confirm#delete`);
+  const r = await run("admin_delete_profile", { p_kind: kind, p_id: id });
+  updateTag("shows");
+  updateTag("tours");
+  if (r !== "ok") redirect(`/admin/profiles/edit/${kind}/${id}?msg=error#delete`);
+  redirect("/admin/profiles?msg=deleted");
+}

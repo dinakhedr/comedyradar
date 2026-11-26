@@ -1,7 +1,9 @@
 "use server";
 
 import { updateTag } from "next/cache";
+import { isSuperAdminNow } from "@/lib/data/admin";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
+import { getProfileForSuperAdmin } from "@/lib/data/profile-edit";
 import { checkPodcast, PODCAST_LINKS, type PodcastErrors, type PodcastLink, type ProfileErrors, type ProfileKind } from "@/lib/profile-forms";
 import { addMembers, freeSlug, photoError, readProfileForm, text, uploadImage, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +18,13 @@ async function adminProfile(form: FormData) {
   const id = text(form.get("profile_id"));
   if (!UUID.test(id)) return null;
   const p = (await getMyProfiles()).find((x) => x.kind === kind && x.id === id);
-  return p && p.role === "admin" ? { ...p, account } : null;
+  if (p && p.role === "admin") return { ...p, account };
+  // The super admin can change any profile (Admin > Profiles > Edit); the database checks it again.
+  if (await isSuperAdminNow()) {
+    const row = await getProfileForSuperAdmin(kind, id);
+    if (row) return { kind, id, name: row.name, slug: row.slug, photo_url: row.photo_url, status: row.status, verified: row.verified, role: "admin" as const, account };
+  }
+  return null;
 }
 
 const NOT_ADMIN = "Only an admin of this profile can change it.";

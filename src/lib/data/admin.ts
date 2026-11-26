@@ -18,6 +18,15 @@ export const requireSuperAdmin = cache(async () => {
   return account;
 });
 
+/** True when the signed-in account is the super admin with 2-step done. Never redirects (for server actions). */
+export const isSuperAdminNow = cache(async (): Promise<boolean> => {
+  const account = await requireAccount();
+  if (!account.is_super_admin || account.is_suspended) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  return data?.currentLevel === "aal2";
+});
+
 /** For the 2-step page: a super admin, signed in, any level. */
 export const requireSuperAdminAccount = cache(async () => {
   const account = await requireAccount();
@@ -560,4 +569,15 @@ export async function getAdminMessages(opts: {
     counts: { new: n.count ?? 0, replied: r.count ?? 0, closed: c.count ?? 0 },
     more: rows.length > opts.limit,
   };
+}
+
+export type DeleteImpact = { name: string; solo_shows: number; shared_shows: number; tours: number; solo_podcasts: number };
+
+/** What deleting a profile would remove, for the confirm step. */
+export async function getDeleteImpact(kind: "comedian" | "group", id: string): Promise<DeleteImpact | null> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_profile_delete_impact", { p_kind: kind, p_id: id });
+  if (error) console.error("admin_profile_delete_impact", error.message);
+  return (data ?? null) as DeleteImpact | null;
 }

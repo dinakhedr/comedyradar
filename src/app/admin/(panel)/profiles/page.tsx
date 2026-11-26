@@ -29,6 +29,7 @@ const VERIFIED = [
 ];
 const MSG: Record<string, string> = {
   saved: "Saved.",
+  deleted: "Profile deleted.",
   added: "Access added.",
   no_account: "Nobody has signed up with that email yet. Ask them to create an account first.",
   error: "Something went wrong. Please try again.",
@@ -61,6 +62,9 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
             {p.kind === "group" ? "Group" : "Comedian"} {statusTag(p)} {p.verified && <Tag tone="purple">Verified</Tag>}
           </p>
         </div>
+        <Link href={`/admin/profiles/edit/${p.kind}/${p.id}`} className={iconBtn} aria-label={`Edit ${p.name}`} title="Edit">
+          <EditIcon />
+        </Link>
         {p.status === "published" && (
           <a href={pageOf(p)} target="_blank" rel="noreferrer" className={iconBtn} aria-label="View the public page" title="View the public page">
             <ExternalIcon />
@@ -308,7 +312,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
                         <td className={`px-2 py-2 text-right font-bold ${r.admins === 0 ? "text-laugh-pink-deep" : ""}`}>{r.admins}</td>
                         <td className="px-2 py-2 text-right">{r.upcoming}</td>
                         <td className="px-2 py-1 text-right">
-                          <Link href={link({ p: `${r.kind}:${r.id}` })} className={iconBtn} aria-label={`Manage ${r.name}`} title="Manage">
+                          <Link href={`/admin/profiles/edit/${r.kind}/${r.id}`} className={iconBtn} aria-label={`Edit ${r.name}`} title="Edit">
                             <EditIcon />
                           </Link>
                         </td>
