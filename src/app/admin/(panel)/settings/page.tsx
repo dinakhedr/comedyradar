@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { addCity, saveSettings } from "@/app/actions/admin-settings";
+import { addCity, addVenue, saveSettings } from "@/app/actions/admin-settings";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { flagOf } from "@/lib/countries";
@@ -16,6 +16,17 @@ const MSG: Record<string, [string, boolean]> = {
   saved: ["Settings saved. The website updates within a few minutes.", true],
   city_added: ["City added.", true],
   city_exists: ["That city is already in the list.", false],
+  venue_added: ["Venue added and published.", true],
+  venue_city_added: ["City and venue added. The venue is published.", true],
+  venue_city: [
+    "Choose a city from the list, or type a new city name (2 to 60 letters) and pick its country.",
+    false,
+  ],
+  venue_exists: ["That city already has a venue with this name.", false],
+  venue_bad: [
+    "Check the venue: a name, a Google Maps link (google.com/maps or maps.app.goo.gl) and, if you add one, a website starting with https://.",
+    false,
+  ],
   bad_value: [
     "One of the values is outside its limits. Nothing else changed.",
     false,
@@ -134,7 +145,7 @@ function Locations({ data }: { data: AdminSettings }) {
               <th className="px-4 py-2 font-extrabold md:px-2">Country</th>
               <th className="px-2 py-2 font-extrabold">Region</th>
               <th className="px-2 py-2 font-extrabold">Market</th>
-              <th className="px-2 py-2 font-extrabold">Cities</th>
+              <th className="px-2 py-2 font-extrabold">Cities (venues)</th>
             </tr>
           </thead>
           <tbody>
@@ -158,7 +169,11 @@ function Locations({ data }: { data: AdminSettings }) {
                   {c.cities.length === 0 ? (
                     <span className="text-radar-purple/60">None yet</span>
                   ) : (
-                    c.cities.map((x) => x.name).join(", ")
+                    c.cities
+                      .map((x) =>
+                        x.venues ? `${x.name} (${x.venues})` : x.name,
+                      )
+                      .join(", ")
                   )}
                 </td>
               </tr>
@@ -202,6 +217,123 @@ function Locations({ data }: { data: AdminSettings }) {
           />
         </div>
         <button className={outlineBtn}>Add city</button>
+      </form>
+      <form
+        action={addVenue}
+        className="grid gap-3 rounded-button bg-lavender p-3 sm:grid-cols-2"
+      >
+        <p className="font-extrabold sm:col-span-2">Add a venue</p>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="venue-city" className={labelCls}>
+            City
+          </label>
+          <select
+            id="venue-city"
+            name="city_id"
+            defaultValue=""
+            className={`${inputCls} min-h-11`}
+          >
+            <option value="">Choose a city</option>
+            {data.countries
+              .filter((c) => c.cities.length > 0)
+              .map((c) => (
+                <optgroup key={c.id} label={`${flagOf(c.code)} ${c.name}`}>
+                  {c.cities.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="venue-name" className={labelCls}>
+            Venue name
+          </label>
+          <input
+            id="venue-name"
+            name="name"
+            required
+            minLength={2}
+            maxLength={120}
+            placeholder="The name people know it by"
+            className={`${inputCls} min-h-11`}
+          />
+        </div>
+        <details className="rounded-button bg-white/70 p-3 sm:col-span-2">
+          <summary className="cursor-pointer font-bold">
+            City not in the list? Add a new one
+          </summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="venue-new-country" className={labelCls}>
+                Country
+              </label>
+              <select
+                id="venue-new-country"
+                name="new_city_country"
+                className={`${inputCls} min-h-11`}
+              >
+                {data.countries.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {flagOf(c.code)} {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="venue-new-city" className={labelCls}>
+                New city
+              </label>
+              <input
+                id="venue-new-city"
+                name="new_city"
+                minLength={2}
+                maxLength={60}
+                placeholder="City name in English"
+                className={`${inputCls} min-h-11`}
+              />
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-radar-purple/75">
+            If you type a new city, it is added and the venue goes in it.
+          </p>
+        </details>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="venue-map" className={labelCls}>
+            Google Maps link
+          </label>
+          <input
+            id="venue-map"
+            name="map_url"
+            type="url"
+            required
+            maxLength={500}
+            placeholder="https://maps.app.goo.gl/…"
+            className={`${inputCls} min-h-11`}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="venue-web" className={labelCls}>
+            Website (optional)
+          </label>
+          <input
+            id="venue-web"
+            name="website"
+            type="url"
+            maxLength={500}
+            placeholder="https://"
+            className={`${inputCls} min-h-11`}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <button className={outlineBtn}>Add venue</button>
+          <span className="text-xs text-radar-purple/75">
+            Venues added here are published at once and can be picked when
+            adding a show.
+          </span>
+        </div>
       </form>
       <p className="text-sm">
         Venues: {data.venues.published} published, {data.venues.pending}{" "}

@@ -677,6 +677,8 @@ set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
 select pg_temp.check(public.admin_settings() is null and public.admin_save_setting('track_count', '8') = 'forbidden',
   'only the super admin reads and changes settings');
+select pg_temp.check(public.admin_add_venue('10000000-0000-0000-0000-000000000001', 'X venue', null, 'https://maps.app.goo.gl/x') = 'forbidden',
+  'only the super admin adds venues here');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = 'aal2';
 select pg_temp.check(public.admin_save_setting('track_count', '8') = 'ok', 'the super admin changes a homepage setting');
@@ -689,6 +691,14 @@ select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001
 select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', 'new giza') = 'exists', 'a city is added only once');
 select pg_temp.check((select slug = 'new-giza' and name = 'New Giza' from public.cities where name = 'New Giza'), 'a new city gets a clean name and address');
 select pg_temp.check(jsonb_array_length(public.admin_settings() -> 'super_admins') >= 1, 'the settings list the super admins');
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'The Room', 'https://theroom.example', 'https://maps.app.goo.gl/abc123') = 'ok',
+  'the super admin adds a venue');
+select pg_temp.check(public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'the room', null, 'https://maps.app.goo.gl/abc123') = 'exists'
+                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', null, 'https://evil.example/maps') = 'bad_value'
+                     and public.admin_add_venue((select id from public.cities where name = 'New Giza'), 'Other', 'javascript:alert(1)', 'https://www.google.com/maps/place/x') = 'bad_value',
+  'a venue needs a new name, a Google Maps link and a web address');
+select pg_temp.check((select status = 'published' and slug = 'the-room-new-giza' and website = 'https://theroom.example' from public.venues where name = 'The Room'),
+  'a venue added by the super admin is published');
 set local request.jwt.claim.aal = '';
 reset role;
 

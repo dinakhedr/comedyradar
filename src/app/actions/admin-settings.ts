@@ -67,3 +67,58 @@ export async function addCity(form: FormData): Promise<void> {
     `/admin/settings?msg=${r === "ok" ? "city_added" : r === "exists" ? "city_exists" : r === "bad_value" ? "bad_value" : "error"}#locations`,
   );
 }
+
+/** Adds a published venue to a city: name, optional website, Google Maps link. */
+export async function addVenue(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const back = (msg: string) =>
+    redirect(`/admin/settings?msg=${msg}#locations`);
+  let city = text(form.get("city_id"));
+  const newCity = text(form.get("new_city"))
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+  if (newCity) {
+    // A city that is not in the list yet: add it first (or use it if it already exists).
+    const country = text(form.get("new_city_country"));
+    if (!UUID.test(country)) return back("venue_city");
+    const added = await run("admin_add_city", {
+      p_country_id: country,
+      p_name: newCity,
+    });
+    if (added !== "ok" && added !== "exists") return back("venue_city");
+    const slug = newCity
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("cities")
+      .select("id, name, slug")
+      .eq("country_id", country);
+    const found = (data ?? []).find(
+      (c: { slug: string; name: string }) =>
+        c.slug === slug || c.name.toLowerCase() === newCity.toLowerCase(),
+    ) as { id: string } | undefined;
+    if (!found) return back("venue_city");
+    city = found.id;
+  }
+  if (!UUID.test(city)) return back("venue_city");
+  const r = await run("admin_add_venue", {
+    p_city_id: city,
+    p_name: text(form.get("name")).slice(0, 140),
+    p_website: text(form.get("website")).trim().slice(0, 500) || null,
+    p_map_url: text(form.get("map_url")).trim().slice(0, 500),
+  });
+  back(
+    r === "ok"
+      ? newCity
+        ? "venue_city_added"
+        : "venue_added"
+      : r === "exists"
+        ? "venue_exists"
+        : r === "bad_value"
+          ? "venue_bad"
+          : "error",
+  );
+}

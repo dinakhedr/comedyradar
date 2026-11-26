@@ -229,6 +229,7 @@ export type AdminVenueRow = {
   country_code: string;
   address: string | null;
   map_url: string | null;
+  website: string | null;
   upcoming: number;
   added_by: string | null;
 };
