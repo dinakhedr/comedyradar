@@ -1,14 +1,14 @@
 import Link from "next/link";
 import type { ShowRow } from "@/lib/data/types";
 import { formatShowDateLine } from "@/lib/dates";
-import { cardBadge, performerHref, showHref } from "@/lib/show-display";
+import { cardBadge, performerHref, showHref, type BadgeInfo } from "@/lib/show-display";
 import { Badge } from "./badge";
 import { CoverImage } from "./placeholder-image";
 import { TicketButton } from "./ticket-button";
 
 /** Coming up card: a grid card on desktop, a compact row on mobile. No prices. */
-export function ShowCard({ show, now }: { show: ShowRow; now: Date }) {
-  const badge = cardBadge(show);
+export function ShowCard({ show, now, badge: override }: { show: ShowRow; now: Date; badge?: BadgeInfo | null }) {
+  const badge = override !== undefined ? override : cardBadge(show);
   const dateLine = formatShowDateLine(new Date(show.starts_at), now);
   const performer = performerHref(show);
   const place = [show.venue_name, show.city_name].filter(Boolean).join(", ");
