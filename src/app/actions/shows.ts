@@ -1,6 +1,6 @@
 "use server";
 
-import { updateTag } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { photoError, text, UUID } from "@/lib/profile-server";
@@ -135,4 +135,5 @@ export async function updateShowStatus(form: FormData): Promise<void> {
   const { error } = await supabase.from("shows").update({ status: to[action] }).in("id", ids).in("status", from[action]);
   if (error) console.error("updateShowStatus", error.message);
   updateTag("shows");
+  refresh();
 }

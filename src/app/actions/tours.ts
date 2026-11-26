@@ -1,6 +1,6 @@
 "use server";
 
-import { updateTag } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { slugify } from "@/lib/profile-forms";
@@ -224,4 +224,5 @@ export async function setShowsTour(form: FormData): Promise<void> {
   }
   updateTag("shows");
   updateTag("tours");
+  refresh();
 }

@@ -6,6 +6,7 @@ import { card, ProfileCard, StatTile, Tag, yellowBtn } from "@/components/dashbo
 import { firstName, pickProfile, SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
 import { countIncomingRequests, getMyProfiles, getOverview, requireAccount, type DashboardShow } from "@/lib/data/dashboard";
+import { getMyInvites } from "@/lib/data/team";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -63,11 +64,12 @@ function ShowsTable({ shows }: { shows: DashboardShow[] }) {
 
 async function OverviewContent({ searchParams }: { searchParams: PageProps<"/dashboard">["searchParams"] }) {
   const sp = await searchParams;
-  const [account, profiles, requests] = await Promise.all([requireAccount(), getMyProfiles(), countIncomingRequests()]);
+  const [account, profiles, requests, invites] = await Promise.all([requireAccount(), getMyProfiles(), countIncomingRequests(), getMyInvites()]);
   const picked = pickProfile(profiles, sp.p);
   const o = await getOverview(profiles, picked);
   const welcome = sp.welcome === "1";
   const passwordUpdated = sp.password === "updated";
+  const team = sp.team === "joined" ? "You joined the team. Their profiles are now in your dashboard." : sp.team === "declined" ? "You declined the invitation." : null;
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -76,6 +78,19 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
           {welcome ? "Your email is confirmed. Welcome to Comedy Radar!" : "Your new password is saved."}
         </p>
       )}
+      {team && (
+        <p role="status" className="rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
+          {team}
+        </p>
+      )}
+      {invites.map((i) => (
+        <p key={i.token} className="rounded-card border-2 border-laugh-pink bg-white px-4 py-3 font-bold">
+          {i.owner_name} invited you to their team.{" "}
+          <Link href={`/team/invite/${i.token}`} className="font-extrabold underline">
+            See the invitation
+          </Link>
+        </p>
+      ))}
       {account.is_suspended && (
         <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
           This account is suspended. Please contact comedyradarnetwork@gmail.com.
