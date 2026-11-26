@@ -6,9 +6,9 @@ import { buildSpotlight, type SpotlightSlide } from "@/lib/spotlight";
 import type { City, ShowRow, TourRow, TrackItem } from "./types";
 
 // Listing data revalidates every 10 minutes (spec section 12).
-const LISTING_CACHE = { stale: 60, revalidate: 600, expire: 3600 };
+export const LISTING_CACHE = { stale: 60, revalidate: 600, expire: 3600 };
 
-const SHOW_COLUMNS =
+export const SHOW_COLUMNS =
   "id, slug, title, starts_at, status, zone, display_signal, ticket_url, poster_url, tour_id, " +
   "city_name, city_slug, country_code, venue_name, headliner_type, headliner_name, headliner_slug, " +
   "headliner_photo_url, comedian_ids, group_ids, performer_count";
