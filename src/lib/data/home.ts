@@ -67,7 +67,7 @@ export async function getCities(): Promise<City[]> {
 }
 
 /** Coming up: the next N published shows for the hero filters, soonest first. */
-export async function getComingUp(when: WhenFilter, city: string | null, limit: number): Promise<ShowRow[]> {
+export async function getComingUp(when: WhenFilter, city: string | null, limit: number, country: string | null = null): Promise<ShowRow[]> {
   "use cache";
   cacheLife(LISTING_CACHE);
   cacheTag("shows");
@@ -82,6 +82,7 @@ export async function getComingUp(when: WhenFilter, city: string | null, limit: 
     .order("starts_at")
     .limit(limit);
   if (city) q = q.eq("city_slug", city);
+  else if (country) q = q.eq("country_code", country);
   const { data, error } = await q;
   if (error) console.error("getComingUp", error.message);
   return (data ?? []) as unknown as ShowRow[];

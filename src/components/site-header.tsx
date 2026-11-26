@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCities } from "@/lib/data/home";
-import { CitySelect } from "./city-select";
+import { countriesOf } from "@/lib/countries";
+import { CountrySelect } from "./country-select";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 import { NAV_LINKS } from "./nav-links";
@@ -19,8 +20,8 @@ export async function SiteHeader() {
         ))}
       </nav>
       <div className="hidden items-center gap-3 md:flex">
-        <Suspense fallback={<div className="h-11 w-36 rounded-button border-2 border-plum-line" />}>
-          <CitySelect cities={cities} variant="header" id="header-city" />
+        <Suspense fallback={<div className="h-11 w-32 rounded-button border-2 border-plum-line" />}>
+          <CountrySelect countries={countriesOf(cities)} id="header-country" />
         </Suspense>
         <Link
           href="/signin"

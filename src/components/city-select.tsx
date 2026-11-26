@@ -5,16 +5,15 @@ import type { City } from "@/lib/data/types";
 import { ChevronDown } from "./icons";
 
 /**
- * City dropdown. Changing it updates the "city" filter in the address
+ * City dropdown (homepage filter chips). Changing it updates the "city" filter in the address
  * (e.g. /?when=month&city=cairo), so the Coming up list follows it.
  */
 export function CitySelect({
   cities,
-  variant,
   id,
 }: {
   cities: City[];
-  variant: "header" | "chip";
+  variant: "chip";
   id: string;
 }) {
   const router = useRouter();
@@ -30,8 +29,6 @@ export function CitySelect({
     router.push(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
   };
 
-  const allLabel = variant === "header" ? (cities[0] ? `All of ${cities[0].country_name}` : "Egypt") : "All cities";
-
   return (
     <div className="relative inline-flex">
       <label htmlFor={id} className="sr-only">
@@ -41,18 +38,14 @@ export function CitySelect({
         id={id}
         value={current}
         onChange={(e) => onChange(e.target.value)}
-        className={`min-h-11 cursor-pointer appearance-none border-2 border-plum-line pr-9 font-bold text-white ${
-          variant === "header"
-            ? "rounded-button bg-transparent py-2.5 pl-4 text-[15px]"
-            : "rounded-full bg-radar-plum py-2.5 pl-5 text-sm md:text-[15px]"
-        }`}
+        className="min-h-11 cursor-pointer appearance-none rounded-full border-2 border-plum-line bg-radar-plum py-2.5 pr-9 pl-5 text-sm font-bold text-white md:text-[15px]"
       >
         <option value="" className="bg-radar-purple">
-          {allLabel}
+          All cities
         </option>
         {cities.map((c) => (
           <option key={c.id} value={c.slug} className="bg-radar-purple">
-            {variant === "header" ? `${c.name}, ${c.country_name}` : c.name}
+            {c.name}
           </option>
         ))}
       </select>
