@@ -660,6 +660,7 @@ create table profile_name_changes (
   check ((comedian_id is null) <> (group_id is null))
 );
 -- comedians / comedy_groups also have archive_requested_at timestamptz ("Request archive").
+-- comedians / comedy_groups also have cover_url text (wide cover; the group page header uses it, falling back to photo_url).
 
 -- Consent requests between profiles (group member, lineup tag, podcast co-host)
 create table link_requests (

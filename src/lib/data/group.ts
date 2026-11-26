@@ -21,6 +21,8 @@ export type GroupDetail = Socials & {
   slug: string;
   bio: string | null;
   photo_url: string | null;
+  /** Wide header photo (falls back to the main photo). */
+  cover_url: string | null;
   country_name: string | null;
   styles: GroupStyle[];
   performing_language: GroupLanguage | null;
@@ -48,7 +50,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
   const { data, error } = await db
     .from("comedy_groups")
     .select(
-      "id, name, slug, bio, photo_url, styles, performing_language, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
+      "id, name, slug, bio, photo_url, cover_url, styles, performing_language, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
         "group_members(display_order, left_on, comedians(id, name, slug, photo_url, status))",
     )
     .eq("slug", slug)
@@ -62,6 +64,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
     slug: string;
     bio: string | null;
     photo_url: string | null;
+    cover_url: string | null;
     countries: { name: string } | null;
     styles: string[] | null;
     performing_language: string | null;
@@ -104,6 +107,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
     slug: g.slug,
     bio: g.bio,
     photo_url: g.photo_url,
+    cover_url: g.cover_url ?? null,
     country_name: g.countries?.name ?? null,
     styles: cleanStyles(g.styles),
     performing_language: isGroupLanguage(g.performing_language) ? g.performing_language : null,

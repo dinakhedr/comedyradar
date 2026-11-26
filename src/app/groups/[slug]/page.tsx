@@ -110,7 +110,7 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
       {/* Group header card */}
       <section className={`${container} pb-6 md:pb-8`}>
         <div className="overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px]">
-          <CoverImage src={g.photo_url} alt={`${g.name}`} iconSize={80} tone="deep" className="h-[220px] w-full md:h-[340px]" />
+          <CoverImage src={g.cover_url ?? g.photo_url} alt={`${g.name}`} iconSize={80} tone="deep" className="h-[220px] w-full md:h-[340px]" />
           <div className="flex flex-col gap-5 p-4 md:grid md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start md:gap-9 md:px-9 md:py-8">
             <div className="flex flex-col gap-3.5">
               <div className="flex flex-wrap gap-1.5 md:gap-2">

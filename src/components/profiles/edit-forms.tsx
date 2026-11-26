@@ -25,6 +25,7 @@ export type EditValues = {
   name_ar: string | null;
   bio: string | null;
   photo_url: string | null;
+  cover_url: string | null;
   home_country_id: string | null;
   instagram_url: string | null;
   tiktok_url: string | null;
@@ -66,7 +67,23 @@ function TextArea({ label, name, rows, maxLength, defaultValue, error }: { label
   );
 }
 
-function ImageField({ label, name, hint, current, removable, error }: { label: string; name: string; hint: string; current: string | null; removable?: boolean; error?: string }) {
+function ImageField({
+  label,
+  name,
+  hint,
+  current,
+  removable,
+  wide,
+  error,
+}: {
+  label: string;
+  name: string;
+  hint: string;
+  current: string | null;
+  removable?: boolean;
+  wide?: boolean;
+  error?: string;
+}) {
   const id = useId();
   return (
     <div className="flex flex-col gap-2">
@@ -74,7 +91,7 @@ function ImageField({ label, name, hint, current, removable, error }: { label: s
         {label}
       </label>
       <div className="flex flex-wrap items-center gap-4">
-        <span className="h-20 w-20 shrink-0 overflow-hidden rounded-full">
+        <span className={`shrink-0 overflow-hidden ${wide ? "h-20 w-40 rounded-xl" : "h-20 w-20 rounded-full"}`}>
           <CoverImage src={current} alt="" iconSize={28} className="h-full w-full" tone="deep" />
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
@@ -92,7 +109,7 @@ function ImageField({ label, name, hint, current, removable, error }: { label: s
           {removable && current && (
             <label className="flex min-h-11 items-center gap-3 text-sm font-bold">
               <input type="checkbox" name={`remove_${name}`} className="h-5 w-5 accent-radar-purple" />
-              Remove the current photo
+              Remove the current {wide ? "cover" : "photo"}
             </label>
           )}
         </div>
@@ -126,6 +143,19 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
           current={p.photo_url}
           removable
           error={e.photo}
+        />
+        <ImageField
+          label="Cover photo"
+          name="cover"
+          hint={
+            group
+              ? "A wide photo for the top of your group page (3:1 works best). JPG, PNG or WebP, up to 10 MB."
+              : "A wide photo (3:1 works best), saved for your page. JPG, PNG or WebP, up to 10 MB."
+          }
+          current={p.cover_url}
+          removable
+          wide
+          error={e.cover}
         />
         <TextField label={group ? "Group name in English" : "Name in English"} name="name" required error={e.name} defaultValue={p.name} />
         <TextField label={group ? "Group name in Arabic" : "Name in Arabic"} name="name_ar" lang="ar" dir="rtl" error={e.name_ar} defaultValue={p.name_ar ?? ""} />
