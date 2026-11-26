@@ -17,7 +17,12 @@ import {
   Tag,
   yellowBtn,
 } from "@/components/dashboard/ui";
-import { CloseIcon, EditIcon, ExternalIcon } from "@/components/icons";
+import {
+  CloseIcon,
+  EditIcon,
+  ExternalIcon,
+  StarIcon,
+} from "@/components/icons";
 import {
   CONTENT_STATUSES,
   contentStatusOf,
@@ -30,6 +35,7 @@ import {
   showTab,
   SIGNALS,
   ticketCheck,
+  isFuture,
   ZONES,
   zoneOf,
   type ShowTab,
@@ -694,6 +700,17 @@ async function ShowsTab({ sp, link }: Ctx) {
                                   <ExternalIcon />
                                 </a>
                               )}
+                              {r.status === "published" &&
+                                isFuture(r.starts_at) && (
+                                  <Link
+                                    href={`/admin/spotlight?show=${r.id}#new`}
+                                    className={iconBtn}
+                                    aria-label={`Add ${r.title} to the Spotlight`}
+                                    title="Add to the Spotlight"
+                                  >
+                                    <StarIcon />
+                                  </Link>
+                                )}
                               <Link
                                 href={here({ s: r.id })}
                                 className={iconBtn}
@@ -715,9 +732,6 @@ async function ShowsTab({ sp, link }: Ctx) {
                   Showing the first 300. Use the filters to narrow the list.
                 </p>
               )}
-              <p className="text-sm text-radar-purple/75">
-                Adding a show to the Spotlight comes with the Spotlight page.
-              </p>
             </>
           )}
         </section>
