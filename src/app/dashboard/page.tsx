@@ -1,22 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { card, ProfileCard, Tag, yellowBtn } from "@/components/dashboard/ui";
+import { card, ProfileCard, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { firstName, pickProfile, SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
 import { countIncomingRequests, getMyProfiles, getOverview, requireAccount, type DashboardShow } from "@/lib/data/dashboard";
 
 export const metadata: Metadata = { title: "Overview" };
-
-function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {
-  return (
-    <div className={`${card} flex flex-col gap-1`}>
-      <span className="text-sm font-bold text-radar-purple/75">{label}</span>
-      <span className="font-display text-[34px] leading-none md:text-[40px]">{value.toLocaleString("en")}</span>
-      {note && <span className="text-xs text-radar-purple/70">{note}</span>}
-    </div>
-  );
-}
 
 function ShowsTable({ shows }: { shows: DashboardShow[] }) {
   return (
@@ -126,7 +116,9 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
           Quick actions
         </h2>
         <div className="flex flex-wrap gap-2.5">
-          <SoonButton>Add a show</SoonButton>
+          <Link href="/dashboard/shows/new" className={yellowBtn}>
+            Add a show
+          </Link>
           <SoonButton>Add a tour</SoonButton>
           <Link href="/dashboard/profiles/new" className={yellowBtn}>
             Create or claim a profile
@@ -166,7 +158,10 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
         )}
         {o.upcomingCount > o.upcoming.length && (
           <p className="text-sm text-radar-purple/75">
-            Showing the next {o.upcoming.length} of {o.upcomingCount}. The full list comes with the Shows page.
+            Showing the next {o.upcoming.length} of {o.upcomingCount}.{" "}
+            <Link href="/dashboard/shows" className="font-extrabold underline">
+              See all shows
+            </Link>
           </p>
         )}
       </section>
