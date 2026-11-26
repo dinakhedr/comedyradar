@@ -160,10 +160,10 @@ select pg_temp.check((select link_status = 'accepted' from public.show_performer
                      'tagged profile admin accepts');
 
 -- ---------------------------------------------------------------- dashboard team
--- A adds B to A's dashboard team with "All profiles · Moderator".
+-- B is in A's dashboard team with "All profiles · Moderator" (set up as the
+-- database owner; through the API a membership only starts from an accepted
+-- invitation, tested further down).
 reset role;
-set local role authenticated;
-set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 insert into public.dashboard_members (id, owner_account_id, member_account_id, scope, all_role, status)
 values ('70000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a',
         '00000000-0000-0000-0000-00000000000b', 'all', 'moderator', 'active');
@@ -379,5 +379,61 @@ reset role;
 select pg_temp.check((select name = 'Style Test Crew' and status = 'published' and archive_requested_at > now() - interval '1 minute'
                       from public.comedy_groups where slug = 'style-test'),
   'the old name stays, the admin cannot archive, and "request archive" is dated now');
+
+-- Team and access (dashboard part 6). Account A (admin of 'style-test') invites B.
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+insert into public.dashboard_members (owner_account_id, member_account_id, invite_email, scope, selected, status)
+select '00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000b', ' B@Test ', 'selected',
+       jsonb_build_array(jsonb_build_object('kind', 'group', 'id', id, 'role', 'moderator')), 'active'
+from public.comedy_groups where slug = 'style-test';
+select pg_temp.check((select owner_account_id = '00000000-0000-0000-0000-00000000000a' and member_account_id is null
+                             and status = 'invited' and invite_email = 'b@test' and expires_at > now() + interval '6 days'
+                      from public.dashboard_members where invite_email = 'b@test'),
+  'an invitation is always an open invitation from the owner, for a cleaned-up email');
+do $$ begin
+  update public.dashboard_members set status = 'active';
+  raise exception 'FAILED: the owner activated an invitation';
+exception when insufficient_privilege then
+  raise notice 'ok - only the invited person can accept';
+end $$;
+select pg_temp.check((select count(*) = 1 and min(status) = 'invited' and min(token::text) is not null from public.my_team()),
+  'the owner sees the invitation and its link');
+create temp table t_invite on commit drop as select token from public.dashboard_members where invite_email = 'b@test';
+grant select on t_invite to authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select pg_temp.check(public.answer_team_invite((select token from t_invite), true) = 'wrong_email',
+  'an invitation works only for the invited email');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select for_me and owner_name = 'User A' and jsonb_array_length(profiles) = 1 from public.team_invite((select token from t_invite))),
+  'the invited person sees who invited them and to what');
+select pg_temp.check((select count(*) = 1 from public.my_team_invites()), 'the invitation waits in the invited person''s requests');
+select pg_temp.check(public.answer_team_invite((select token from t_invite), true) = 'ok', 'the invited person accepts');
+select pg_temp.check((select private.can_manage_group(id) and not private.is_profile_admin(id, id)
+                      from public.comedy_groups where slug = 'style-test'),
+  'accepting gives the chosen role on the chosen profiles');
+select pg_temp.check(public.answer_team_invite((select token from t_invite), true) = 'not_found', 'a link works once');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.dashboard_members set status = 'removed' where invite_email = 'b@test';
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select not private.can_manage_group(id) from public.comedy_groups where slug = 'style-test'),
+  'a removed team member loses access at once');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+insert into public.dashboard_members (invite_email, scope, all_role) values ('b@test', 'all', 'moderator');
+reset role;
+update public.dashboard_members set expires_at = now() - interval '1 day' where status = 'invited';
+create temp table t_invite2 on commit drop as select token from public.dashboard_members where status = 'invited';
+grant select on t_invite2 to authenticated;
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.answer_team_invite((select token from t_invite2), true) = 'expired',
+  'an invitation expires after 7 days');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.dashboard_members set status = 'invited' where status = 'expired';
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.answer_team_invite((select token from public.my_team_invites()), true) = 'ok', 'an invitation sent again can be accepted');
+select pg_temp.check((select private.can_manage_group(id) from public.comedy_groups where slug = 'style-test'),
+  'sending again gives 7 more days, and "all profiles" covers the owner''s profiles');
+reset role;
 
 rollback;

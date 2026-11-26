@@ -8,7 +8,7 @@ const ITEMS: { href: string; label: string; soon?: boolean; requests?: boolean }
   { href: "/dashboard/shows", label: "Shows" },
   { href: "/dashboard/tours", label: "Tours" },
   { href: "/dashboard/profiles", label: "Profiles" },
-  { href: "/dashboard/team", label: "Team and access", soon: true },
+  { href: "/dashboard/team", label: "Team and access" },
   { href: "/dashboard/requests", label: "Requests", soon: true, requests: true },
   { href: "/dashboard/spotlight", label: "Spotlight", soon: true },
 ];
