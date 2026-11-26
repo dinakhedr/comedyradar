@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { accountAction, sendPasswordReset } from "@/app/actions/admin-accounts";
+import {
+  accountAction,
+  sendPasswordReset,
+  setAccountType,
+} from "@/app/actions/admin-accounts";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon } from "@/components/icons";
@@ -36,6 +40,7 @@ const MSG: Record<string, [string, boolean]> = {
     true,
   ],
   unsuspend: ["Suspension lifted.", true],
+  type_saved: ["Account type changed.", true],
   reset_sent: ["Password reset link sent to their email.", true],
   rate_limit: [
     "Too many emails were sent just now. Please try again in a few minutes.",
@@ -230,6 +235,24 @@ async function SidePanel({
           <h3 id="acc-actions" className="font-extrabold">
             Actions
           </h3>
+          <form action={setAccountType} className="flex flex-col gap-1">
+            {hidden}
+            <label htmlFor="acc-type" className="text-sm font-bold">
+              Account type
+            </label>
+            <div className="flex gap-2">
+              <select
+                id="acc-type"
+                name="type"
+                defaultValue={a.type}
+                className={`${inputCls} min-h-11 min-w-0 flex-1 bg-white`}
+              >
+                <option value="comedian">Comedian</option>
+                <option value="manager">Manager or agent</option>
+              </select>
+              <button className={`${outlineBtn} bg-white`}>Save</button>
+            </div>
+          </form>
           <form action={sendPasswordReset}>
             {hidden}
             <button className={`${outlineBtn} w-full bg-white`}>
