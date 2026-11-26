@@ -10,6 +10,7 @@ import { getMyProfiles } from "@/lib/data/dashboard";
 import { getMyTours, type ListedTour } from "@/lib/data/my-tours";
 import { formatMonthRange, formatShowDate } from "@/lib/dates";
 import { TOUR_TABS, tourTab } from "@/lib/tour-forms";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Tours" };
 
@@ -32,12 +33,12 @@ function SavedNote({ sp }: { sp: Record<string, string | string[] | undefined> }
     as === "published" ? "Your tour is live on Comedy Radar." : as === "pending" ? "Your tour is saved and sent to Comedy Radar for review." : "Your tour is saved as a draft. Only your team can see it.";
   const parts = [dates ? `${dates} new ${dates === 1 ? "date" : "dates"} added` : null, imported ? `${imported} existing ${imported === 1 ? "show" : "shows"} joined the tour` : null].filter(Boolean);
   return (
-    <div role="status" className="flex flex-col gap-1 rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
-      <p>
+    <>
+      <SuccessNote>
         {head} {parts.length ? `${parts.join(", ")}.` : ""}
-      </p>
-      {failed > 0 && <p className="font-bold">{failed === 1 ? "1 date" : `${failed} dates`} couldn&apos;t be saved. Please add {failed === 1 ? "it" : "them"} again.</p>}
-    </div>
+      </SuccessNote>
+      {failed > 0 && <ErrorNote>{failed === 1 ? "1 date" : `${failed} dates`} couldn&apos;t be saved. Please add {failed === 1 ? "it" : "them"} again.</ErrorNote>}
+    </>
   );
 }
 

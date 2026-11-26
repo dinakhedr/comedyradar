@@ -46,5 +46,14 @@ Rules: never yellow text on white; never white text on yellow. Proportions about
 - Primary CTA "Get tickets"; tour cards "View tour"; sold out "Join waitlist". No prices on cards (show page only).
 - Social posts: purple background with faint radar waves, logo top left, one big headline with one yellow line, photo in a rounded frame, one yellow call to action.
 
+## Messages (success and error)
+Decided by Dina, 2026-11-26. Success and error messages are never shown in a pill, banner or coloured box.
+- Plain bold text (Nunito 700, 16px; 14–15px inside small forms) with a small line icon on the left, right under the page title or under the form that caused it.
+- Success: green #157A3F with a tick icon.
+- Error: red #D12A1F with a circled "!" icon.
+- Both pass contrast on white and Lavender. Not for use on Radar Purple.
+- Pills stay only for status tags (Published yellow, Pending pink, Archived outline).
+- In code: `SuccessNote` and `ErrorNote` in `src/components/status-note.tsx`; forms use `FormMessage`.
+
 ## Design references
 *Comedy Radar — Design Canvas* (claude.ai artifact), page "Website pages": row 1 public pages, row 2 creator dashboard, row 3 super admin panel, row 4 supporting and system pages. Each page's content is described in the specs.

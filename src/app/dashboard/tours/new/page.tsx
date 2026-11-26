@@ -5,6 +5,7 @@ import { card, yellowBtn } from "@/components/dashboard/ui";
 import { TourForm } from "@/components/tours/tour-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getTourFormOptions } from "@/lib/data/my-tours";
+import { ErrorNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Add a tour" };
 
@@ -13,9 +14,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/t
   const [account, options] = await Promise.all([requireAccount(), getTourFormOptions()]);
   if (account.is_suspended) {
     return (
-      <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
-        This account is suspended. Please contact comedyradarnetwork@gmail.com.
-      </p>
+      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   if (!options.profiles.length) {

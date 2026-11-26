@@ -19,6 +19,7 @@ import {
   topicLabel,
 } from "@/lib/contact";
 import { getAdminMessages, type AdminMessage } from "@/lib/data/admin";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -172,12 +173,11 @@ async function Content({
   return (
     <div className="flex flex-col gap-5">
       {msg && (
-        <p
-          role="status"
-          className={`rounded-button px-4 py-3 font-bold ${msg[1] ? "bg-spotlight-yellow text-radar-purple" : "bg-laugh-pink text-white"}`}
-        >
-          {msg[0]}
-        </p>
+        msg[1] ? (
+          <SuccessNote>{msg[0]}</SuccessNote>
+        ) : (
+          <ErrorNote>{msg[0]}</ErrorNote>
+        )
       )}
       <div className="grid grid-cols-3 gap-3">
         <StatTile label="New" value={data.counts.new} />

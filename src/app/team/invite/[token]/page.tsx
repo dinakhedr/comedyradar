@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { AnswerForm } from "@/components/team/team-forms";
 import { getInvite } from "@/lib/data/team";
 import { ROLES } from "@/lib/team-forms";
+import { ErrorNote } from "@/components/status-note";
 
 export const metadata: Metadata = {
   title: "Team invitation",
@@ -85,9 +86,9 @@ async function Content({ params }: { params: PageProps<"/team/invite/[token]">["
       ) : invite.for_me ? (
         <AnswerForm token={token} />
       ) : (
-        <p role="alert" className="rounded-button bg-lavender px-4 py-3 font-bold">
+        <ErrorNote>
           This invitation was sent to {invite.invite_email}, not to the email you are signed in with. Sign out and sign in with {invite.invite_email} to accept it.
-        </p>
+        </ErrorNote>
       )}
     </>
   );

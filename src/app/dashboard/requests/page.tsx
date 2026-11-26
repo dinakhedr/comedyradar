@@ -11,6 +11,7 @@ import { ROLE_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
 import { getRequests, type IncomingInvite, type SentInvite } from "@/lib/data/requests";
 import { describe, kindOf, REQUEST_KINDS, REQUEST_TABS, requestKind, requestTab, tabOf, TYPE_LABEL, type LinkRequest, type RequestKind, type RequestTab } from "@/lib/requests";
+import { SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Requests" };
 
@@ -161,9 +162,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/r
   return (
     <>
       {done && (
-        <p role="status" className="rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
-          {done}
-        </p>
+        <SuccessNote>{done}</SuccessNote>
       )}
       <section aria-label="Numbers" className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
         <StatTile label="Waiting for you" value={counts.incoming} />

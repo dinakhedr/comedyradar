@@ -5,6 +5,7 @@ import { card, yellowBtn } from "@/components/dashboard/ui";
 import { ShowForm } from "@/components/shows/show-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getEditableShow, getShowFormOptions } from "@/lib/data/my-shows";
+import { ErrorNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Add a show" };
 
@@ -16,9 +17,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
   const [account, options, copy] = await Promise.all([requireAccount(), getShowFormOptions(), from ? getEditableShow(from) : null]);
   if (account.is_suspended) {
     return (
-      <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
-        This account is suspended. Please contact comedyradarnetwork@gmail.com.
-      </p>
+      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   if (!options.profiles.length) {

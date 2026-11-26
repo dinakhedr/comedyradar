@@ -25,6 +25,7 @@ import {
   type AdminAccountRow,
 } from "@/lib/data/admin";
 import { UUID } from "@/lib/profile-server";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Accounts" };
 
@@ -330,12 +331,11 @@ async function Content({
   return (
     <>
       {msg && (
-        <p
-          role="status"
-          className={`rounded-card px-4 py-3 font-extrabold ${msg[1] ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}
-        >
-          {msg[0]}
-        </p>
+        msg[1] ? (
+          <SuccessNote>{msg[0]}</SuccessNote>
+        ) : (
+          <ErrorNote>{msg[0]}</ErrorNote>
+        )
       )}
       <section
         aria-label="Numbers"

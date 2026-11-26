@@ -5,6 +5,7 @@ import { PASSWORD_RULES, passwordStrength, STRENGTH_LABELS } from "@/lib/auth-fo
 
 export { errorCls, inputCls, labelCls, primaryBtn } from "./field-classes";
 import { errorCls, inputCls, labelCls } from "./field-classes";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export function Field({
   label,
@@ -140,15 +141,12 @@ export function PasswordField({
   );
 }
 
+/** A form's result: green text with a tick, or red text with "!" (no box). */
 export function FormMessage({ message, tone = "error" }: { message?: string; tone?: "error" | "ok" }) {
-  return (
-    <p
-      role={tone === "error" ? "alert" : "status"}
-      className={`rounded-button px-3.5 py-2.5 text-[15px] font-bold text-radar-purple empty:hidden ${
-        tone === "error" ? "border-2 border-laugh-pink-deep bg-laugh-pink/10" : "bg-lavender"
-      }`}
-    >
-      {message ?? ""}
-    </p>
+  if (!message) return null;
+  return tone === "ok" ? (
+    <SuccessNote className="text-[15px]">{message}</SuccessNote>
+  ) : (
+    <ErrorNote className="text-[15px]">{message}</ErrorNote>
   );
 }

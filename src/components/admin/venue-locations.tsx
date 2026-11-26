@@ -8,11 +8,11 @@ import { flagOf } from "@/lib/countries";
 import type { AdminSettings, AdminVenueRow } from "@/lib/data/admin";
 import {
   EMPTY_VENUE_STATE,
-  errText,
   okText,
   type VenueField,
   type VenueFormState,
 } from "@/lib/venue-forms";
+import { ErrorNote } from "@/components/status-note";
 
 type Country = AdminSettings["countries"][number];
 type City = Country["cities"][number];
@@ -265,9 +265,7 @@ function VenueForm({
         )}
       </div>
       {state.message && !state.ok && (
-        <p role="alert" className={errText}>
-          {state.message}
-        </p>
+        <ErrorNote className="text-sm">{state.message}</ErrorNote>
       )}
       <div className="flex items-center gap-4">
         <SaveButton pending={pending} />

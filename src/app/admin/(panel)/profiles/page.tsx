@@ -7,6 +7,7 @@ import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Profiles" };
 
@@ -193,9 +194,11 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
   return (
     <>
       {msg && (
-        <p role="status" className={`rounded-card px-4 py-3 font-extrabold ${one(sp.msg) === "saved" || one(sp.msg) === "added" ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}>
-          {msg}
-        </p>
+        ["saved", "deleted", "added"].includes(one(sp.msg)) ? (
+          <SuccessNote>{msg}</SuccessNote>
+        ) : (
+          <ErrorNote>{msg}</ErrorNote>
+        )
       )}
       <section aria-label="Numbers" className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         <StatTile label="Comedians" value={data.stats.comedians} />

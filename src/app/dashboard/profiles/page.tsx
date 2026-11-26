@@ -7,6 +7,7 @@ import { CopyLink } from "@/components/profiles/claim-form";
 import { getMyProfiles } from "@/lib/data/dashboard";
 import { getMyClaims, type MyClaim } from "@/lib/data/profiles";
 import { PROOF_METHODS } from "@/lib/profile-forms";
+import { SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Profiles" };
 
@@ -61,9 +62,9 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/p
   return (
     <>
       {created && (
-        <p role="status" className="rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
+        <SuccessNote>
           Your profile is saved. Comedy Radar will review it before it goes live; drafts stay private until you send them.
-        </p>
+        </SuccessNote>
       )}
       <section aria-labelledby="mine" className={`${card} flex flex-col gap-4`}>
         <h2 id="mine" className="text-heading font-extrabold">

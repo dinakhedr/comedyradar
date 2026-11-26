@@ -4,7 +4,7 @@
  */
 
 /** Green and red plain text for results (no pills). */
-export const okText = "text-sm font-bold text-[#1f9d55]";
+export const okText = "text-sm font-bold text-[#157a3f]";
 export const errText = "text-sm font-bold text-[#d12a1f]";
 
 export const VENUE_FIELDS = [

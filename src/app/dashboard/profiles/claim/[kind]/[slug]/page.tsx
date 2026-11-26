@@ -7,6 +7,7 @@ import { CoverImage } from "@/components/placeholder-image";
 import { ClaimForm } from "@/components/profiles/claim-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getClaimTarget } from "@/lib/data/profiles";
+import { ErrorNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Claim a profile" };
 
@@ -37,9 +38,7 @@ async function Content({ params }: { params: PageProps<"/dashboard/profiles/clai
         </p>
       )}
       {account.is_suspended ? (
-        <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
-          This account is suspended. Please contact comedyradarnetwork@gmail.com.
-        </p>
+        <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
       ) : (
         <ClaimForm kind={kind} profileId={target.id} profileName={target.name} email={account.email} />
       )}
