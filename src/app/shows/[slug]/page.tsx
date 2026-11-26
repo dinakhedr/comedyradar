@@ -11,6 +11,8 @@ import { ShowActions } from "@/components/show/show-actions";
 import { StickyTicketBar } from "@/components/show/sticky-ticket-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TrackedLink } from "@/components/analytics/tracked-link";
+import { ticketsClickEvent } from "@/lib/analytics-events";
 import { formatShowDate } from "@/lib/dates";
 import { getRelatedShows, getShow, type Person, type ShowDetail } from "@/lib/data/show";
 import type { ShowRow } from "@/lib/data/types";
@@ -79,17 +81,24 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
     );
   }
   return (
-    <a
+    <TrackedLink
       id={id}
       href={show.ticket_url}
       target="_blank"
       rel="noopener"
+      event={ticketsClickEvent({
+        id: show.id,
+        title: show.title,
+        performer: show.performers[0]?.name,
+        city: show.city.name,
+        zone: show.zone,
+      })}
       className={`block rounded-[14px] bg-spotlight-yellow text-center font-extrabold text-radar-purple hover:bg-white ${
         compact ? "px-[18px] py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"
       }`}
     >
       Get tickets
-    </a>
+    </TrackedLink>
   );
 }
 

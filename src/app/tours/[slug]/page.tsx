@@ -205,7 +205,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
           Tour <span className="text-spotlight-yellow">dates</span>
         </h2>
         {upcoming.length > 0 ? (
-          <TourDates dates={upcoming} nowIso={now.toISOString()} />
+          <TourDates dates={upcoming} nowIso={now.toISOString()} performer={tour.owner.name} />
         ) : (
           <p className="rounded-card bg-radar-plum p-5 text-base text-lavender-text">
             No upcoming dates right now. New dates will show up here as soon as they are announced.

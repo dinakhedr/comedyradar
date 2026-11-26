@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ShowRow } from "@/lib/data/types";
+import { ticketsClickEvent } from "@/lib/analytics-events";
 import { showHref, ticketLink } from "@/lib/show-display";
+import { TrackedLink } from "./analytics/tracked-link";
 
 const sizes = {
   sm: "px-4 py-2.5 text-sm",
@@ -10,7 +12,7 @@ const sizes = {
 
 /**
  * Yellow "Get tickets" (or outline "Join waitlist" when sold out).
- * Ticket links open the official seller in a new tab.
+ * Ticket links open the official seller in a new tab and send `get_tickets_click`.
  */
 export function TicketButton({
   show,
@@ -40,15 +42,22 @@ export function TicketButton({
   const cls = `inline-flex min-h-11 items-center rounded-button bg-spotlight-yellow font-extrabold text-radar-purple hover:bg-white ${sizes[size]} ${width}`;
   if (link.external) {
     return (
-      <a
+      <TrackedLink
         href={link.href}
         target="_blank"
         rel={sponsored ? "noopener sponsored" : "noopener"}
         className={cls}
         aria-label={`Get tickets for ${show.title}`}
+        event={ticketsClickEvent({
+          id: show.id,
+          title: show.title,
+          performer: show.headliner_name,
+          city: show.city_name,
+          zone: show.zone,
+        })}
       >
         Get tickets
-      </a>
+      </TrackedLink>
     );
   }
   return (
