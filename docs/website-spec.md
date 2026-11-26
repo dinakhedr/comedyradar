@@ -471,6 +471,8 @@ create table shows (
   description text,
   starts_at timestamptz not null,
   ends_at timestamptz,
+  doors_at timestamptz,               -- when doors open (optional)
+  good_to_know text[] default '{}',     -- seating, parking, refunds, photo rules
   venue_id uuid references venues(id),
   city_id uuid references cities(id) not null,
   zone show_zone not null,

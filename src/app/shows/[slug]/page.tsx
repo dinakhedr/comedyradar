@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/badge";
+import { Avatar, LineupCard } from "@/components/lineup-card";
 import { NewsletterBand } from "@/components/newsletter-band";
 import { CoverImage } from "@/components/placeholder-image";
 import { ShowCard } from "@/components/show-card";
@@ -92,16 +93,6 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
   );
 }
 
-function Avatar({ person, ring, size }: { person: Person; ring: "yellow" | "pink"; size: string }) {
-  return (
-    <span
-      className={`block shrink-0 overflow-hidden rounded-full border-[3px] ${ring === "yellow" ? "border-spotlight-yellow" : "border-laugh-pink"} ${size}`}
-    >
-      <CoverImage src={person.photo_url} alt="" iconSize={28} className="h-full w-full" tone="deep" />
-    </span>
-  );
-}
-
 function PerformerRow({ show }: { show: ShowDetail }) {
   const main = show.performers[0];
   if (!main) return null;
@@ -141,7 +132,7 @@ function DetailsPanel({ show }: { show: ShowDetail }) {
         <CalendarIcon />
         <div>
           <p className={`text-[15px] font-extrabold md:text-base ${strike}`}>{formatLongDate(starts)}</p>
-          <p className={`text-[13px] text-lavender-text md:text-small ${cancelled ? "line-through" : ""}`}>{timeLine(starts, ends)}</p>
+          <p className={`text-[13px] text-lavender-text md:text-small ${cancelled ? "line-through" : ""}`}>{timeLine(starts, ends, show.doors_at ? new Date(show.doors_at) : null)}</p>
         </div>
       </div>
       <div className="flex gap-3">
@@ -194,56 +185,18 @@ function DetailsPanel({ show }: { show: ShowDetail }) {
 
 function OnStage({ show }: { show: ShowDetail }) {
   if (show.performers.length === 0) return null;
-  const group = show.performers.find((p) => p.kind === "group");
+  const group = show.performers.find((p) => p.kind === "group") ?? null;
   const comedians: Person[] = [
     ...(group && group.kind === "group" ? group.members : []),
     ...show.performers.filter((p) => p.kind === "comedian"),
   ].filter((p, i, all) => all.findIndex((x) => x.id === p.id) === i);
-
-  const circles = (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-3.5 sm:grid-cols-4 md:grid-cols-5 md:gap-5">
-      {comedians.map((c, i) => (
-        <li key={c.id}>
-          <Link href={`/comedians/${c.slug}`} className="group flex flex-col items-center gap-1.5 text-center">
-            <Avatar person={c} ring={i % 2 === 0 ? "pink" : "yellow"} size="h-[72px] w-[72px] md:h-[88px] md:w-[88px]" />
-            <span className="text-[13px] font-extrabold group-hover:text-spotlight-yellow md:text-[15px]">{c.name}</span>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
 
   return (
     <section aria-labelledby="on-stage" className={`${container} flex flex-col gap-3 pb-8 md:gap-5 md:pb-14`}>
       <h2 id="on-stage" className={h2}>
         On <span className="text-spotlight-yellow">stage</span>
       </h2>
-      <div
-        className={`flex flex-col gap-3.5 rounded-[18px] bg-radar-plum p-4 md:rounded-[24px] md:p-6 ${
-          group ? "md:grid md:grid-cols-[280px_minmax(0,1fr)] md:items-center md:gap-7" : ""
-        }`}
-      >
-        {group && (
-          <div className="flex items-center gap-3 md:flex-col md:items-stretch md:gap-2.5">
-            <CoverImage
-              src={group.photo_url}
-              alt=""
-              iconSize={36}
-              className="h-16 w-16 shrink-0 rounded-[14px] md:h-[180px] md:w-full md:rounded-[18px]"
-            />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <Badge tone="yellow">Group</Badge>
-                <span className="text-[17px] font-extrabold">{group.name}</span>
-              </div>
-              <Link href={`/groups/${group.slug}`} className="text-small font-extrabold text-spotlight-yellow hover:text-white">
-                View group page ›
-              </Link>
-            </div>
-          </div>
-        )}
-        {comedians.length > 0 && circles}
-      </div>
+      <LineupCard group={group} comedians={comedians} />
     </section>
   );
 }
@@ -366,6 +319,7 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
   const groupIds = show.performers.filter((p) => p.kind === "group").map((p) => p.id);
   const related = await getRelatedShows(show.id, show.city.slug, comedianIds, groupIds);
   const about = paragraphs(show.description);
+  const goodToKnow = (show.good_to_know ?? []).map((x) => x.trim()).filter(Boolean);
   const main = show.performers[0];
   const location = [show.venue?.name, show.venue?.address, show.city.name].filter(Boolean).join(", ");
 
@@ -461,18 +415,32 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
         </div>
       </section>
 
-      {about.length > 0 && (
-        <section aria-labelledby="about-show" className={`${container} flex flex-col gap-2.5 pb-8 md:gap-3.5 md:pb-14`}>
-          <h2 id="about-show" className={h2}>
-            About the show
-          </h2>
-          <div className="flex max-w-[760px] flex-col gap-3 text-[15px] leading-6 text-lavender md:text-[17px] md:leading-7">
-            {about.map((p, i) => (
-              <p key={i} className="whitespace-pre-line">
-                {p}
-              </p>
-            ))}
-          </div>
+      {(about.length > 0 || goodToKnow.length > 0) && (
+        <section className={`${container} grid gap-6 pb-8 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:gap-10 md:pb-14`}>
+          {about.length > 0 && (
+            <div className="flex flex-col gap-2.5 md:gap-3.5">
+              <h2 id="about-show" className={h2}>
+                About the show
+              </h2>
+              <div className="flex flex-col gap-3 text-[15px] leading-6 text-lavender md:text-[17px] md:leading-7">
+                {about.map((p, i) => (
+                  <p key={i} className="whitespace-pre-line">
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+          {goodToKnow.length > 0 && (
+            <div className="flex flex-col gap-2.5 md:gap-3.5">
+              <h2 className={h2}>Good to know</h2>
+              <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-[21px] text-lavender md:gap-2 md:text-base md:leading-6">
+                {goodToKnow.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 

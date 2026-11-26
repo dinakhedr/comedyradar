@@ -13,6 +13,8 @@ export type ShowDetail = {
   description: string | null;
   starts_at: string;
   ends_at: string | null;
+  doors_at: string | null;
+  good_to_know: string[];
   status: "published" | "sold_out" | "cancelled";
   zone: "local" | "outbound" | "inbound";
   signal: "none" | "new" | "strong" | "fading";
@@ -67,7 +69,7 @@ export async function getShow(slug: string): Promise<ShowDetail | null> {
   const { data, error } = await db
     .from("shows")
     .select(
-      "id, slug, title, description, starts_at, ends_at, status, zone, signal, created_at, updated_at, price_min, " +
+      "id, slug, title, description, starts_at, ends_at, doors_at, good_to_know, status, zone, signal, created_at, updated_at, price_min, " +
         "price_max, currency, ticket_url, poster_url, language, age_rating, " +
         "cities!inner(name, slug, countries!inner(name, code)), " +
         "venues(name, slug, address, map_url, capacity, status), tours(name, slug, status), " +

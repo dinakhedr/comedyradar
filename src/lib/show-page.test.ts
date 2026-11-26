@@ -49,6 +49,7 @@ describe("small formatters", () => {
     const s = new Date("2026-11-28T19:30:00Z");
     expect(timeLine(s, new Date("2026-11-28T21:00:00Z"))).toBe("Show 9:30 PM · about 90 min");
     expect(timeLine(s, null)).toBe("Show 9:30 PM");
+    expect(timeLine(s, null, new Date("2026-11-28T18:30:00Z"))).toBe("Doors 8:30 PM · Show 9:30 PM");
   });
   it("audience line", () => {
     expect(audienceLine("Arabic", "16+")).toBe("Arabic · 16+");
