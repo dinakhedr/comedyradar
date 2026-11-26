@@ -50,12 +50,12 @@ function SpotlightEmpty() {
               List your shows
             </Link>
             <a
-              href="https://instagram.com/comedyradar"
+              href="https://instagram.com/comedy_radar"
               target="_blank"
               rel="noopener"
               className="inline-flex min-h-11 items-center rounded-button border-2 border-plum-line px-5 py-3 font-bold hover:border-spotlight-yellow"
             >
-              Follow @comedyradar
+              Follow @comedy_radar
             </a>
           </div>
         </div>

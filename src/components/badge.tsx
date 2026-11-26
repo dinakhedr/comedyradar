@@ -1,9 +1,10 @@
-export type BadgeTone = "pink" | "yellow" | "purple" | "outline";
+export type BadgeTone = "pink" | "yellow" | "purple" | "plum" | "outline";
 
 const tones: Record<BadgeTone, string> = {
   pink: "bg-laugh-pink text-radar-purple font-extrabold",
   yellow: "bg-spotlight-yellow text-radar-purple font-extrabold",
   purple: "bg-radar-purple text-white font-bold",
+  plum: "bg-radar-plum text-white font-bold",
   outline: "border border-plum-line text-white font-bold",
 };
 

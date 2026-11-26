@@ -23,7 +23,7 @@ Coverage follows the three zones: shows in Egypt, Egyptian comedians abroad, vis
 
 | Source | How | Notes |
 |---|---|---|
-| **A. Instagram professional accounts** (comedians, groups, venues, promoters on the watch list) | Instagram Graph API **Business Discovery** (`/{ig-user-id}?fields=business_discovery.username(<handle>){media{caption,media_type,media_url,permalink,timestamp,children{media_url}}}`) using the **@comedyradar** professional account | Works only for Business / Creator accounts; personal and age-gated accounts return nothing. Respect the app rate limits; spread calls over the run. |
+| **A. Instagram professional accounts** (comedians, groups, venues, promoters on the watch list) | Instagram Graph API **Business Discovery** (`/{ig-user-id}?fields=business_discovery.username(<handle>){media{caption,media_type,media_url,permalink,timestamp,children{media_url}}}`) using the **@comedy_radar** professional account | Works only for Business / Creator accounts; personal and age-gated accounts return nothing. Respect the app rate limits; spread calls over the run. |
 | **B. Websites** (ticketing sites, venue "what's on" pages) | Server-side fetch of listed URLs, parse HTML / JSON-LD `Event` data | Only URLs marked `allowed = true` in the watch list after checking terms and `robots.txt`. Identify with a clear user agent. |
 | **C. Web search** | Claude API with the web search tool, using saved queries (e.g. "stand up comedy Cairo this week", "[comedian] tour 2027") | Results go through the same extraction; always keep the result URL as source. |
 | **D. Manual "Add from link"** | Admin pastes a post URL, caption text and/or uploads a poster image | Covers personal Instagram accounts and anything else; same extraction and review flow. **Build this first** — it works before Meta approval. |
@@ -126,12 +126,12 @@ Add an **Agent** item to the admin sidebar (style from `docs/website-spec.md`, s
 
 ## 8. Environment variables
 
-`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` (current Claude model for extraction), `META_APP_ID`, `META_APP_SECRET`, `IG_BUSINESS_ACCOUNT_ID` (the @comedyradar IG user id), `IG_ACCESS_TOKEN` (long-lived; plan a refresh before it expires), `CRON_SECRET`. Add to `.env.local` and Vercel; never commit.
+`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` (current Claude model for extraction), `META_APP_ID`, `META_APP_SECRET`, `IG_BUSINESS_ACCOUNT_ID` (the @comedy_radar IG user id), `IG_ACCESS_TOKEN` (long-lived; plan a refresh before it expires), `CRON_SECRET`. Add to `.env.local` and Vercel; never commit.
 
 ## 9. Meta setup (Dina, before source A works)
 
-1. Switch Instagram **@comedyradar** to a professional (Business or Creator) account.
-2. Create a Facebook Page for Comedy Radar and link @comedyradar to it.
+1. Switch Instagram **@comedy_radar** to a professional (Business or Creator) account.
+2. Create a Facebook Page for Comedy Radar and link @comedy_radar to it.
 3. Create a Meta developer app (comedyradarnetwork@gmail.com), add the Instagram product (Instagram API with Facebook Login), and request the permissions listed in Meta's Business Discovery reference.
 4. Generate a long-lived access token and the IG business account id; give them to Claude Code via `.env.local` (never paste them in chat or commit them).
 Until this is done, use sources B, C and D.
