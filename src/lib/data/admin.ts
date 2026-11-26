@@ -182,3 +182,45 @@ async function adminList<T>(fn: "admin_tours" | "admin_podcasts" | "admin_venues
 export const getAdminTours = (q: string, status: string) => adminList<AdminTourRow>("admin_tours", q, status);
 export const getAdminPodcasts = (q: string, status: string) => adminList<AdminPodcastRow>("admin_podcasts", q, status);
 export const getAdminVenues = (q: string, status: string) => adminList<AdminVenueRow>("admin_venues", q, status);
+
+export type AdminAccountRow = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  type: "comedian" | "manager";
+  created_at: string;
+  last_sign_in_at: string | null;
+  confirmed: boolean;
+  confirmed_at: string | null;
+  provider: string;
+  two_step: boolean;
+  suspended: boolean;
+  super_admin: boolean;
+  team_member: boolean;
+  status: "active" | "unconfirmed" | "suspended";
+  profiles: { name: string; kind: "comedian" | "group"; slug: string; role: "admin" | "moderator"; via_team: boolean }[];
+};
+export type AdminAccountDetail = AdminAccountRow & {
+  team: { name: string | null; status: string }[];
+  member_of: { name: string | null; scope: string }[];
+};
+export type AdminAccounts = {
+  stats: { total: number; comedians: number; managers: number; unconfirmed: number; suspended: number; new_7: number };
+  rows: AdminAccountRow[];
+};
+
+export async function getAdminAccounts(f: { q: string; type: string; status: string }): Promise<AdminAccounts> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_accounts", { p_q: f.q, p_type: f.type, p_status: f.status });
+  if (error) console.error("admin_accounts", error.message);
+  return (data ?? { stats: { total: 0, comedians: 0, managers: 0, unconfirmed: 0, suspended: 0, new_7: 0 }, rows: [] }) as AdminAccounts;
+}
+
+export async function getAdminAccount(id: string): Promise<AdminAccountDetail | null> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_account", { p_id: id });
+  if (error) console.error("admin_account", error.message);
+  return (data ?? null) as AdminAccountDetail | null;
+}
