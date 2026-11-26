@@ -307,4 +307,38 @@ select pg_temp.check((select count(*) = 0 from public.my_page_stats(current_date
   'other accounts do not see those views');
 reset role;
 
+-- Create or claim a profile (dashboard part 2).
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select count(*) >= 1 from public.find_profiles('style tst') where kind = 'group'),
+  'find_profiles finds a published group by a misspelled name');
+insert into public.access_requests (type, account_id, group_id, relation, proof_method)
+select 'claim', '00000000-0000-0000-0000-00000000000b', id, 'manager', 'comedian_confirms'
+from public.comedy_groups where slug = 'style-test';
+select pg_temp.check((select confirm_token is not null from public.access_requests
+                      where account_id = '00000000-0000-0000-0000-00000000000b' and type = 'claim'),
+  'a claim gets a private confirmation link');
+set local role anon;
+select pg_temp.check((select not public.confirm_claim(gen_random_uuid(), 'Somebody')), 'a wrong link confirms nothing');
+reset role;
+select set_config('test.token', (select confirm_token::text from public.access_requests
+  where account_id = '00000000-0000-0000-0000-00000000000b' and type = 'claim'), true);
+set local role anon;
+select pg_temp.check((select profile_name = 'Style Test' and not confirmed
+                      from public.claim_to_confirm(current_setting('test.token')::uuid)),
+  'the link shows which profile is claimed');
+select pg_temp.check((select not public.confirm_claim(current_setting('test.token')::uuid, ' ')), 'a name is needed to confirm');
+select pg_temp.check((select public.confirm_claim(current_setting('test.token')::uuid, 'Nour Hassan')), 'one tap confirms the claim');
+select pg_temp.check((select not public.confirm_claim(current_setting('test.token')::uuid, 'Nour Hassan')), 'a claim is confirmed only once');
+do $$ begin
+  perform 1 from public.access_requests;
+  raise exception 'FAILED: anon read claims';
+exception when insufficient_privilege then
+  raise notice 'ok - anon cannot read claims';
+end $$;
+reset role;
+select pg_temp.check((select confirmed_by_name = 'Nour Hassan' and confirmed_at is not null from public.access_requests
+                      where account_id = '00000000-0000-0000-0000-00000000000b' and type = 'claim'),
+  'the confirmation keeps the name typed');
+
 rollback;
