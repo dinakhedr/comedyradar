@@ -517,4 +517,33 @@ select pg_temp.check((select role = 'moderator' and status = 'active' from publi
   'an approved claim gives the chosen role');
 reset role;
 
+-- ---------------------------------------------------------------- admin profiles
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_profiles('all', '', '', '') is null
+                     and public.admin_grant_access('comedian', '30000000-0000-0000-0000-00000000000a', 'b@test', 'admin') = 'forbidden',
+  'only the super admin lists profiles and gives access');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select (public.admin_profiles('comedian', 'renamed', '', '') -> 'rows' -> 0 ->> 'slug') = 'comic-a'),
+  'the super admin searches profiles by name');
+select pg_temp.check(public.admin_grant_access('comedian', '30000000-0000-0000-0000-00000000000a', 'nobody@test', 'admin') = 'no_account',
+  'access needs an existing account');
+select pg_temp.check(public.admin_grant_access('comedian', '30000000-0000-0000-0000-00000000000a', 'B@test', 'admin') = 'ok',
+  'the super admin gives access by email');
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_profile_access('comedian', '30000000-0000-0000-0000-00000000000a')) e
+                      where e ->> 'email' = 'b@test' and e ->> 'role' = 'admin'),
+  'the access list shows the new admin');
+select pg_temp.check(public.admin_change_access((select id from public.profile_access
+                       where account_id = '00000000-0000-0000-0000-00000000000b' and comedian_id = '30000000-0000-0000-0000-00000000000a'), 'remove') = 'ok',
+  'the super admin removes access');
+select pg_temp.check(public.admin_set_profile('comedian', '30000000-0000-0000-0000-00000000000a', 'archived', false) = 'ok', 'the super admin changes a profile status');
+select pg_temp.check((select status = 'archived' and not verified from public.comedians where id = '30000000-0000-0000-0000-00000000000a'),
+  'the super admin archives a profile and removes the verified badge');
+select pg_temp.check((select count(*) = 0 from jsonb_array_elements(public.admin_profile_access('comedian', '30000000-0000-0000-0000-00000000000a')) e
+                      where e ->> 'email' = 'b@test'),
+  'removed access leaves the access list');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;

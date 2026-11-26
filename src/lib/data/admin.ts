@@ -71,3 +71,36 @@ export async function claimDocumentUrl(path: string): Promise<string | null> {
   const { data } = await supabase.storage.from("claim-documents").createSignedUrl(path, 600);
   return data?.signedUrl ?? null;
 }
+
+export type AdminProfileRow = {
+  kind: "comedian" | "group";
+  id: string;
+  name: string;
+  name_ar: string | null;
+  slug: string;
+  status: "draft" | "pending" | "published" | "archived";
+  verified: boolean;
+  seeded: boolean;
+  admins: number;
+  people: number;
+  upcoming: number;
+  created_at: string;
+};
+export type AdminProfiles = { stats: { comedians: number; groups: number; no_admin: number; pending: number }; rows: AdminProfileRow[] };
+export type AdminAccess = { id: string; name: string | null; email: string; role: "admin" | "moderator"; status: string; via_team: boolean; since: string };
+
+export async function getAdminProfiles(f: { kind: string; q: string; status: string; verified: string }): Promise<AdminProfiles> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_profiles", { p_kind: f.kind, p_q: f.q, p_status: f.status, p_verified: f.verified });
+  if (error) console.error("admin_profiles", error.message);
+  return (data ?? { stats: { comedians: 0, groups: 0, no_admin: 0, pending: 0 }, rows: [] }) as AdminProfiles;
+}
+
+export async function getAdminProfileAccess(kind: string, id: string): Promise<AdminAccess[]> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_profile_access", { p_kind: kind, p_id: id });
+  if (error) console.error("admin_profile_access", error.message);
+  return (data ?? []) as AdminAccess[];
+}
