@@ -29,9 +29,9 @@ export async function updateSession(request: NextRequest) {
   // getClaims() refreshes the session when it has expired.
   const { data } = await supabase.auth.getClaims();
 
-  // The creator dashboard needs a signed-in account (pages check again on the server).
+  // The creator dashboard and the admin panel need a signed-in account (pages check again on the server).
   const path = request.nextUrl.pathname;
-  if (!data?.claims && (path === "/dashboard" || path.startsWith("/dashboard/"))) {
+  if (!data?.claims && (path === "/dashboard" || path.startsWith("/dashboard/") || path === "/admin" || path.startsWith("/admin/"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/signin";
     to.search = "";

@@ -21,7 +21,15 @@ create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
 
+-- Like Supabase: the sign-in token's claims ("aal" is set by the tests).
+create function auth.jwt() returns jsonb language sql stable as $$
+  select jsonb_strip_nulls(jsonb_build_object(
+    'sub', nullif(current_setting('request.jwt.claim.sub', true), ''),
+    'aal', nullif(current_setting('request.jwt.claim.aal', true), '')))
+$$;
+
 grant usage on schema auth to anon, authenticated, service_role;
+grant execute on function auth.jwt() to anon, authenticated, service_role;
 grant execute on function auth.uid() to anon, authenticated, service_role;
 
 create schema storage;

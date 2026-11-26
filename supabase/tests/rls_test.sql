@@ -84,9 +84,15 @@ select pg_temp.check((select count(*) = 0 from public.comedians), 'anon cannot s
 reset role;
 set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select pg_temp.check(public.admin_overview() is null, 'the admin overview needs 2-step verification');
+select pg_temp.check(not private.is_super_admin() and not exists (select 1 from public.comedians where id = '30000000-0000-0000-0000-00000000000a'),
+                     'a super admin without 2-step verification has no super admin rights');
+set local request.jwt.claim.aal = 'aal2';
 update public.comedians set status = 'published' where id = '30000000-0000-0000-0000-00000000000a';
 select pg_temp.check((select status = 'published' from public.comedians where id = '30000000-0000-0000-0000-00000000000a'),
                      'super admin publishes a profile');
+select pg_temp.check((select (public.admin_overview() ->> 'profiles')::int >= 1), 'the super admin sees the admin overview');
+set local request.jwt.claim.aal = '';
 
 -- ---------------------------------------------------------------- user A adds a show
 reset role;
@@ -114,7 +120,9 @@ select pg_temp.check((select status = 'pending' from public.shows where id = '40
 reset role;
 set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
 update public.comedians set verified = true where id = '30000000-0000-0000-0000-00000000000a';
+set local request.jwt.claim.aal = '';
 
 reset role;
 set local role authenticated;
