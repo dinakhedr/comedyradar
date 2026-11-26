@@ -10,6 +10,7 @@ import {
   setTicketLink,
 } from "@/app/actions/admin-shows";
 import { updateVenue } from "@/app/actions/admin-settings";
+import { StatusSelect } from "@/components/admin/status-select";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import {
   card,
@@ -114,7 +115,7 @@ function Hidden({ ret, more }: { ret: string; more?: Record<string, string> }) {
   );
 }
 
-/** A status selector and Save, for tours, podcasts and venues. */
+/** A status menu for tours, podcasts and venues: it saves when a new status is picked. */
 function StatusForm({
   kind,
   id,
@@ -129,34 +130,14 @@ function StatusForm({
   name: string;
 }) {
   return (
-    <form
+    <StatusSelect
       action={setContentStatus}
-      className="flex items-center justify-end gap-1"
-    >
-      <Hidden ret={ret} more={{ kind, id }} />
-      <label htmlFor={`st-${id}`} className="sr-only">
-        Status of {name}
-      </label>
-      <select
-        id={`st-${id}`}
-        name="status"
-        defaultValue={status}
-        className={smallSelect}
-      >
-        {CONTENT_STATUSES.map((s) => (
-          <option key={s.value} value={s.value}>
-            {s.label}
-          </option>
-        ))}
-      </select>
-      <button
-        className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`}
-        aria-label={`Save status of ${name}`}
-        title="Save status"
-      >
-        <SaveIcon />
-      </button>
-    </form>
+      hidden={{ ret, kind, id }}
+      id={`st-${id}`}
+      name={name}
+      status={status}
+      options={CONTENT_STATUSES}
+    />
   );
 }
 
