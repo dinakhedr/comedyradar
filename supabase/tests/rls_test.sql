@@ -546,4 +546,39 @@ select pg_temp.check((select count(*) = 0 from jsonb_array_elements(public.admin
 set local request.jwt.claim.aal = '';
 reset role;
 
+-- ---------------------------------------------------------------- admin shows and tours
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.shows set signal_request = 'strong' where id = '40000000-0000-0000-0000-000000000001';
+select pg_temp.check(public.admin_shows('', '', '', null, 'upcoming') is null
+                     and public.admin_set_show_signal(array['40000000-0000-0000-0000-000000000001'::uuid], 'strong') = 0
+                     and public.admin_tours('', '') is null and public.admin_venues('', '') is null,
+  'only the super admin lists shows and sets signals');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_shows('show one', '', '', null, 'upcoming') -> 'rows') r
+                      where r ->> 'id' = '40000000-0000-0000-0000-000000000001'),
+  'the super admin searches shows by title');
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_shows('', '', 'asked', null, 'all') -> 'rows') r
+                      where r ->> 'signal_request' = 'strong'),
+  'shows with a signal change request can be listed');
+select pg_temp.check(public.admin_set_show_signal(array['40000000-0000-0000-0000-000000000001'::uuid], 'fading') = 1,
+  'the super admin sets a signal');
+select pg_temp.check((select signal = 'fading' and signal_request is null from public.shows where id = '40000000-0000-0000-0000-000000000001'),
+  'setting a signal answers the signal change request');
+select pg_temp.check(public.admin_set_ticket_link('40000000-0000-0000-0000-000000000001', 'javascript:alert(1)') = 'bad_url'
+                     and public.admin_set_ticket_link('40000000-0000-0000-0000-000000000001', 'https://tickets.example.com/x') = 'ok',
+  'ticket links must be web links');
+select pg_temp.check(public.admin_set_show_status(array['40000000-0000-0000-0000-000000000001'::uuid], 'draft') = 1,
+  'the super admin unpublishes a show');
+select pg_temp.check((select status = 'draft' from public.shows where id = '40000000-0000-0000-0000-000000000001'),
+  'an unpublished show is a draft');
+select pg_temp.check(jsonb_typeof(public.admin_tours('', '')) = 'array' and jsonb_typeof(public.admin_podcasts('', '')) = 'array',
+  'the super admin lists tours and podcasts');
+select pg_temp.check(public.admin_set_content_status('tour', (select id from public.tours limit 1), 'archived') = 'ok'
+                     and public.admin_set_content_status('nothing', gen_random_uuid(), 'archived') = 'not_found',
+  'the super admin changes a tour status');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;
