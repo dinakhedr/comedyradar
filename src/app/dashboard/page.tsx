@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ExternalIcon } from "@/components/icons";
 import { card, ProfileCard, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { firstName, pickProfile, SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { formatShowDate } from "@/lib/dates";
@@ -41,8 +42,13 @@ function ShowsTable({ shows }: { shows: DashboardShow[] }) {
                 <td className="py-3 pr-3 text-right font-bold">{s.clicks}</td>
                 <td className="py-3 text-right whitespace-nowrap">
                   {live && (
-                    <Link href={`/shows/${s.slug}`} className="font-extrabold underline">
-                      View page
+                    <Link
+                      href={`/shows/${s.slug}`}
+                      aria-label={`View the public page of ${s.title}`}
+                      title="View page"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-button hover:bg-lavender"
+                    >
+                      <ExternalIcon />
                     </Link>
                   )}
                 </td>

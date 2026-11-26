@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { updateShowStatus } from "@/app/actions/shows";
+import { CopyIcon, EditIcon, ExternalIcon, SoldOutIcon, TicketIcon } from "@/components/icons";
 import { outlineBtn, Tag, type Tone } from "@/components/dashboard/ui";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import type { ListedShow } from "@/lib/data/my-shows";
@@ -12,8 +13,8 @@ import { formatShowDate } from "@/lib/dates";
 
 const STATUS_TONE: Record<string, Tone> = { draft: "outline", pending: "pink", published: "yellow", sold_out: "purple", cancelled: "outline" };
 const SIGNALS: Record<string, string> = { new: "New", strong: "Strong", fading: "Fading", none: "None" };
-const linkCls = "font-extrabold underline";
-const actionBtn = "min-h-11 font-extrabold underline disabled:opacity-60";
+/** Square icon buttons; the label is read out and shown as a tooltip. */
+const iconBtn = "inline-flex h-11 w-11 items-center justify-center rounded-button text-radar-purple hover:bg-lavender focus-visible:outline-2 focus-visible:outline-radar-purple";
 
 export function ShowsTable({ shows, past }: { shows: ListedShow[]; past: boolean }) {
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -118,25 +119,30 @@ export function ShowsTable({ shows, past }: { shows: ListedShow[]; past: boolean
                   </td>
                   <td className="py-3 pr-3 text-right font-bold">{s.clicks}</td>
                   <td className="py-3">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <Link href={`/dashboard/shows/${s.id}/edit`} className={linkCls}>
-                        Edit<span className="sr-only"> {s.title}</span>
+                    <div className="-mt-2.5 flex items-center gap-1">
+                      <Link href={`/dashboard/shows/${s.id}/edit`} className={iconBtn} aria-label={`Edit ${s.title}`} title="Edit">
+                        <EditIcon />
                       </Link>
-                      <Link href={`/dashboard/shows/new?from=${s.id}`} className={linkCls}>
-                        Duplicate<span className="sr-only"> {s.title}</span>
+                      <Link href={`/dashboard/shows/new?from=${s.id}`} className={iconBtn} aria-label={`Duplicate ${s.title}`} title="Duplicate">
+                        <CopyIcon />
                       </Link>
                       {(s.status === "published" || s.status === "sold_out") && !past && (
                         <form action={updateShowStatus} className="contents">
                           <input type="hidden" name="show_ids" value={s.id} />
-                          <button name="action" value={s.status === "published" ? "sold_out" : "on_sale"} className={actionBtn}>
-                            {s.status === "published" ? "Mark sold out" : "Back on sale"}
-                            <span className="sr-only"> {s.title}</span>
-                          </button>
+                          {s.status === "published" ? (
+                            <button name="action" value="sold_out" className={iconBtn} aria-label={`Mark ${s.title} sold out`} title="Mark sold out">
+                              <SoldOutIcon />
+                            </button>
+                          ) : (
+                            <button name="action" value="on_sale" className={iconBtn} aria-label={`Put ${s.title} back on sale`} title="Back on sale">
+                              <TicketIcon />
+                            </button>
+                          )}
                         </form>
                       )}
                       {live && (
-                        <Link href={`/shows/${s.slug}`} className={linkCls}>
-                          View page<span className="sr-only"> {s.title}</span>
+                        <Link href={`/shows/${s.slug}`} className={iconBtn} aria-label={`View the public page of ${s.title}`} title="View page">
+                          <ExternalIcon />
                         </Link>
                       )}
                     </div>
