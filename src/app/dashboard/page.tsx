@@ -64,7 +64,9 @@ function ShowsTable({ shows }: { shows: DashboardShow[] }) {
 
 async function OverviewContent({ searchParams }: { searchParams: PageProps<"/dashboard">["searchParams"] }) {
   const sp = await searchParams;
-  const [account, profiles, requests, invites] = await Promise.all([requireAccount(), getMyProfiles(), countIncomingRequests(), getMyInvites()]);
+  const [account, profiles, waiting, invites] = await Promise.all([requireAccount(), getMyProfiles(), countIncomingRequests(), getMyInvites()]);
+  // Team invitations have their own banners below; this counts the other requests.
+  const requests = Math.max(0, waiting - invites.length);
   const picked = pickProfile(profiles, sp.p);
   const o = await getOverview(profiles, picked);
   const welcome = sp.welcome === "1";
@@ -112,7 +114,10 @@ async function OverviewContent({ searchParams }: { searchParams: PageProps<"/das
 
       {requests > 0 && (
         <p className="rounded-card border-2 border-laugh-pink bg-white px-4 py-3 font-bold">
-          {requests === 1 ? "1 request is" : `${requests} requests are`} waiting for your answer. You will be able to answer them on the Requests page soon.
+          {requests === 1 ? "1 request is" : `${requests} requests are`} waiting for your answer.{" "}
+          <Link href="/dashboard/requests" className="font-extrabold underline">
+            Open Requests
+          </Link>
         </p>
       )}
 

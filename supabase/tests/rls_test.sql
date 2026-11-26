@@ -436,4 +436,45 @@ select pg_temp.check((select private.can_manage_group(id) from public.comedy_gro
   'sending again gives 7 more days, and "all profiles" covers the owner''s profiles');
 reset role;
 
+-- ---------------------------------------------------------------- link requests (Requests page)
+-- B's lineup tag on A's show is waiting again, with its request from A.
+update public.show_performers set link_status = 'pending' where id = '50000000-0000-0000-0000-000000000001';
+insert into public.link_requests (id, type, from_account_id, target_comedian_id, show_id)
+values ('80000000-0000-0000-0000-000000000001', 'lineup_tag', '00000000-0000-0000-0000-00000000000a',
+        '30000000-0000-0000-0000-00000000000b', '40000000-0000-0000-0000-000000000001');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.check((select direction = 'sent' and show_title is not null and target_name = 'Comic B'
+                      from public.my_link_requests() where id = '80000000-0000-0000-0000-000000000001'),
+  'the sender sees the request under Sent, with names');
+select pg_temp.check(public.answer_link_request('80000000-0000-0000-0000-000000000001', true) = 'forbidden',
+  'the sender cannot accept their own request');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select direction = 'incoming' and status = 'pending'
+                      from public.my_link_requests() where id = '80000000-0000-0000-0000-000000000001'),
+  'the tagged profile admin sees it under Incoming');
+select pg_temp.check(public.answer_link_request('80000000-0000-0000-0000-000000000001', true) = 'ok',
+  'the tagged profile admin accepts');
+select pg_temp.check((select link_status = 'accepted' from public.show_performers where id = '50000000-0000-0000-0000-000000000001'),
+  'accepting a request shows the link');
+select pg_temp.check((select status = 'accepted' and decided_at is not null from public.my_link_requests()
+                      where id = '80000000-0000-0000-0000-000000000001'),
+  'the answered request moves to history');
+select pg_temp.check(public.answer_link_request('80000000-0000-0000-0000-000000000001', false) = 'not_found',
+  'a request is answered once');
+reset role;
+update public.show_performers set link_status = 'pending' where id = '50000000-0000-0000-0000-000000000001';
+insert into public.link_requests (id, type, from_account_id, target_comedian_id, show_id)
+values ('80000000-0000-0000-0000-000000000002', 'lineup_tag', '00000000-0000-0000-0000-00000000000a',
+        '30000000-0000-0000-0000-00000000000b', '40000000-0000-0000-0000-000000000001');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.cancel_link_request('80000000-0000-0000-0000-000000000002') = 'not_found',
+  'only the sender can cancel a request');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.check(public.cancel_link_request('80000000-0000-0000-0000-000000000002') = 'ok', 'the sender cancels');
+select pg_temp.check(not exists (select 1 from public.show_performers where id = '50000000-0000-0000-0000-000000000001'),
+  'cancelling takes the waiting tag off the lineup');
+reset role;
+
 rollback;
