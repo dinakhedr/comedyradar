@@ -749,6 +749,43 @@ select pg_temp.check((select name = 'Club 2' and address = '5 Main St' and insta
   'venue edits are saved and the address stays');
 select pg_temp.check(public.admin_update_venue((select id from public.venues where name = 'Club 2'), 'The Room', null, null, 'https://maps.app.goo.gl/z', null, null) = 'exists',
   'a venue cannot take the name of another venue in its city');
+-- Bulk import (Admin > Bulk import)
+select pg_temp.check((public.admin_import_comedians('[{"name":"Import One","name_ar":"واحد","slug_base":"import-one","home_country_id":"10000000-0000-0000-0000-000000000001","instagram_url":"https://instagram.com/importone"},{"name":"import one","slug_base":"import-one"}]'::jsonb)
+                      = '{"comedians": 1, "skipped": 1}'::jsonb),
+  'the super admin imports comedians; a name already there is skipped');
+select pg_temp.check((select status = 'published' and seeded and slug = 'import-one' and name_ar = 'واحد' from public.comedians where name = 'Import One'),
+  'imported comedians are published and seeded');
+select pg_temp.check(not exists (select 1 from public.profile_access pa join public.comedians c on c.id = pa.comedian_id where c.name = 'Import One'),
+  'the super admin does not become admin of imported comedians');
+select pg_temp.check((public.admin_import_shows(jsonb_build_array(
+    jsonb_build_object('title', 'Import Night', 'slug_base', 'import-night-2030-01-10', 'starts_at', '2030-01-10T18:30:00Z',
+      'city_id', '20000000-0000-0000-0000-000000000001', 'new_venue', jsonb_build_object('name', 'Import Hall', 'address', 'Downtown'),
+      'zone', 'local', 'market_country_id', '10000000-0000-0000-0000-000000000001', 'currency', 'EGP', 'signal', 'strong',
+      'good_to_know', jsonb_build_array('No photos'), 'source_url', 'https://www.instagram.com/p/abc',
+      'performers', jsonb_build_array(jsonb_build_object('kind', 'comedian', 'id', (select id from public.comedians where name = 'Import One')),
+                                      jsonb_build_object('kind', 'new', 'name', 'Brand New Comic'))),
+    jsonb_build_object('title', 'Import Night', 'slug_base', 'import-night-2030-01-10', 'starts_at', '2030-01-10T20:30:00Z',
+      'city_id', '20000000-0000-0000-0000-000000000001', 'new_venue', jsonb_build_object('name', 'import hall'),
+      'zone', 'local', 'market_country_id', '10000000-0000-0000-0000-000000000001',
+      'performers', jsonb_build_array(jsonb_build_object('kind', 'new', 'name', 'brand new comic')))))
+   = '{"shows": 2, "venues": 1, "comedians": 1}'::jsonb),
+  'the super admin imports shows; a new venue and a new performer are added once');
+select pg_temp.check((select bool_and(s.status = 'pending' and s.source_type = 'aggregated') and count(*) = 2
+                             and bool_or(s.slug = 'import-night-2030-01-10-2') and bool_or(s.signal = 'strong' and s.source_url = 'https://www.instagram.com/p/abc')
+                      from public.shows s where s.title = 'Import Night'),
+  'imported shows wait as pending, keep their source and get free addresses');
+select pg_temp.check((select status = 'pending' from public.venues where name = 'Import Hall')
+                     and (select status = 'pending' and seeded from public.comedians where name = 'Brand New Comic')
+                     and not exists (select 1 from public.profile_access pa join public.comedians c on c.id = pa.comedian_id where c.name = 'Brand New Comic'),
+  'new venues and performers from a show import wait as pending, with no admin');
+select pg_temp.check((select array_agg(coalesce(c.name, '') order by sp.billing_order) = array['Import One', 'Brand New Comic']
+                      from public.show_performers sp join public.shows s on s.id = sp.show_id left join public.comedians c on c.id = sp.comedian_id
+                      where s.slug = 'import-night-2030-01-10'),
+  'imported performers keep their order');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.check(public.admin_import_comedians('[{"name":"Sneaky"}]'::jsonb) is null and public.admin_import_shows('[]'::jsonb) is null,
+  'only the super admin can bulk import');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = '';
 reset role;
 
