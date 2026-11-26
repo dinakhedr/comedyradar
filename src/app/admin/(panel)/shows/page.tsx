@@ -10,6 +10,7 @@ import {
   setTicketLink,
 } from "@/app/actions/admin-shows";
 import { updateVenue } from "@/app/actions/admin-settings";
+import { LogoPicker } from "@/components/admin/logo-picker";
 import { StatusSelect } from "@/components/admin/status-select";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import {
@@ -69,6 +70,8 @@ const MSG: Record<string, string> = {
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
   venue_saved: "Venue saved.",
+  venue_bad_logo: "The logo must be a JPG, PNG or WebP image. Please pick another file.",
+  venue_logo_failed: "The venue was saved, but the logo did not upload. Please try the logo again.",
   venue_exists: "That city already has a venue with this name.",
   venue_bad:
     "Check the venue: a name, a Google Maps link (google.com/maps or maps.app.goo.gl) and, if you add them, a website starting with https://, an Instagram handle or link and a Facebook page link.",
@@ -1182,7 +1185,8 @@ async function VenuesTab({ sp, link }: Ctx) {
 
 const venueFields = [
   ["name", "Venue name", "", true, 120],
-  ["address", "Address (optional)", "Street and area", false, 200],
+  ["area", "Area (optional)", "e.g. Sheikh Zayed, New Cairo", false, 60],
+  ["address", "Address (optional)", "Street and building", false, 200],
   ["map_url", "Google Maps link", "https://maps.app.goo.gl/…", true, 500],
   ["website", "Website (optional)", "https://", false, 500],
   [
@@ -1207,6 +1211,7 @@ function VenueEditForm({
 }) {
   const value: Record<(typeof venueFields)[number][0], string> = {
     name: v.name,
+    area: v.area ?? "",
     address: v.address ?? "",
     map_url: v.map_url ?? "",
     website: v.website ?? "",
@@ -1243,6 +1248,7 @@ function VenueEditForm({
       <form action={updateVenue} className="grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="id" value={v.id} />
         <input type="hidden" name="ret" value={ret} />
+        <LogoPicker id={`ve-${v.id}`} current={v.logo_url} name={v.name} />
         {venueFields.map(([name, label, ph, req, max]) => (
           <div key={name} className="flex flex-col gap-1">
             <label htmlFor={`ve-${name}`} className={labelCls}>

@@ -338,3 +338,76 @@ export function InboxIcon({ className, size = 20 }: IconProps) {
     </svg>
   );
 }
+
+/** A globe, for a website link. */
+export function GlobeIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12 H21" />
+      <path d="M12 3 A14 14 0 0 1 12 21 A14 14 0 0 1 12 3" />
+    </svg>
+  );
+}
+
+export function FacebookIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M15 3 H12.5 A3.5 3.5 0 0 0 9 6.5 V9 H7 V12.5 H9 V21 H12.5 V12.5 H15 L15.5 9 H12.5 V7 A1 1 0 0 1 13.5 6 H15 Z" />
+    </svg>
+  );
+}
+
+export function TikTokIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M14 3 V14.5 A3.5 3.5 0 1 1 10.5 11" />
+      <path d="M14 3 C14.5 5.8 16.4 7.6 19 8" />
+    </svg>
+  );
+}
+
+export function YouTubeIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
+      <path d="M10 9.5 V14.5 L14.5 12 Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Three linked dots, for Share. */
+export function ShareIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.6 13.5 L15.4 17.5" />
+      <path d="M15.4 6.5 L8.6 10.5" />
+    </svg>
+  );
+}
+
+export function WhatsAppIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M4 20 L5.3 16 A8 8 0 1 1 8 18.7 Z" />
+      <path
+        d="M9 9.5 C9 12.5 11.5 15 14.5 15 L15.7 13.7 L13.9 12.7 L12.9 13.5 A4 4 0 0 1 10.5 11.1 L11.3 10.1 L10.3 8.3 Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
+/** A map pin, for venues without a logo. */
+export function PinIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M12 21 C12 21 5 14.8 5 9 A7 7 0 0 1 19 9 C19 14.8 12 21 12 21 Z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </svg>
+  );
+}

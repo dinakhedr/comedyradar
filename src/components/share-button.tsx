@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ICON_BTN } from "./icon-link";
+import { ShareIcon } from "./icons";
 
-/** Opens the phone's share menu, or copies the link where there is none. */
-export function ShareButton({ title, url, label = "Share", className = "" }: { title: string; url: string; label?: string; className?: string }) {
+/**
+ * Share as an icon button: opens the phone's share menu, or copies the link
+ * where there is none and says "Link copied" beside the icon for 2 seconds.
+ */
+export function ShareButton({ title, url, label = "Share", className = ICON_BTN }: { title: string; url: string; label?: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   async function share() {
     try {
@@ -19,8 +24,13 @@ export function ShareButton({ title, url, label = "Share", className = "" }: { t
     }
   }
   return (
-    <button type="button" onClick={share} className={className} aria-live="polite">
-      {copied ? "Link copied" : label}
-    </button>
+    <span className="inline-flex items-center">
+      <button type="button" onClick={share} className={className} aria-label={label} title={label}>
+        <ShareIcon />
+      </button>
+      <span aria-live="polite" className={copied ? "ml-2 text-sm font-bold text-lavender-text" : ""}>
+        {copied ? "Link copied" : ""}
+      </span>
+    </span>
   );
 }

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { photoError, text, UUID } from "@/lib/profile-server";
 import { checkShow, type ShowErrors, type ShowInput } from "@/lib/show-forms";
-import { insertShow, performerHome, placeShow, publishShow, savePerformers, suggestVenue, uploadPoster } from "@/lib/show-server";
+import { insertShow, performerHome, placeShow, publishShow, savePerformers, uploadPoster } from "@/lib/show-server";
 import { createClient } from "@/lib/supabase/server";
 
 /** Add, edit and update shows from the creator dashboard (spec 11.4 items 4 and 9). */
@@ -57,12 +57,9 @@ export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowSt
   const place = await placeShow(supabase, values.city_id, await performerHome(supabase, performer));
   if (!place) return { errors: { city_id: "Please choose the city." }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
 
-  // A new venue is suggested and waits for Comedy Radar (spec 11.4 item 4).
-  let venueId = values.venue_id;
-  if (values.new_venue) {
-    venueId = await suggestVenue(supabase, account.id, place.cityId, values.new_venue);
-    if (!venueId) return { errors: { venue: "We couldn't save the new venue. Please try again." }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
-  }
+  // Only Comedy Radar adds venues (Dina, 2026-11-26): creators pick one from the list.
+  if (values.new_venue) return { errors: { venue: "Please choose a venue from the list." }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
+  const venueId = values.venue_id;
 
   const row = {
     title: values.title,

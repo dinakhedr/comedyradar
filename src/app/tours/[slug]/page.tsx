@@ -194,7 +194,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
                 title={tour.name}
                 url={`${SITE_URL}/tours/${tour.slug}`}
                 label="Share tour"
-                className="flex min-h-12 flex-1 items-center justify-center rounded-button border-2 border-plum-line px-5 font-bold hover:border-spotlight-yellow md:flex-none"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-button border-2 border-plum-line hover:border-spotlight-yellow hover:text-spotlight-yellow"
               />
             </div>
           </div>

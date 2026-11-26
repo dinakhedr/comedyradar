@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { requireSuperAdmin } from "@/lib/data/admin";
 import { text, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
+import { applyVenueLogo } from "@/lib/venue-logo-server";
 import {
+  logoChange,
   venueMessage,
   venueValues,
   VENUE_STATUSES,
@@ -91,6 +93,9 @@ export async function addVenue(
   const cityName = text(form.get("city_name")).slice(0, 80);
   if (!UUID.test(city))
     return { ...venueMessage("error", "add", v.name, cityName), values: v };
+  const logo = logoChange(form);
+  if (logo.kind === "bad")
+    return { ...venueMessage("bad_logo", "add", v.name, cityName), values: v };
   const r = await run("admin_add_venue", {
     p_city_id: city,
     p_name: v.name,
@@ -98,7 +103,24 @@ export async function addVenue(
     p_map_url: v.map_url,
     p_instagram: v.instagram || null,
     p_facebook: v.facebook || null,
+    p_area: v.area || null,
   });
+  if (r === "ok" && logo.kind === "upload") {
+    const supabase = await createClient();
+    const want = v.name.replace(/\s+/g, " ").toLowerCase();
+    const { data } = await supabase
+      .from("venues")
+      .select("id, name")
+      .eq("city_id", city);
+    const id = ((data ?? []) as { id: string; name: string }[]).find(
+      (x) => x.name.toLowerCase() === want,
+    )?.id;
+    const done = id ? await applyVenueLogo(supabase, id, logo) : "logo_failed";
+    refresh();
+    updateTag("cities");
+    if (done !== "ok")
+      return { ...venueMessage(done, "add", v.name, cityName), values: v };
+  }
   return { ...venueMessage(r, "add", v.name, cityName), values: v };
 }
 
@@ -117,6 +139,8 @@ export async function editVenue(
   });
   if (!UUID.test(id)) return fail("error");
   if (!VENUE_STATUSES.includes(v.status)) return fail("bad_status");
+  const logo = logoChange(form);
+  if (logo.kind === "bad") return fail("bad_logo");
   const r = await run("admin_update_venue", {
     p_id: id,
     p_name: v.name,
@@ -125,8 +149,11 @@ export async function editVenue(
     p_map_url: v.map_url,
     p_instagram: v.instagram || null,
     p_facebook: v.facebook || null,
+    p_area: v.area || null,
   });
   if (r !== "ok") return fail(r);
+  if ((await applyVenueLogo(await createClient(), id, logo)) !== "ok")
+    return fail("logo_failed");
   if (v.status !== text(form.get("old_status"))) {
     const st = await run("admin_set_content_status", {
       p_kind: "venue",
@@ -153,6 +180,8 @@ export async function updateVenue(form: FormData): Promise<void> {
     redirect(`${u.pathname}?${u.searchParams.toString()}`);
   };
   if (!UUID.test(id)) return go("error", false);
+  const logo = logoChange(form);
+  if (logo.kind === "bad") return go("venue_bad_logo", true);
   const r = await run("admin_update_venue", {
     p_id: id,
     p_name: text(form.get("name")).slice(0, 140),
@@ -161,8 +190,13 @@ export async function updateVenue(form: FormData): Promise<void> {
     p_map_url: text(form.get("map_url")).trim().slice(0, 500),
     p_instagram: text(form.get("instagram")).trim().slice(0, 300) || null,
     p_facebook: text(form.get("facebook")).trim().slice(0, 300) || null,
+    p_area: text(form.get("area")).trim().replace(/\s+/g, " ").slice(0, 60) || null,
   });
-  if (r === "ok") return go("venue_saved", false);
+  if (r === "ok") {
+    if ((await applyVenueLogo(await createClient(), id, logo)) !== "ok")
+      return go("venue_logo_failed", true);
+    return go("venue_saved", false);
+  }
   go(
     r === "exists" ? "venue_exists" : r === "bad_value" ? "venue_bad" : "error",
     true,
