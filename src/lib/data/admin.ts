@@ -104,3 +104,81 @@ export async function getAdminProfileAccess(kind: string, id: string): Promise<A
   if (error) console.error("admin_profile_access", error.message);
   return (data ?? []) as AdminAccess[];
 }
+
+export type AdminShowRow = {
+  id: string;
+  slug: string;
+  title: string;
+  starts_at: string;
+  status: "draft" | "pending" | "published" | "sold_out" | "cancelled";
+  signal: "none" | "new" | "strong" | "fading";
+  signal_request: "none" | "new" | "strong" | "fading" | null;
+  zone: "local" | "outbound" | "inbound";
+  ticket_url: string | null;
+  source_type: string;
+  city: string;
+  country_code: string;
+  venue: string | null;
+  tour: string | null;
+  performers: string | null;
+  added_by: string | null;
+};
+export type AdminShows = {
+  stats: { upcoming: number; local: number; outbound: number; inbound: number; missing_ticket: number; cancelled: number };
+  quality: { signal_requests: number; no_venue: number; tours_no_tickets: number; new_signal_days: number };
+  cities: { id: string; name: string; country_code: string }[];
+  rows: AdminShowRow[];
+};
+export type AdminTourRow = {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+  owner: string | null;
+  owner_kind: "comedian" | "group";
+  shows: number;
+  upcoming: number;
+  missing_ticket: number;
+  countries: number;
+  first_at: string | null;
+  last_at: string | null;
+};
+export type AdminPodcastRow = { id: string; slug: string; name: string; status: string; is_active: boolean; hosts: string | null; links: number };
+export type AdminVenueRow = {
+  id: string;
+  name: string;
+  name_ar: string | null;
+  status: string;
+  city: string;
+  country_code: string;
+  address: string | null;
+  map_url: string | null;
+  upcoming: number;
+  added_by: string | null;
+};
+
+const EMPTY_SHOWS: AdminShows = {
+  stats: { upcoming: 0, local: 0, outbound: 0, inbound: 0, missing_ticket: 0, cancelled: 0 },
+  quality: { signal_requests: 0, no_venue: 0, tours_no_tickets: 0, new_signal_days: 7 },
+  cities: [],
+  rows: [],
+};
+
+export async function getAdminShows(f: { q: string; zone: string; status: string; city: string; period: string }): Promise<AdminShows> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_shows", { p_q: f.q, p_zone: f.zone, p_status: f.status, p_city: f.city || null, p_period: f.period });
+  if (error) console.error("admin_shows", error.message);
+  return (data ?? EMPTY_SHOWS) as AdminShows;
+}
+
+async function adminList<T>(fn: "admin_tours" | "admin_podcasts" | "admin_venues", q: string, status: string): Promise<T[]> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(fn, { p_q: q, p_status: status });
+  if (error) console.error(fn, error.message);
+  return (data ?? []) as T[];
+}
+export const getAdminTours = (q: string, status: string) => adminList<AdminTourRow>("admin_tours", q, status);
+export const getAdminPodcasts = (q: string, status: string) => adminList<AdminPodcastRow>("admin_podcasts", q, status);
+export const getAdminVenues = (q: string, status: string) => adminList<AdminVenueRow>("admin_venues", q, status);
