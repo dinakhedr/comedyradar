@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { MicIcon, SearchIcon } from "@/components/icons";
+import { SearchIcon } from "@/components/icons";
+import { LogoMark } from "@/components/logo-mark";
 import { Logo } from "@/components/logo";
 
 export const metadata = { title: "Page not found" };
@@ -12,7 +13,7 @@ export default function NotFound() {
         <Logo />
       </header>
       <main className="mx-auto flex max-w-[720px] flex-col items-center gap-5 px-[18px] py-16 text-center">
-        <MicIcon size={96} className="text-lavender-text" />
+        <LogoMark size={120} />
         <p className="text-label font-extrabold tracking-widest text-laugh-pink">ERROR 404</p>
         <h1 className="font-display text-[40px] leading-none md:text-display-xl">
           We lost the <span className="text-spotlight-yellow">signal</span>
