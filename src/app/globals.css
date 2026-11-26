@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+/* Comedy Radar brand tokens (docs/website-spec.md, section 3). */
+:root {
+  --radar-purple: #2b0b4f;
+  --spotlight-yellow: #ffd60a;
+  --laugh-pink: #ff4d8d;
+  --laugh-pink-deep: #e63e7a;
+  --radar-plum: #4a1470;
+  --plum-deep: #3d1470;
+  --plum-line: #5a2a86;
+  --stage-black: #121212;
+  --lavender: #f1eafb;
+  --lavender-text: #cdbee6;
+  --white: #ffffff;
+}
+
+@theme inline {
+  --color-radar-purple: var(--radar-purple);
+  --color-spotlight-yellow: var(--spotlight-yellow);
+  --color-laugh-pink: var(--laugh-pink);
+  --color-laugh-pink-deep: var(--laugh-pink-deep);
+  --color-radar-plum: var(--radar-plum);
+  --color-plum-deep: var(--plum-deep);
+  --color-plum-line: var(--plum-line);
+  --color-stage-black: var(--stage-black);
+  --color-lavender: var(--lavender);
+  --color-lavender-text: var(--lavender-text);
+
+  --font-display: var(--font-luckiest-guy), "Luckiest Guy", system-ui, sans-serif;
+  --font-sans: var(--font-nunito), "Nunito", system-ui, sans-serif;
+
+  /* Type scale (px): display-xl 64 · display-lg 48 · display-md 32 · heading 22 · body 16 · small 14 · label 13 */
+  --text-display-xl: 4rem;
+  --text-display-xl--line-height: 1;
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 1.02;
+  --text-display-md: 2rem;
+  --text-display-md--line-height: 1.05;
+  --text-heading: 1.375rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-label: 0.8125rem;
+
+  /* Shapes: cards 20px, Spotlight 28px, buttons 12px, chips pill */
+  --radius-card: 20px;
+  --radius-spotlight: 28px;
+  --radius-button: 12px;
+}
+
+html {
+  background: var(--radar-purple);
+  color: var(--white);
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--radar-purple);
+  color: var(--white);
+}
+
+/* Luckiest Guy is used for short uppercase headlines only. */
+.font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+}
+
+:focus-visible {
+  outline: 3px solid var(--spotlight-yellow);
+  outline-offset: 2px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

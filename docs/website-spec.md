@@ -78,7 +78,8 @@ Rules:
 | Analytics | Vercel Analytics (start), add GA4 later if needed | Track clicks on "Get tickets", Spotlight slides, podcast platform links |
 
 **Environment variables (Vercel and `.env.local`):**
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never exposed to the browser), `NEXT_PUBLIC_SITE_URL`.
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (the new publishable key, `sb_publishable_…`, safe in the browser), `SUPABASE_SECRET_KEY` (the new secret key, `sb_secret_…`, server only, never exposed to the browser), `NEXT_PUBLIC_SITE_URL`.
+The project uses Supabase's new API keys; the legacy anon and service role keys are not used.
 
 ---
 
@@ -841,9 +842,9 @@ Admin style: Stage Black sidebar (#121212) with a pink "SUPER ADMIN" label and y
 - Supabase account: **comedyradarnetwork@gmail.com**.
 
 **Next steps**
-1. **Supabase project:** in the Supabase dashboard create a new project named `comedyradar`, choose the region closest to Egypt (for example Frankfurt, `eu-central-1`), and save the database password in a password manager. From *Project settings → API* copy the Project URL, the anon (public) key and the service role key.
+1. **Supabase project:** in the Supabase dashboard create a new project named `comedyradar`, choose the region closest to Egypt (for example Frankfurt, `eu-central-1`), and save the database password in a password manager. From *Project settings → API* copy the Project URL, the publishable key (`sb_publishable_…`) and the secret key (`sb_secret_…`).
 2. **Supabase Auth:** turn on Email (with "Confirm email") and, if wanted at launch, Google (needs a Google Cloud OAuth client). Before inviting real users, set **custom SMTP** in *Auth → Emails*; the built-in email service is only for testing and has strict limits. Add the site address to *URL configuration* (the Vercel address for now).
-3. **Vercel:** sign in with GitHub, *Add New → Project*, import `comedyradar`, and add the environment variables from section 2 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`). Every pull request gets a preview link.
+3. **Vercel:** sign in with GitHub, *Add New → Project*, import `comedyradar`, and add the environment variables from section 2 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `NEXT_PUBLIC_SITE_URL`). Every pull request gets a preview link.
 4. **Claude Code (desktop app):** clone `comedyradar` to the computer, open the folder in Claude Code, and save this file as `docs/website-spec.md`. Put the same keys in `.env.local` (never commit it; keep it in `.gitignore`). Optionally connect the Supabase MCP server in Claude Code so it can run migrations and check the database directly.
 5. **First prompt:**
    > "Read docs/website-spec.md. Set up phase 1 step 1 and step 2: Next.js (App Router) + TypeScript + Tailwind with the brand tokens and fonts from section 3, and the Supabase schema from section 10 with RLS, helper views and seed data as migrations. Then build the homepage from section 5. Work on a feature branch and open a pull request."
