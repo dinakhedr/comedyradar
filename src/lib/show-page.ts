@@ -61,9 +61,10 @@ export function formatLongDate(d: Date): string {
   }).format(d);
 }
 
-/** "Show 9:30 PM · about 90 min" */
-export function timeLine(starts: Date, ends: Date | null): string {
+/** "Doors 8:30 PM · Show 9:30 PM · about 90 min" */
+export function timeLine(starts: Date, ends: Date | null, doors: Date | null = null): string {
   const parts = [`Show ${formatTime(starts)}`];
+  if (doors && doors < starts) parts.unshift(`Doors ${formatTime(doors)}`);
   if (ends && ends > starts) {
     const minutes = Math.round((ends.getTime() - starts.getTime()) / 60000);
     parts.push(minutes % 60 === 0 && minutes >= 120 ? `about ${minutes / 60} hours` : `about ${minutes} min`);
