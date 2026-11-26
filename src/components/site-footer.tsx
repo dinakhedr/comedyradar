@@ -42,13 +42,13 @@ export function SiteFooter() {
             If it&apos;s live and it&apos;s funny, it&apos;s on the radar.
           </p>
           <a
-            href="https://instagram.com/comedyradar"
+            href="https://instagram.com/comedy_radar"
             target="_blank"
             rel="noopener"
             className="inline-flex items-center gap-2 text-[15px] font-extrabold hover:text-spotlight-yellow"
           >
             <InstagramIcon className="text-spotlight-yellow" />
-            @comedyradar
+            @comedy_radar
           </a>
           <a
             href="mailto:comedyradarnetwork@gmail.com"

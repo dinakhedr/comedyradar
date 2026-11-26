@@ -6,7 +6,7 @@ Brand reference for building the website. Full source: *Comedy Radar — Brand G
 - **Name:** Comedy Radar · **Tagline:** If it's live and it's funny, it's on the radar.
 - **Coverage zones:** Local Range (shows in the country), Outbound Range (its comedians on tour), Inbound Range (visiting comedians). Launch market: Egypt.
 - **Radar vocabulary:** On the Radar (upcoming), New Signal (new show), Strong Signal (trending), Fading Signal (last tickets), Track (follow), Within Range (near you), New Territory (new country), Spotlight (featured carousel).
-- **Contact:** comedyradarnetwork@gmail.com · Instagram **@comedyradar** (only social account). English only at launch. Domain on hold.
+- **Contact:** comedyradarnetwork@gmail.com · Instagram **@comedy_radar** (only social account). English only at launch. Domain on hold.
 
 ## Logo
 - Wordmark: **COMEDY** stacked above **RADAR**, Luckiest Guy, uppercase.

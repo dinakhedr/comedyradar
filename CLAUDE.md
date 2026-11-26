@@ -18,7 +18,7 @@ The specs are the source of truth. If something is unclear or two docs disagree,
 - Fonts: Luckiest Guy (uppercase display only), Nunito 400/700/800.
 - Public site: purple base. Creator dashboard: lavender + white cards + purple sidebar. Admin panel: Stage Black sidebar, pink "SUPER ADMIN" label.
 - Logo SVGs live in `public/brand/` (exported from the Brand Guidelines).
-- English only at launch. Contact: comedyradarnetwork@gmail.com · Instagram @comedyradar.
+- English only at launch. Contact: comedyradarnetwork@gmail.com · Instagram @comedy_radar.
 
 ## Working rules
 - Work on a feature branch per task and open a pull request; never push directly to `main`.

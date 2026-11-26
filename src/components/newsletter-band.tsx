@@ -21,7 +21,7 @@ export function NewsletterBand() {
           className="flex flex-[1_1_380px] flex-col gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            setNote("Thanks! Sign-ups open very soon. Follow @comedyradar on Instagram in the meantime.");
+            setNote("Thanks! Sign-ups open very soon. Follow @comedy_radar on Instagram in the meantime.");
           }}
         >
           <div className="flex flex-wrap gap-2.5">
