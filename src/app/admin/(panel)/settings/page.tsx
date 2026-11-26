@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { addCity, addVenue, saveSettings } from "@/app/actions/admin-settings";
-import { setContentStatus } from "@/app/actions/admin-shows";
+import { saveSettings } from "@/app/actions/admin-settings";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
-import { card, outlineBtn, Tag, yellowBtn } from "@/components/dashboard/ui";
+import { card, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { flagOf } from "@/lib/countries";
-import { EditIcon, SaveIcon } from "@/components/icons";
-import { CONTENT_STATUSES, labelOf } from "@/lib/admin-shows";
+import {
+  StatusLegend,
+  VenueLocations,
+} from "@/components/admin/venue-locations";
+import { errText, okText } from "@/lib/venue-forms";
 import {
   getAdminSettings,
   getAdminVenues,
@@ -24,19 +26,7 @@ const MSG: Record<string, [string, boolean]> = {
   saved: ["Settings saved. The website updates within a few minutes.", true],
   city_added: ["City added.", true],
   city_exists: ["That city is already in the list.", false],
-  venue_added: ["Venue added and published.", true],
-  venue_status: ["Venue status saved.", true],
   city_bad: ["Type a city name of 2 to 60 letters.", false],
-  venue_city_added: ["City and venue added. The venue is published.", true],
-  venue_city: [
-    "Choose a city from the list, or type a new city name (2 to 60 letters) and pick its country.",
-    false,
-  ],
-  venue_exists: ["That city already has a venue with this name.", false],
-  venue_bad: [
-    "Check the venue: a name, a Google Maps link (google.com/maps or maps.app.goo.gl) and, if you add them, a website starting with https://, an Instagram handle or link and a Facebook page link.",
-    false,
-  ],
   bad_value: [
     "One of the values is outside its limits. Nothing else changed.",
     false,
@@ -141,88 +131,7 @@ function NumberField({
   );
 }
 
-const LOCATION_MSGS = new Set([
-  "city_added",
-  "city_exists",
-  "city_bad",
-  "venue_added",
-  "venue_exists",
-  "venue_bad",
-  "venue_city",
-  "venue_status",
-  "venue_city_added",
-]);
-
-const smallSelect =
-  "min-h-11 rounded-button border-2 border-radar-purple/25 bg-white px-2 text-sm font-bold";
-
-function venueTag(s: string) {
-  if (s === "published") return <Tag tone="yellow">Published</Tag>;
-  if (s === "pending") return <Tag tone="pink">Pending</Tag>;
-  return <Tag tone="outline">{labelOf(CONTENT_STATUSES, s)}</Tag>;
-}
-
-/** The fields of a new venue, inside one city. */
-function AddVenueForm({ cityId, code }: { cityId: string; code: string }) {
-  const f = (
-    name: string,
-    label: string,
-    ph: string,
-    req = false,
-    type = "text",
-    max = 300,
-  ) => (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={`nv-${name}-${cityId}`} className={labelCls}>
-        {label}
-      </label>
-      <input
-        id={`nv-${name}-${cityId}`}
-        name={name}
-        type={type}
-        required={req}
-        maxLength={max}
-        placeholder={ph}
-        className={`${inputCls} min-h-11`}
-      />
-    </div>
-  );
-  return (
-    <details className="rounded-button bg-lavender p-3">
-      <summary className="cursor-pointer font-extrabold">+ Add a venue</summary>
-      <form action={addVenue} className="mt-3 grid gap-3 sm:grid-cols-2">
-        <input type="hidden" name="city_id" value={cityId} />
-        <input type="hidden" name="open" value={code} />
-        {f(
-          "name",
-          "Venue name",
-          "The name people know it by",
-          true,
-          "text",
-          120,
-        )}
-        {f(
-          "map_url",
-          "Google Maps link",
-          "https://maps.app.goo.gl/…",
-          true,
-          "url",
-          500,
-        )}
-        {f("website", "Website (optional)", "https://", false, "url", 500)}
-        {f(
-          "instagram",
-          "Instagram (optional)",
-          "@venue or instagram.com/venue",
-        )}
-        {f("facebook", "Facebook (optional)", "facebook.com/venue")}
-        <div className="flex items-end">
-          <button className={outlineBtn}>Add venue</button>
-        </div>
-      </form>
-    </details>
-  );
-}
+const LOCATION_MSGS = new Set(["city_added", "city_exists", "city_bad"]);
 
 function Locations({
   data,
@@ -235,21 +144,15 @@ function Locations({
   open: string;
   msg?: [string, boolean];
 }) {
-  const byCity = new Map<string, AdminVenueRow[]>();
-  for (const v of venues)
-    byCity.set(v.city_id, [...(byCity.get(v.city_id) ?? []), v]);
-  const ret = (code: string) => `/admin/settings?open=${code}`;
   return (
     <Card
       id="locations"
       title="Locations and venues"
-      note="Open a country to see its cities and the venues in each city. Shows in a country marked as a market count as In Egypt; others are On tour."
+      note="Open a country to see its cities. Press + beside a city to add a venue there. Shows in a country marked as a market count as In Egypt; others are On tour."
     >
+      <StatusLegend />
       {msg && (
-        <p
-          role="status"
-          className={`rounded-button px-4 py-3 font-extrabold ${msg[1] ? "bg-spotlight-yellow" : "bg-laugh-pink text-white"}`}
-        >
+        <p role="status" className={msg[1] ? okText : errText}>
           {msg[0]}
         </p>
       )}
@@ -271,172 +174,7 @@ function Locations({
           </>
         )}
       </p>
-      <ul className="flex flex-col gap-2">
-        {data.countries.map((c) => {
-          const count = c.cities.reduce(
-            (n, x) => n + (byCity.get(x.id)?.length ?? 0),
-            0,
-          );
-          return (
-            <li key={c.id}>
-              <details
-                open={open === c.code || undefined}
-                className="group rounded-button border-2 border-radar-purple/15 open:border-radar-purple/40"
-              >
-                <summary className="flex min-h-12 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 [&::-webkit-details-marker]:hidden">
-                  <span
-                    aria-hidden="true"
-                    className="inline-block text-xl leading-none font-extrabold transition-transform group-open:rotate-90"
-                  >
-                    ›
-                  </span>
-                  <span className="font-extrabold">
-                    {flagOf(c.code)} {c.name}
-                  </span>
-                  {c.is_market && <Tag tone="yellow">Market</Tag>}
-                  <span className="text-xs text-radar-purple/70">
-                    {c.cities.length === 1
-                      ? "1 city"
-                      : `${c.cities.length} cities`}{" "}
-                    · {count === 1 ? "1 venue" : `${count} venues`}
-                    {c.region ? ` · ${c.region}` : ""}
-                  </span>
-                </summary>
-                <div className="flex flex-col gap-3 border-t border-radar-purple/15 p-3">
-                  {c.cities.length === 0 && (
-                    <p className="text-sm text-radar-purple/70">
-                      No cities yet. Add the first one below.
-                    </p>
-                  )}
-                  {c.cities.map((x) => {
-                    const list = byCity.get(x.id) ?? [];
-                    return (
-                      <section
-                        key={x.id}
-                        aria-labelledby={`city-${x.id}`}
-                        className="flex flex-col gap-2 rounded-button bg-white p-3 shadow-[0_0_0_1px_rgba(43,11,79,0.08)]"
-                      >
-                        <h3 id={`city-${x.id}`} className="font-extrabold">
-                          {x.name}{" "}
-                          <span className="text-xs font-bold text-radar-purple/70">
-                            (
-                            {list.length === 1
-                              ? "1 venue"
-                              : `${list.length} venues`}
-                            )
-                          </span>
-                        </h3>
-                        {list.length > 0 && (
-                          <ul className="flex flex-col divide-y divide-radar-purple/10">
-                            {list.map((v) => (
-                              <li
-                                key={v.id}
-                                className="flex flex-wrap items-center justify-between gap-2 py-2"
-                              >
-                                <span className="flex min-w-0 flex-wrap items-center gap-2">
-                                  <span className="font-bold break-words">
-                                    {v.name}
-                                  </span>
-                                  {venueTag(v.status)}
-                                  {v.upcoming > 0 && (
-                                    <span className="text-xs text-radar-purple/70">
-                                      {v.upcoming === 1
-                                        ? "1 show coming up"
-                                        : `${v.upcoming} shows coming up`}
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <form
-                                    action={setContentStatus}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <input
-                                      type="hidden"
-                                      name="kind"
-                                      value="venue"
-                                    />
-                                    <input
-                                      type="hidden"
-                                      name="id"
-                                      value={v.id}
-                                    />
-                                    <input
-                                      type="hidden"
-                                      name="ret"
-                                      value={ret(c.code)}
-                                    />
-                                    <label
-                                      htmlFor={`vs-${v.id}`}
-                                      className="sr-only"
-                                    >
-                                      Status of {v.name}
-                                    </label>
-                                    <select
-                                      id={`vs-${v.id}`}
-                                      name="status"
-                                      defaultValue={v.status}
-                                      className={smallSelect}
-                                    >
-                                      {CONTENT_STATUSES.map((st) => (
-                                        <option key={st.value} value={st.value}>
-                                          {st.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    <button
-                                      className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`}
-                                      aria-label={`Save status of ${v.name}`}
-                                      title="Save status"
-                                    >
-                                      <SaveIcon />
-                                    </button>
-                                  </form>
-                                  <Link
-                                    href={`/admin/shows?tab=venues&country=${c.code}&city=${x.id}&edit=${v.id}`}
-                                    className="inline-flex h-11 w-11 items-center justify-center rounded-button hover:bg-lavender"
-                                    aria-label={`Edit ${v.name}`}
-                                    title="Edit the venue"
-                                  >
-                                    <EditIcon />
-                                  </Link>
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        <AddVenueForm cityId={x.id} code={c.code} />
-                      </section>
-                    );
-                  })}
-                  <form
-                    action={addCity}
-                    className="flex flex-col gap-2 sm:flex-row sm:items-end"
-                  >
-                    <input type="hidden" name="country_id" value={c.id} />
-                    <input type="hidden" name="open" value={c.code} />
-                    <div className="flex flex-1 flex-col gap-1">
-                      <label htmlFor={`nc-${c.id}`} className={labelCls}>
-                        New city in {c.name}
-                      </label>
-                      <input
-                        id={`nc-${c.id}`}
-                        name="name"
-                        required
-                        minLength={2}
-                        maxLength={60}
-                        placeholder="City name in English"
-                        className={`${inputCls} min-h-11`}
-                      />
-                    </div>
-                    <button className={outlineBtn}>+ Add city</button>
-                  </form>
-                </div>
-              </details>
-            </li>
-          );
-        })}
-      </ul>
+      <VenueLocations countries={data.countries} venues={venues} open={open} />
     </Card>
   );
 }
