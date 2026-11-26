@@ -10,13 +10,13 @@ import {
   StatusLegend,
   VenueLocations,
 } from "@/components/admin/venue-locations";
-import { errText, okText } from "@/lib/venue-forms";
 import {
   getAdminSettings,
   getAdminVenues,
   type AdminSettings,
   type AdminVenueRow,
 } from "@/lib/data/admin";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -152,9 +152,11 @@ function Locations({
     >
       <StatusLegend />
       {msg && (
-        <p role="status" className={msg[1] ? okText : errText}>
-          {msg[0]}
-        </p>
+        msg[1] ? (
+          <SuccessNote className="text-sm">{msg[0]}</SuccessNote>
+        ) : (
+          <ErrorNote className="text-sm">{msg[0]}</ErrorNote>
+        )
       )}
       <p className="text-sm">
         Venues: {data.venues.published} published, {data.venues.pending}{" "}
@@ -226,12 +228,11 @@ async function Content({
 
       <div className="flex min-w-0 flex-col gap-6">
         {msg && (
-          <p
-            role="status"
-            className={`rounded-card px-4 py-3 font-extrabold ${msg[1] ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}
-          >
-            {msg[0]}
-          </p>
+          msg[1] ? (
+            <SuccessNote>{msg[0]}</SuccessNote>
+          ) : (
+            <ErrorNote>{msg[0]}</ErrorNote>
+          )
         )}
 
         <Card id="general" title="General" note="Fixed for launch.">

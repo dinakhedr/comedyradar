@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ConfirmForm } from "@/components/profiles/confirm-form";
 import { createPublicClient } from "@/lib/supabase/public";
+import { SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = {
   title: "Confirm a manager",
@@ -41,9 +42,7 @@ async function Content({ params }: { params: PageProps<"/claim/confirm/[token]">
       <p className="text-sm font-extrabold tracking-wider text-radar-purple/75 uppercase">Comedy Radar</p>
       <h1 className="font-display text-[32px] leading-none md:text-[40px]">CONFIRM A MANAGER</h1>
       {row.confirmed ? (
-        <p role="status" className="rounded-button bg-lavender px-4 py-3 text-base font-extrabold">
-          This request is already confirmed. Thank you!
-        </p>
+        <SuccessNote>This request is already confirmed. Thank you!</SuccessNote>
       ) : (
         <>
           <p className="text-base">

@@ -9,6 +9,7 @@ import { getMyShows } from "@/lib/data/my-shows";
 import { getMyTourOptions } from "@/lib/data/my-tours";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { SHOW_TABS, showTab } from "@/lib/show-forms";
+import { SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Shows" };
 
@@ -53,9 +54,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/s
   return (
     <>
       {saved && SAVED[saved] && (
-        <p role="status" className="rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
-          {SAVED[saved]}
-        </p>
+        <SuccessNote>{SAVED[saved]}</SuccessNote>
       )}
 
       <section aria-label="Numbers" className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">

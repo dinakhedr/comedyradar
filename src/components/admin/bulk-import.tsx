@@ -3,7 +3,8 @@
 import { useActionState, useRef, useState } from "react";
 import { importComedians, importShows, type ComedianImportState, type ShowImportState } from "@/app/actions/admin-import";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
-import { errText, okText } from "@/lib/venue-forms";
+import { errText } from "@/lib/venue-forms";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 const START_COMEDIANS: ComedianImportState = { step: "start", message: "", ok: true, rows: [], counts: { ready: 0, skip: 0, error: 0 } };
 const START_SHOWS: ShowImportState = { step: "start", message: "", ok: true, rows: [], counts: { ready: 0, skip: 0, error: 0 }, createMissing: false };
@@ -130,8 +131,8 @@ export function ComedianImport({ initial = START_COMEDIANS }: { initial?: Comedi
           }}
         />
         {pending && <p className="text-sm font-bold">Checking the file…</p>}
-        {localError && <p className={errText}>{localError}</p>}
-        {!localError && state.message && !pending && <p className={state.ok ? okText : errText}>{state.message}</p>}
+        {localError && <ErrorNote className="text-sm">{localError}</ErrorNote>}
+        {!localError && state.message && !pending && (state.ok ? <SuccessNote className="text-sm">{state.message}</SuccessNote> : <ErrorNote className="text-sm">{state.message}</ErrorNote>)}
 
         {showPreview && (
           <>
@@ -232,8 +233,8 @@ export function ShowImport({ initial = START_SHOWS }: { initial?: ShowImportStat
           </span>
         </label>
         {pending && <p className="text-sm font-bold">Checking the file…</p>}
-        {localError && <p className={errText}>{localError}</p>}
-        {!localError && state.message && !pending && <p className={state.ok ? okText : errText}>{state.message}</p>}
+        {localError && <ErrorNote className="text-sm">{localError}</ErrorNote>}
+        {!localError && state.message && !pending && (state.ok ? <SuccessNote className="text-sm">{state.message}</SuccessNote> : <ErrorNote className="text-sm">{state.message}</ErrorNote>)}
 
         {showPreview && (
           <>

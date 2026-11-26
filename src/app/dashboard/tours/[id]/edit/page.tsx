@@ -6,6 +6,7 @@ import { card, Tag } from "@/components/dashboard/ui";
 import { TourForm } from "@/components/tours/tour-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getEditableTour, getTourFormOptions } from "@/lib/data/my-tours";
+import { ErrorNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Edit tour" };
 
@@ -19,9 +20,7 @@ async function Content({ params, searchParams }: PageProps<"/dashboard/tours/[id
   if (!tour) notFound();
   if (account.is_suspended) {
     return (
-      <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
-        This account is suspended. Please contact comedyradarnetwork@gmail.com.
-      </p>
+      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   return (

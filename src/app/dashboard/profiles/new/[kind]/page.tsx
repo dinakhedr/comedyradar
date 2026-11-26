@@ -6,6 +6,7 @@ import { card } from "@/components/dashboard/ui";
 import { CreateProfileForm } from "@/components/profiles/create-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getCountries } from "@/lib/data/profiles";
+import { ErrorNote } from "@/components/status-note";
 
 export function generateStaticParams() {
   return [{ kind: "comedian" }, { kind: "group" }];
@@ -20,9 +21,7 @@ async function Form({ kind }: { kind: "comedian" | "group" }) {
   const [account, countries] = await Promise.all([requireAccount(), getCountries()]);
   if (account.is_suspended) {
     return (
-      <p role="alert" className="rounded-card bg-laugh-pink px-4 py-3 font-extrabold">
-        This account is suspended. Please contact comedyradarnetwork@gmail.com.
-      </p>
+      <ErrorNote>This account is suspended. Please contact comedyradarnetwork@gmail.com.</ErrorNote>
     );
   }
   return <CreateProfileForm kind={kind} countries={countries} />;

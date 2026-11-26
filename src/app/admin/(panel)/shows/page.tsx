@@ -54,6 +54,7 @@ import {
 } from "@/lib/data/admin";
 import { formatShowDate } from "@/lib/dates";
 import { UUID } from "@/lib/profile-server";
+import { ErrorNote, SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Shows and tours" };
 
@@ -1300,12 +1301,11 @@ async function Content({
   return (
     <>
       {msg && (
-        <p
-          role="status"
-          className={`rounded-card px-4 py-3 font-extrabold ${msgKey === "saved" || msgKey === "declined" || msgKey === "venue_saved" ? "bg-spotlight-yellow" : "bg-laugh-pink"}`}
-        >
-          {msg}
-        </p>
+        ["saved", "declined", "venue_saved"].includes(msgKey) ? (
+          <SuccessNote>{msg}</SuccessNote>
+        ) : (
+          <ErrorNote>{msg}</ErrorNote>
+        )
       )}
       <nav
         aria-label="Shows and tours tabs"

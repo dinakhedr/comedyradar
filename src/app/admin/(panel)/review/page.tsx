@@ -9,6 +9,7 @@ import { ExternalIcon } from "@/components/icons";
 import { itemsFor, PROOF_LABELS, RELATION_LABELS, REVIEW_TABS, reviewTab, TYPE_LABELS, waited, type ReviewItem, type ReviewTab } from "@/lib/admin-review";
 import { formatShowDate } from "@/lib/dates";
 import { claimDocumentUrl, getReviewQueue } from "@/lib/data/admin";
+import { SuccessNote } from "@/components/status-note";
 
 export const metadata: Metadata = { title: "Review queue" };
 
@@ -373,9 +374,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/revie
   return (
     <>
       {done && (
-        <p role="status" className="rounded-card bg-spotlight-yellow px-4 py-3 font-extrabold">
-          {done === "saved" ? "Saved. The next item is open." : "This item was already decided."}
-        </p>
+        <SuccessNote>{done === "saved" ? "Saved. The next item is open." : "This item was already decided."}</SuccessNote>
       )}
       <nav aria-label="Review tabs" className="-mx-1 flex gap-1 overflow-x-auto pb-1">
         {REVIEW_TABS.map((t) => {

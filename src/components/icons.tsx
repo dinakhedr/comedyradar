@@ -206,3 +206,14 @@ export function SaveIcon({ className, size = 20 }: IconProps) {
     </svg>
   );
 }
+
+/** A circled "!": shown before an error message. */
+export function AlertIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5 V13" />
+      <path d="M12 16.5 V16.6" />
+    </svg>
+  );
+}
