@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { trackSpotlightClick } from "@/lib/analytics";
 import type { ShowRow } from "@/lib/data/types";
 import { formatShowDate } from "@/lib/dates";
 import { performerHref, showHref, signalBadge, typeBadge } from "@/lib/show-display";
@@ -185,6 +186,10 @@ function Slide({
       aria-roledescription="slide"
       aria-label={`${position} of ${total}`}
       hidden={!active}
+      // Any link on the slide (title, performer, Get tickets, Show details) counts as a Spotlight click.
+      onClickCapture={(e) => {
+        if ((e.target as HTMLElement).closest("a")) trackSpotlightClick(show.id, position);
+      }}
       className="overflow-hidden rounded-[22px] bg-radar-plum md:grid md:min-h-[420px] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:rounded-spotlight"
     >
       <CoverImage src={show.poster_url} alt="" iconSize={96} className="h-[230px] w-full md:h-full" />

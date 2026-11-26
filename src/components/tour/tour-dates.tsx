@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { trackTicketsClick } from "@/lib/analytics";
 import type { TourDate } from "@/lib/data/tour";
 import { displaySignal } from "@/lib/show-page";
 import { countryCounts, dateTile } from "@/lib/tour-page";
@@ -17,11 +18,18 @@ function DateBadge({ date, now }: { date: TourDate; now: Date }) {
   return null;
 }
 
-function Action({ date }: { date: TourDate }) {
+function Action({ date, performer }: { date: TourDate; performer: string }) {
   const cls = "relative z-10 inline-flex min-h-11 shrink-0 items-center rounded-button px-4 text-sm font-extrabold";
   if (date.status === "published" && date.ticket_url) {
     return (
-      <a href={date.ticket_url} target="_blank" rel="noopener" data-ticket-show={date.id} className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}>
+      <a
+        href={date.ticket_url}
+        target="_blank"
+        rel="noopener"
+        data-ticket-show={date.id}
+        className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}
+        onClick={() => trackTicketsClick({ id: date.id, title: date.title, performer, city: date.city_name, zone: date.zone })}
+      >
         Get tickets
       </a>
     );
@@ -31,7 +39,7 @@ function Action({ date }: { date: TourDate }) {
 }
 
 /** Tour dates with country chips (spec 6.2, item 3). Desktop 3 columns; mobile one row per date. */
-export function TourDates({ dates, nowIso }: { dates: TourDate[]; nowIso: string }) {
+export function TourDates({ dates, nowIso, performer }: { dates: TourDate[]; nowIso: string; performer: string }) {
   const [country, setCountry] = useState<string | null>(null);
   const now = new Date(nowIso);
   const countries = countryCounts(dates);
@@ -98,7 +106,7 @@ export function TourDates({ dates, nowIso }: { dates: TourDate[]; nowIso: string
                   <DateBadge date={date} now={now} />
                 </span>
                 <span className="md:hidden">{date.status !== "published" && <DateBadge date={date} now={now} />}</span>
-                <Action date={date} />
+                <Action date={date} performer={performer} />
               </div>
             </li>
           );

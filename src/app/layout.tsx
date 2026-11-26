@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Luckiest_Guy, Nunito } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
+import { Analytics } from "@/components/analytics/analytics";
+import { analyticsEnabled } from "@/lib/analytics-events";
 import { TicketClickTracker } from "@/components/page-tracker";
+import { consentDefaultsScript } from "@/lib/consent";
 import { SITE_URL } from "@/lib/site";
 
 const luckiestGuy = Luckiest_Guy({
@@ -42,8 +46,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${luckiestGuy.variable} ${nunito.variable} antialiased`}>
       <body className="min-h-screen bg-radar-purple text-white">
+        {/* Google Consent Mode v2: everything denied until the visitor accepts. Runs before GA loads. */}
+        {analyticsEnabled && (
+          <Script id="ga-consent-defaults" strategy="beforeInteractive">
+            {consentDefaultsScript()}
+          </Script>
+        )}
         {children}
         <TicketClickTracker />
+        <Analytics />
       </body>
     </html>
   );

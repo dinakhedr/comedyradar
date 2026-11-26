@@ -17,6 +17,8 @@ import { getGroup, type GroupDetail } from "@/lib/data/group";
 import { formatShowDate } from "@/lib/dates";
 import { paragraphs } from "@/lib/show-page";
 import { ticketLink } from "@/lib/show-display";
+import { TrackedLink } from "@/components/analytics/tracked-link";
+import { ticketsClickEvent } from "@/lib/analytics-events";
 import { SITE_URL } from "@/lib/site";
 import { TrackView } from "@/components/page-tracker";
 
@@ -278,13 +280,20 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                     {show.status === "sold_out" ? (
                       <span className="text-[13px] font-extrabold text-lavender-text">Sold out</span>
                     ) : (
-                      <a
+                      <TrackedLink
                         href={link.href}
                         {...(link.external ? { target: "_blank", rel: "noopener" } : {})}
                         className="relative z-10 text-[13px] font-extrabold text-spotlight-yellow hover:text-white"
+                        event={ticketsClickEvent({
+                          id: show.id,
+                          title: show.title,
+                          performer: member.name,
+                          city: show.city_name,
+                          zone: show.zone,
+                        })}
                       >
                         Get tickets ›
-                      </a>
+                      </TrackedLink>
                     )}
                   </div>
                 </li>

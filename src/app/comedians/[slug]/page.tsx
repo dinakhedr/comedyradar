@@ -12,6 +12,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SocialLinks } from "@/components/social-links";
 import { TourWideCard } from "@/components/tour-wide-card";
+import { TrackedLink } from "@/components/analytics/tracked-link";
+import { podcastPlatform } from "@/lib/analytics-events";
 import { getComedian, type ComedianDetail, type Podcast } from "@/lib/data/comedian";
 import { whenRange } from "@/lib/dates";
 import { comedianShowBadge, hasShowBetween, tourLabel } from "@/lib/profile-page";
@@ -86,6 +88,25 @@ function jsonLd(c: ComedianDetail) {
   ];
 }
 
+/** A listen button; Apple, Spotify, Anghami and podU clicks send `podcast_link_click`. */
+function PodcastLink({ podcast, label, url }: { podcast: string; label: string; url: string }) {
+  const cls =
+    "inline-flex min-h-11 items-center rounded-button bg-white px-4 text-sm font-extrabold text-radar-purple hover:bg-spotlight-yellow";
+  const platform = podcastPlatform(label);
+  if (!platform) {
+    return (
+      <a href={url} target="_blank" rel="noopener" className={cls}>
+        {label}
+      </a>
+    );
+  }
+  return (
+    <TrackedLink href={url} target="_blank" rel="noopener" className={cls} event={{ name: "podcast_link_click", params: { podcast, platform } }}>
+      {label}
+    </TrackedLink>
+  );
+}
+
 function PodcastCard({ podcast }: { podcast: Podcast }) {
   const label = [podcast.coHosts.length ? "Co-hosted" : "Solo", podcast.is_active ? null : "No new episodes"].filter(Boolean).join(" · ");
   return (
@@ -116,14 +137,7 @@ function PodcastCard({ podcast }: { podcast: Podcast }) {
           <ul className="flex flex-wrap gap-2.5" aria-label={`Listen to ${podcast.name}`}>
             {podcast.links.map((l) => (
               <li key={l.label}>
-                <a
-                  href={l.url}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex min-h-11 items-center rounded-button bg-white px-4 text-sm font-extrabold text-radar-purple hover:bg-spotlight-yellow"
-                >
-                  {l.label}
-                </a>
+                <PodcastLink podcast={podcast.name} label={l.label} url={l.url} />
               </li>
             ))}
           </ul>

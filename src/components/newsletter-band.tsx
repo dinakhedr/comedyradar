@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { subscribeToNewsletter } from "@/app/actions/newsletter";
+import { trackNewsletterSignup } from "@/lib/analytics";
 import { NEWSLETTER_IDLE } from "@/lib/newsletter";
 
 /** Yellow newsletter band (spec 5.7): saves the email in newsletter_subscribers. */
@@ -18,6 +19,10 @@ export function NewsletterBand() {
     return action(form);
   };
   const done = state.status === "ok";
+  // One `newsletter_signup` event when the sign-up succeeds.
+  useEffect(() => {
+    if (done) trackNewsletterSignup();
+  }, [done]);
 
   return (
     <section className="bg-spotlight-yellow text-radar-purple" aria-labelledby="newsletter-title">

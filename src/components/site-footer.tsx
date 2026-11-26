@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { analyticsEnabled } from "@/lib/analytics-events";
+import { CookieSettingsButton } from "./analytics/cookie-settings-button";
 import { InstagramIcon, MailIcon } from "./icons";
 import { Logo } from "./logo";
 
@@ -67,6 +69,9 @@ export function SiteFooter() {
                   {l.label}
                 </Link>
               ))}
+              {col.title === "Comedy Radar" && analyticsEnabled && (
+                <CookieSettingsButton className="text-left text-[15px] hover:text-spotlight-yellow" />
+              )}
             </div>
           ))}
         </nav>
