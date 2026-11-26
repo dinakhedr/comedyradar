@@ -341,4 +341,40 @@ select pg_temp.check((select confirmed_by_name = 'Nour Hassan' and confirmed_at 
                       where account_id = '00000000-0000-0000-0000-00000000000b' and type = 'claim'),
   'the confirmation keeps the name typed');
 
+-- Edit a profile (dashboard part 3). Account A is admin of the group 'style-test'.
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.comedy_groups set bio = 'New bio', name = 'Style Test Crew' where slug = 'style-test';
+reset role;
+select pg_temp.check((select name = 'Style Test Crew' and bio = 'New bio' from public.comedy_groups where slug = 'style-test'),
+  'an unverified profile saves its new name straight away');
+update public.comedy_groups set verified = true where slug = 'style-test';
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.comedy_groups set name = 'Renamed Crew', name_ar = 'كرو' where slug = 'style-test';
+update public.comedy_groups set name = 'Renamed Crew 2' where slug = 'style-test';
+select pg_temp.check((select count(*) = 1 and min(name) = 'Renamed Crew 2' and min(old_name) = 'Style Test Crew'
+                      from public.profile_name_changes where status = 'pending'),
+  'a verified profile''s new name waits for review, one request at a time');
+update public.comedy_groups set status = 'archived' where slug = 'style-test';
+update public.comedy_groups set archive_requested_at = '2000-01-01' where slug = 'style-test';
+select pg_temp.check((select count(*) = 1 and sum(jsonb_array_length(people)) = 1 from public.profile_panel(null,
+                        (select id from public.comedy_groups where slug = 'style-test'))),
+  'the side panel lists the people with access');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check((select count(*) = 0 from public.profile_panel(null, (select id from public.comedy_groups where slug = 'style-test'))),
+  'other accounts get nothing from the side panel');
+select pg_temp.check((select count(*) = 0 from public.profile_name_changes),
+  'other accounts cannot see name change requests');
+do $$ begin
+  insert into public.profile_name_changes (group_id, name) select id, 'Hijack' from public.comedy_groups where slug = 'style-test';
+  raise exception 'FAILED: an account wrote a name change directly';
+exception when insufficient_privilege then
+  raise notice 'ok - name changes are written only by the profile rules';
+end $$;
+reset role;
+select pg_temp.check((select name = 'Style Test Crew' and status = 'published' and archive_requested_at > now() - interval '1 minute'
+                      from public.comedy_groups where slug = 'style-test'),
+  'the old name stays, the admin cannot archive, and "request archive" is dated now');
+
 rollback;

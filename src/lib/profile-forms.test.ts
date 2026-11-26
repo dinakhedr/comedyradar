@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkClaim, checkProfile, cleanHandle, cleanSocial, nextSlug, slugify } from "./profile-forms";
+import { checkClaim, checkPodcast, checkProfile, cleanHandle, cleanSocial, nextSlug, slugify } from "./profile-forms";
 
 const base = {
   kind: "comedian" as const,
@@ -73,5 +73,18 @@ describe("claims", () => {
   it("reads Instagram handles", () => {
     expect(cleanHandle("https://instagram.com/Badr.Nour/")).toBe("badr.nour");
     expect(cleanHandle("not a handle!")).toBeNull();
+  });
+});
+
+describe("checkPodcast", () => {
+  const empty = { apple_podcasts_url: "", spotify_url: "", anghami_url: "", podu_url: "", youtube_url: "" };
+  it("needs a name and at least one link", () => {
+    expect(checkPodcast({ name: "", description: "", links: empty }).errors.name).toBeTruthy();
+    expect(checkPodcast({ name: "Estry Mni", description: "", links: empty }).errors.links).toBeTruthy();
+  });
+  it("keeps links on the right sites only", () => {
+    const ok = checkPodcast({ name: "Estry Mni", description: " ", links: { ...empty, podu_url: "podu.me/estry", spotify_url: "https://open.spotify.com/show/abc" } });
+    expect(ok.values).toMatchObject({ podu_url: "https://podu.me/estry", spotify_url: "https://open.spotify.com/show/abc", description: null });
+    expect(checkPodcast({ name: "Estry Mni", description: "", links: { ...empty, anghami_url: "https://evil.com/x" } }).errors.anghami_url).toBeTruthy();
   });
 });
