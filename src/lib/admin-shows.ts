@@ -69,3 +69,6 @@ export function ticketCheck(url: string | null | undefined): "ok" | "missing" | 
     return "bad";
   }
 }
+
+/** Has this date not happened yet? */
+export const isFuture = (iso: string) => Date.parse(iso) > Date.now();

@@ -610,4 +610,41 @@ select pg_temp.check((select count(*) = 0 from auth.sessions where user_id = '00
   'suspending signs the account out of every device');
 select pg_temp.check((select not is_suspended from public.accounts where id = '00000000-0000-0000-0000-00000000000b'), 'an unsuspended account works again');
 
+-- ---------------------------------------------------------------- admin spotlight
+update public.shows set status = 'published', starts_at = now() + interval '5 days' where id = '40000000-0000-0000-0000-000000000001';
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_spotlight() is null
+                     and public.admin_save_placement(null, '40000000-0000-0000-0000-000000000001', now(), null, 1, null, false, null, 'EGP', null, null) = 'forbidden',
+  'only the super admin manages the Spotlight');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check(public.admin_save_placement(null, '40000000-0000-0000-0000-000000000001', now() - interval '1 minute', now() + interval '30 days',
+                                                 20, 1, true, 1000, 'EGP', 'Promoter', null) = 'ok',
+  'the super admin adds a placement');
+select pg_temp.check((select sp.ends_at <= s.starts_at from public.spotlight_placements sp join public.shows s on s.id = sp.show_id
+                      where sp.client_name = 'Promoter'),
+  'a placement ends when the show starts');
+select pg_temp.check(public.admin_save_placement(null, '40000000-0000-0000-0000-000000000001', now() + interval '10 days', null, 0, null, false, null, 'EGP', null, null) = 'bad_dates',
+  'a placement cannot start after the show');
+select pg_temp.check((select (public.admin_spotlight() -> 'stats' ->> 'live')::int >= 1
+                             and (public.admin_spotlight() -> 'stats' ->> 'revenue')::numeric = 1000),
+  'the Spotlight page counts live placements and revenue');
+select pg_temp.check(jsonb_array_length(public.admin_spotlight_shows('show one')) = 1, 'the placement picker finds upcoming shows');
+select pg_temp.check(public.admin_spotlight_settings(9, 6) = 'bad_value' and public.admin_spotlight_settings(4, 8) = 'ok',
+  'carousel settings stay within limits');
+set local request.jwt.claim.aal = '';
+set local role anon;
+select public.record_page_stat('spotlight_view', '40000000-0000-0000-0000-000000000001');
+select public.record_page_stat('spotlight_click', '40000000-0000-0000-0000-000000000001');
+reset role;
+select pg_temp.check((select impressions = 1 and clicks = 1 from public.spotlight_placements where client_name = 'Promoter'),
+  'visitors add Spotlight views and clicks to the live placement');
+set local role authenticated;
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check(public.admin_end_placement((select id from public.spotlight_placements where client_name = 'Promoter')) = 'ended',
+  'the super admin ends a live placement');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;

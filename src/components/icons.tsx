@@ -83,11 +83,37 @@ export function MailIcon({ className, size = 20 }: IconProps) {
 /** The retro stage microphone, used on image placeholders. */
 export function MicIcon({ className, size = 64 }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden className={className}>
-      <rect x="24" y="11" width="16" height="27" rx="8" fill="none" stroke="currentColor" strokeWidth="2" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      aria-hidden
+      className={className}
+    >
+      <rect
+        x="24"
+        y="11"
+        width="16"
+        height="27"
+        rx="8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
       <rect x="22" y="23.5" width="20" height="3.5" rx="1.7" fill="#FF4D8D" />
-      <path d="M32 38 V51" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <path d="M22 55 Q32 49 42 55" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <path
+        d="M32 38 V51"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M22 55 Q32 49 42 55"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -114,7 +140,10 @@ export function CopyIcon({ className, size = 20 }: IconProps) {
 export function TicketIcon({ className, size = 20 }: IconProps) {
   return (
     <svg {...base(size)} strokeWidth={2} className={className}>
-      <path d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z" transform="translate(0 1.5)" />
+      <path
+        d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z"
+        transform="translate(0 1.5)"
+      />
       <path d="M14 6.5 V17.5" strokeDasharray="2 2" />
     </svg>
   );
@@ -124,7 +153,10 @@ export function TicketIcon({ className, size = 20 }: IconProps) {
 export function SoldOutIcon({ className, size = 20 }: IconProps) {
   return (
     <svg {...base(size)} strokeWidth={2} className={className}>
-      <path d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z" transform="translate(0 1.5)" />
+      <path
+        d="M3 8 V6 A1 1 0 0 1 4 5 H20 A1 1 0 0 1 21 6 V8 A2.5 2.5 0 0 0 21 13 V15 A1 1 0 0 1 20 16 H4 A1 1 0 0 1 3 15 V13 A2.5 2.5 0 0 0 3 8 Z"
+        transform="translate(0 1.5)"
+      />
       <path d="M4 21 L20 2" />
     </svg>
   );
@@ -136,6 +168,32 @@ export function ExternalIcon({ className, size = 20 }: IconProps) {
       <path d="M14 4 H20 V10" />
       <path d="M20 4 L11 13" />
       <path d="M18 14 V19 A1 1 0 0 1 17 20 H5 A1 1 0 0 1 4 19 V7 A1 1 0 0 1 5 6 H10" />
+    </svg>
+  );
+}
+
+export function StarIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M12 3.5 L14.6 8.9 L20.5 9.6 L16.1 13.6 L17.3 19.5 L12 16.6 L6.7 19.5 L7.9 13.6 L3.5 9.6 L9.4 8.9 Z" />
+    </svg>
+  );
+}
+
+export function ArrowUpIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <path d="M5 13 L12 6 L19 13" />
+      <path d="M12 6 V19" />
+    </svg>
+  );
+}
+
+export function ArrowDownIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <path d="M5 11 L12 18 L19 11" />
+      <path d="M12 18 V5" />
     </svg>
   );
 }

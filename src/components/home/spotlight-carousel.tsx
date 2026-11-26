@@ -5,13 +5,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { trackSpotlightClick } from "@/lib/analytics";
 import type { ShowRow } from "@/lib/data/types";
 import { formatShowDate } from "@/lib/dates";
-import { performerHref, showHref, signalBadge, typeBadge } from "@/lib/show-display";
+import {
+  performerHref,
+  showHref,
+  signalBadge,
+  typeBadge,
+} from "@/lib/show-display";
 import { Badge } from "../badge";
 import { ChevronLeft, ChevronRight } from "../icons";
 import { CoverImage } from "../placeholder-image";
+import { sendStat } from "../page-tracker";
 import { TicketButton } from "../ticket-button";
 
-export type SpotlightSlideData = { show: ShowRow; sponsored: boolean };
+export type SpotlightSlideData = {
+  show: ShowRow;
+  sponsored: boolean;
+  placed?: boolean;
+};
 
 /**
  * Spotlight carousel (spec 5.3): one full-width slide at a time, counter,
@@ -53,7 +63,10 @@ export function SpotlightCarousel({
 
   useEffect(() => {
     if (!autoPlaying || paused) return;
-    const t = window.setTimeout(() => setIndex((i) => (i + 1) % count), autoAdvanceSeconds * 1000);
+    const t = window.setTimeout(
+      () => setIndex((i) => (i + 1) % count),
+      autoAdvanceSeconds * 1000,
+    );
     return () => window.clearTimeout(t);
   }, [autoPlaying, paused, index, count, autoAdvanceSeconds]);
 
@@ -64,6 +77,15 @@ export function SpotlightCarousel({
     },
     [count],
   );
+
+  // Spotlight placements count a view the first time their slide shows in this tab (spec 9, rule 8).
+  const seen = useRef(new Set<string>());
+  const current = slides[index];
+  useEffect(() => {
+    if (!current?.placed || hidden || seen.current.has(current.show.id)) return;
+    seen.current.add(current.show.id);
+    sendStat("spotlight_view", current.show.id);
+  }, [current, hidden]);
 
   if (count === 0) return null;
 
@@ -76,18 +98,27 @@ export function SpotlightCarousel({
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+          setFocused(false);
       }}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-2.5 md:gap-3.5">
-          <h2 id="spotlight-title" className="font-display text-[28px] md:text-[40px]">
+          <h2
+            id="spotlight-title"
+            className="font-display text-[28px] md:text-[40px]"
+          >
             Spotlight
           </h2>
-          <span className="text-small text-lavender-text md:text-base">This month</span>
+          <span className="text-small text-lavender-text md:text-base">
+            This month
+          </span>
         </div>
         <div className="flex items-center gap-2.5">
-          <span className="text-[13px] font-bold text-lavender-text md:text-small" aria-hidden>
+          <span
+            className="text-[13px] font-bold text-lavender-text md:text-small"
+            aria-hidden
+          >
             {index + 1} / {count}
           </span>
           {count > 1 && (
@@ -106,11 +137,18 @@ export function SpotlightCarousel({
           if (touchStart.current === null) return;
           const dx = e.changedTouches[0].clientX - touchStart.current;
           touchStart.current = null;
-          if (Math.abs(dx) > 40 && count > 1) go(dx < 0 ? index + 1 : index - 1);
+          if (Math.abs(dx) > 40 && count > 1)
+            go(dx < 0 ? index + 1 : index - 1);
         }}
       >
         {slides.map((slide, i) => (
-          <Slide key={slide.show.id} slide={slide} position={i + 1} total={count} active={i === index} />
+          <Slide
+            key={slide.show.id}
+            slide={slide}
+            position={i + 1}
+            total={count}
+            active={i === index}
+          />
         ))}
       </div>
 
@@ -146,7 +184,13 @@ export function SpotlightCarousel({
   );
 }
 
-function ArrowButton({ direction, onClick }: { direction: "prev" | "next"; onClick: () => void }) {
+function ArrowButton({
+  direction,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  onClick: () => void;
+}) {
   const next = direction === "next";
   return (
     <button
@@ -188,11 +232,18 @@ function Slide({
       hidden={!active}
       // Any link on the slide (title, performer, Get tickets, Show details) counts as a Spotlight click.
       onClickCapture={(e) => {
-        if ((e.target as HTMLElement).closest("a")) trackSpotlightClick(show.id, position);
+        if (!(e.target as HTMLElement).closest("a")) return;
+        trackSpotlightClick(show.id, position);
+        if (slide.placed) sendStat("spotlight_click", show.id);
       }}
       className="overflow-hidden rounded-[22px] bg-radar-plum md:grid md:min-h-[420px] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:rounded-spotlight"
     >
-      <CoverImage src={show.poster_url} alt="" iconSize={96} className="h-[230px] w-full md:h-full" />
+      <CoverImage
+        src={show.poster_url}
+        alt=""
+        iconSize={96}
+        className="h-[230px] w-full md:h-full"
+      />
       <div className="flex flex-col justify-center gap-2 p-[18px] md:gap-3.5 md:px-11 md:py-10">
         <div className="flex flex-wrap gap-1.5 md:gap-2">
           {signal && (
@@ -227,7 +278,12 @@ function Slide({
         </p>
         <div className="mt-1.5 flex flex-wrap gap-3 md:mt-2.5">
           <div className="w-full md:w-auto">
-            <TicketButton show={show} size="lg" sponsored={slide.sponsored} full />
+            <TicketButton
+              show={show}
+              size="lg"
+              sponsored={slide.sponsored}
+              full
+            />
           </div>
           <Link
             href={showHref(show)}
