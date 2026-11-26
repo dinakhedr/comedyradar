@@ -8,6 +8,7 @@ import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboa
 import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Profiles" };
 
@@ -40,9 +41,7 @@ const smallSelect = "min-h-11 rounded-button border-2 border-radar-purple/25 bg-
 const pageOf = (p: AdminProfileRow) => `/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}`;
 
 function statusTag(p: AdminProfileRow) {
-  if (p.status === "published") return <Tag tone="yellow">Published</Tag>;
-  if (p.status === "pending") return <Tag tone="pink">Pending</Tag>;
-  return <Tag tone="outline">{p.status === "draft" ? "Draft" : "Archived"}</Tag>;
+  return <StatusPill status={p.status} />;
 }
 
 async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; close: string }) {

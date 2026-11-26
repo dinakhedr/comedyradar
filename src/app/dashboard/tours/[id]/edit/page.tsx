@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { card, Tag } from "@/components/dashboard/ui";
+import { card } from "@/components/dashboard/ui";
 import { TourForm } from "@/components/tours/tour-form";
 import { requireAccount } from "@/lib/data/dashboard";
 import { getEditableTour, getTourFormOptions } from "@/lib/data/my-tours";
 import { ErrorNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 
 export const metadata: Metadata = { title: "Edit tour" };
 
@@ -27,7 +28,7 @@ async function Content({ params, searchParams }: PageProps<"/dashboard/tours/[id
     <>
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="font-display text-[32px] leading-none md:text-[44px]">{tour.name.toUpperCase()}</h1>
-        <Tag tone={tour.status === "published" ? "yellow" : tour.status === "pending" ? "pink" : "outline"}>{STATUS[tour.status]}</Tag>
+        <StatusPill status={tour.status} label={STATUS[tour.status]} />
         {tour.status === "published" && (
           <Link href={`/tours/${tour.slug}`} className="text-sm font-extrabold underline">
             View public page

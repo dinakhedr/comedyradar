@@ -5,14 +5,14 @@ import { useState } from "react";
 import { updateShowStatus } from "@/app/actions/shows";
 import { setShowsTour } from "@/app/actions/tours";
 import { CopyIcon, EditIcon, ExternalIcon, SoldOutIcon, TicketIcon } from "@/components/icons";
-import { outlineBtn, Tag, type Tone } from "@/components/dashboard/ui";
+import { outlineBtn } from "@/components/dashboard/ui";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import type { ListedShow } from "@/lib/data/my-shows";
 import { formatShowDate } from "@/lib/dates";
+import { ShowStatusPill } from "@/components/status";
 
 /** The dashboard Shows table with bulk select and row actions (spec 11.4 item 9). */
 
-const STATUS_TONE: Record<string, Tone> = { draft: "outline", pending: "pink", published: "yellow", sold_out: "purple", cancelled: "outline" };
 const SIGNALS: Record<string, string> = { new: "New", strong: "Strong", fading: "Fading", none: "None" };
 /** Square icon buttons; the label is read out and shown as a tooltip. */
 const iconBtn = "inline-flex h-11 w-11 items-center justify-center rounded-button text-radar-purple hover:bg-lavender focus-visible:outline-2 focus-visible:outline-radar-purple";
@@ -143,7 +143,7 @@ export function ShowsTable({ shows, past, tours }: { shows: ListedShow[]; past: 
                   <td className="py-3 pr-3">{s.performers.join(", ") || "—"}</td>
                   <td className="py-3 pr-3">{s.tour_name ?? "—"}</td>
                   <td className="py-3 pr-3">
-                    <Tag tone={STATUS_TONE[s.status] ?? "outline"}>{SHOW_STATUS_LABELS[s.status] ?? s.status}</Tag>
+                    <ShowStatusPill status={s.status} label={SHOW_STATUS_LABELS[s.status]} />
                   </td>
                   <td className="py-3 pr-3">
                     {SIGNALS[s.signal] ?? s.signal}
