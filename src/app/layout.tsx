@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Luckiest_Guy, Nunito } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 const luckiestGuy = Luckiest_Guy({
   variable: "--font-luckiest-guy",
@@ -16,10 +17,8 @@ const nunito = Nunito({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://comedyradarnetwork.vercel.app";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Stand-up comedy in Cairo this month | Comedy Radar",
     template: "%s | Comedy Radar",
