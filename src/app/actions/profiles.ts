@@ -1,20 +1,16 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { updateTag } from "next/cache";
 import {
   checkClaim,
-  checkProfile,
   AVAILABLE_PROOFS,
-  nextSlug,
-  slugify,
   type ClaimErrors,
   type ProfileErrors,
   type ProfileKind,
-  type Social,
 } from "@/lib/profile-forms";
 import { requireAccount } from "@/lib/data/dashboard";
+import { addMembers, freeSlug, origin, photoError, readProfileForm, text, uploadImage, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
 
 export type FoundProfile = {
@@ -29,17 +25,6 @@ export type FoundProfile = {
   score: number;
 };
 
-const text = (v: FormDataEntryValue | null) => (typeof v === "string" ? v : "");
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PHOTO_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
-const MAX_PHOTO = 10 * 1024 * 1024;
-
-async function origin(): Promise<string> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 /** Profiles with a similar English or Arabic name (published or in review). */
 export async function findProfiles(q: string): Promise<FoundProfile[]> {
@@ -89,23 +74,9 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
   const account = await requireAccount();
   if (account.is_suspended) return { message: "This account is suspended." };
   const kind: ProfileKind = text(form.get("kind")) === "group" ? "group" : "comedian";
-  const socials = Object.fromEntries(
-    (["instagram", "tiktok", "youtube", "facebook"] as Social[]).map((k) => [k, text(form.get(k))]),
-  ) as Record<Social, string>;
-  const { values, errors } = checkProfile({
-    kind,
-    name: text(form.get("name")),
-    name_ar: text(form.get("name_ar")),
-    bio: text(form.get("bio")),
-    country: text(form.get("country")),
-    socials,
-    styles: form.getAll("styles").map(String),
-    language: text(form.get("language")),
-  });
+  const { values, errors } = readProfileForm(form, kind);
 
-  const photo = form.get("photo");
-  const file = photo instanceof File && photo.size > 0 ? photo : null;
-  const photoErr = file && (!PHOTO_TYPES[file.type] ? "Please use a JPG, PNG or WebP photo." : file.size > MAX_PHOTO ? "The photo is larger than 10 MB." : null);
+  const { file, error: photoErr } = photoError(form, "photo");
   if (!values || photoErr) {
     return {
       errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}) },
@@ -131,9 +102,9 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
 
   const supabase = await createClient();
   const table = kind === "group" ? "comedy_groups" : "comedians";
-  const base = slugify(values.name, kind);
-  const { data: taken } = await supabase.from(table).select("slug").like("slug", `${base}%`).limit(200);
-  let slug = nextSlug(base, ((taken ?? []) as { slug: string }[]).map((r) => r.slug));
+  const free = await freeSlug(supabase, table, values.name, kind);
+  const base = free.base;
+  let slug = free.slug;
   const status = text(form.get("intent")) === "draft" ? "draft" : "pending";
 
   let id: string | null = null;
@@ -150,59 +121,14 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
 
   // Photo: saved after the profile exists, because the folder is named after it.
   if (file) {
-    const path = `${id}/photo-${Date.now()}.${PHOTO_TYPES[file.type]}`;
-    const bucket = kind === "group" ? "groups" : "comedians";
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
-    if (error) console.error("profile photo", error.message);
-    else {
-      const url = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-      await supabase.from(table).update({ photo_url: url }).eq("id", id);
-    }
+    const url = await uploadImage(supabase, kind === "group" ? "groups" : "comedians", id, "photo", file);
+    if (url) await supabase.from(table).update({ photo_url: url }).eq("id", id);
   }
 
   if (kind === "group") await addMembers(supabase, account.id, id, form);
 
   updateTag("profiles");
   redirect(`/dashboard/profiles?created=${kind === "group" ? "g" : "c"}:${slug}`);
-}
-
-/** Group members: existing comedians (a link request when someone else manages them) and new drafts. */
-async function addMembers(supabase: Awaited<ReturnType<typeof createClient>>, accountId: string, groupId: string, form: FormData) {
-  const existing = [...new Set(form.getAll("member_ids").map(String).filter((v) => UUID.test(v)))].slice(0, 20);
-  const newNames = text(form.get("new_members"))
-    .split("\n")
-    .map((n) => n.trim().replace(/\s+/g, " "))
-    .filter((n) => n.length >= 2 && n.length <= 80 && /[A-Za-z]/.test(n))
-    .slice(0, 20);
-
-  const created: string[] = [];
-  for (const name of newNames) {
-    const base = slugify(name, "comedian");
-    const { data: taken } = await supabase.from("comedians").select("slug").like("slug", `${base}%`).limit(200);
-    const slug = nextSlug(base, ((taken ?? []) as { slug: string }[]).map((r) => r.slug));
-    const { data, error } = await supabase.from("comedians").insert({ name, slug, status: "draft" }).select("id").single();
-    if (error) console.error("member draft", error.message);
-    if (data) created.push((data as { id: string }).id);
-  }
-
-  const all = [...existing, ...created];
-  if (!all.length) return;
-  const { data: rows, error } = await supabase
-    .from("group_members")
-    .insert(all.map((comedian_id, i) => ({ group_id: groupId, comedian_id, display_order: i + 1 })))
-    .select("comedian_id, link_status");
-  if (error) {
-    console.error("group members", error.message);
-    return;
-  }
-  // Members this account does not manage wait for their admin's answer (spec 11.3, consent).
-  const pending = ((rows ?? []) as { comedian_id: string; link_status: string }[]).filter((r) => r.link_status === "pending");
-  if (pending.length) {
-    const { error: reqErr } = await supabase.from("link_requests").insert(
-      pending.map((r) => ({ type: "group_member", from_account_id: accountId, target_comedian_id: r.comedian_id, group_id: groupId })),
-    );
-    if (reqErr) console.error("link requests", reqErr.message);
-  }
 }
 
 // ---------------------------------------------------------------------------

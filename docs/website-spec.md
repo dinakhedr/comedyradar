@@ -645,6 +645,22 @@ create table access_requests (
   check ((comedian_id is null) <> (group_id is null))
 );
 
+-- Name changes on verified profiles wait for the super admin (spec 11.4 item 5);
+-- written by the profile trigger, one pending request per profile.
+create table profile_name_changes (
+  id uuid primary key default gen_random_uuid(),
+  comedian_id uuid references comedians(id) on delete cascade,
+  group_id uuid references comedy_groups(id) on delete cascade,
+  name text not null, name_ar text,
+  old_name text, old_name_ar text,
+  requested_by uuid references accounts(id),
+  status text default 'pending',      -- 'pending' | 'approved' | 'rejected'
+  decided_by uuid references accounts(id), decision_reason text,
+  created_at timestamptz default now(), decided_at timestamptz,
+  check ((comedian_id is null) <> (group_id is null))
+);
+-- comedians / comedy_groups also have archive_requested_at timestamptz ("Request archive").
+
 -- Consent requests between profiles (group member, lineup tag, podcast co-host)
 create table link_requests (
   id uuid primary key default gen_random_uuid(),
@@ -781,7 +797,7 @@ Dashboard style: light working theme — Lavender background, white cards, Radar
 2. **Create or claim a profile** (`/dashboard/profiles/new`): step 1 search "Is your profile already on Comedy Radar?" → results with **Claim** (relation + one proof method from section 11.3, the official-account message selected by default) or "Not found → Create a new profile" (Comedian / Group). Group creation picks existing comedians or creates member drafts inline.
 3. **Dashboard overview** (`/dashboard`): sidebar (Overview, Shows, Tours, Profiles, Team and access, Requests with count, Spotlight — soon), top bar with **profile switcher**; greeting + "You manage [N] profiles"; stat tiles (upcoming shows, page views 30 days, ticket clicks 30 days, pending review); **My profiles** cards (photo, name, type, my role, status: Verified / Pending review / Draft); **Upcoming shows** table across profiles (date, show, performer, status, clicks, actions); quick actions (Add show, Add tour, Create or claim profile); requests alert.
 4. **Add a show** (`/dashboard/shows/new`): performer picker limited to managed profiles (group / comedian / lineup with tags), title, description, date, doors and show time, country, city, venue (search or suggest new), ticket link, price from/to + currency, language, age, poster upload (4:5), signal note; "Part of a tour" selector; right-side **live preview** of the show card; buttons Save draft / Publish (or "Send for review" for unverified profiles).
-5. **Edit profile** (`/dashboard/p/[slug]/edit`): photo and cover, name EN/AR, bio, home country, social links; for groups: **members** list (accepted / pending invitations, add member); for comedians: **podcasts** with co-hosts and platform links (Apple Podcasts, Spotify, Anghami, podU, YouTube). Side panel: profile status, verified, last edit, people with access; name changes on verified profiles go to super admin review; "Request archive" (only the super admin deletes).
+5. **Edit profile** (`/dashboard/p/[slug]/edit`, `?type=group` for a group): photo and cover, name EN/AR, bio, home country, social links; for groups: **members** list (accepted / pending invitations, add member); for comedians: **podcasts** with co-hosts and platform links (Apple Podcasts, Spotify, Anghami, podU, YouTube). Side panel: profile status, verified, last edit, people with access; name changes on verified profiles go to super admin review; "Request archive" (only the super admin deletes).
 6. **Team and access** (`/dashboard/team`): stat tiles (team members, profiles in the dashboard, pending invitations); **team members table** with the access of each person as chips ("All profiles · Moderator" or "HighFive · Admin", "Badr Nour · Admin"…), Edit access, Remove; filter "Show access to [profile]"; pending invitations (resend, cancel, expire after 7 days); Admin / Moderator explanation. **Invite panel:** email; Access = **All profiles in this dashboard** (one role, includes profiles added later) or **Selected profiles only** (checklist of the owner's profiles with Select all and a role per ticked profile); note that only profiles where the owner is Admin can be shared and that a group does not include its members' solo profiles.
 7. **Requests** (`/dashboard/requests`): tabs Incoming / Sent / History; type filter (Lineup tags, Groups, Podcasts, Team invites); cards for group invitations, lineup tags, podcast co-host requests and team invitations with Accept / Decline; "Sent by you, waiting" list with Cancel.
 8. **Add a tour** (`/dashboard/tours/new`): 1 Who is touring (managed profiles only; one comedian or one group); 2 Tour details (name, description, 4:5 poster, optional 3:1 banner); 3 **Tour dates** — one row per date with date, show time, city and country, venue (search or suggest), ticket link and status (On sale / Sold out / No ticket link), "+ Add a date", "Paste several dates" (one per line) and "Import my existing shows"; 4 **Same for every date** (show title pattern "[Tour] — [City]", language, price from/to, currency per city, age, doors, guests). Right side: live tour card preview and a publish checklist (name and poster, at least one date, ticket links, venues). Each date is saved as its own show linked to the tour; dates without a link show "Tickets soon".

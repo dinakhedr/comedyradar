@@ -8,8 +8,10 @@ export type ManagedProfile = {
   photo_url: string | null;
   status: "draft" | "pending" | "published" | "archived";
   verified: boolean;
-  role: "admin" | "moderator";
+  role: ProfileRole;
 };
+
+export type ProfileRole = "admin" | "moderator";
 
 /** "c:badr-nour" or "g:highfive": the profile switcher value kept in the address (?p=). */
 export const profileKey = (p: Pick<ManagedProfile, "kind" | "slug">) => `${p.kind === "group" ? "g" : "c"}:${p.slug}`;

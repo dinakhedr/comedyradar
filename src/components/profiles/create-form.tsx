@@ -10,7 +10,7 @@ import { SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
 
 type Country = { id: string; name: string };
 
-function TextField({
+export function TextField({
   label,
   name,
   hint,
@@ -68,8 +68,18 @@ function TextField({
   );
 }
 
-/** Pick group members from comedians already on Comedy Radar. */
-function MemberPicker({ initial }: { initial: { id: string; name: string }[] }) {
+/** Pick comedians already on Comedy Radar (group members, podcast co-hosts). */
+export function MemberPicker({
+  initial,
+  label = "Members already on Comedy Radar",
+  hint = "A member who manages their own page is asked first, and shows on the group page once they accept.",
+  listLabel = "Members added",
+}: {
+  initial: { id: string; name: string }[];
+  label?: string;
+  hint?: string;
+  listLabel?: string;
+}) {
   const id = useId();
   const [members, setMembers] = useState(initial);
   const [q, setQ] = useState("");
@@ -84,10 +94,10 @@ function MemberPicker({ initial }: { initial: { id: string; name: string }[] }) 
   return (
     <div className="flex flex-col gap-2.5">
       <label htmlFor={id} className={labelCls}>
-        Members already on Comedy Radar <span className="font-bold text-radar-purple/70">(optional)</span>
+        {label} <span className="font-bold text-radar-purple/70">(optional)</span>
       </label>
       <p id={`${id}-hint`} className="text-sm text-radar-purple/75">
-        A member who manages their own page is asked first, and shows on the group page once they accept.
+        {hint}
       </p>
       <div className="flex flex-col gap-2.5 sm:flex-row">
         <input
@@ -113,7 +123,7 @@ function MemberPicker({ initial }: { initial: { id: string; name: string }[] }) 
       {found && (
         <div aria-live="polite">
           {found.length === 0 ? (
-            <p className="text-sm font-bold">No comedian found. Add them as a new member below.</p>
+            <p className="text-sm font-bold">No comedian found with this name.</p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {found.map((c) => {
@@ -141,7 +151,7 @@ function MemberPicker({ initial }: { initial: { id: string; name: string }[] }) 
         </div>
       )}
       {members.length > 0 && (
-        <ul aria-label="Members added" className="flex flex-wrap gap-2">
+        <ul aria-label={listLabel} className="flex flex-wrap gap-2">
           {members.map((m) => (
             <li key={m.id} className="flex items-center gap-1 rounded-full bg-radar-purple py-1 pr-1 pl-3 text-sm font-bold text-white">
               {m.name}

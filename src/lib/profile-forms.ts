@@ -213,3 +213,68 @@ export function checkClaim(
   }
   return { errors, proofValue };
 }
+
+// ---------------------------------------------------------------------------
+// Podcasts (comedians only, spec 6.4 item 6 and 11.4 item 5)
+// ---------------------------------------------------------------------------
+
+const PODCAST_HOSTS = {
+  apple_podcasts_url: ["podcasts.apple.com"],
+  spotify_url: ["open.spotify.com", "spotify.com"],
+  anghami_url: ["anghami.com", "play.anghami.com", "open.anghami.com"],
+  podu_url: ["podu.me"],
+  youtube_url: ["youtube.com", "youtu.be", "music.youtube.com"],
+} as const;
+export type PodcastLink = keyof typeof PODCAST_HOSTS;
+
+export const PODCAST_LINKS: { key: PodcastLink; label: string }[] = [
+  { key: "apple_podcasts_url", label: "Apple Podcasts" },
+  { key: "spotify_url", label: "Spotify" },
+  { key: "anghami_url", label: "Anghami" },
+  { key: "podu_url", label: "podU" },
+  { key: "youtube_url", label: "YouTube" },
+];
+
+/** A link on one of the listed sites as https, null when empty, "invalid" otherwise. */
+export function cleanLink(raw: string, hosts: readonly string[]): string | null | "invalid" {
+  let v = raw.trim();
+  if (!v) return null;
+  if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+  try {
+    const u = new URL(v);
+    const host = u.hostname.toLowerCase().replace(/^(www\.|m\.)/, "");
+    if (!hosts.includes(host)) return "invalid";
+    if (u.pathname.length <= 1) return "invalid";
+    u.protocol = "https:";
+    u.hash = "";
+    return u.toString().slice(0, 300);
+  } catch {
+    return "invalid";
+  }
+}
+
+export type PodcastErrors = Partial<Record<"name" | "description" | "links" | PodcastLink, string>>;
+export type PodcastValues = { name: string; description: string | null } & Record<PodcastLink, string | null>;
+
+export function checkPodcast(f: { name: string; description: string; links: Record<PodcastLink, string> }): {
+  values?: PodcastValues;
+  errors: PodcastErrors;
+} {
+  const errors: PodcastErrors = {};
+  const name = f.name.trim().replace(/\s+/g, " ");
+  if (name.length < 2) errors.name = "Please enter the podcast name.";
+  else if (name.length > 80) errors.name = "Please use at most 80 characters.";
+  const description = f.description.trim();
+  if (description.length > 600) errors.description = "Please keep the description under 600 characters.";
+  const links = {} as Record<PodcastLink, string | null>;
+  for (const { key, label } of PODCAST_LINKS) {
+    const v = cleanLink(f.links[key] ?? "", PODCAST_HOSTS[key]);
+    if (v === "invalid") errors[key] = `Please paste a ${label} link.`;
+    else links[key] = v;
+  }
+  if (!Object.keys(errors).length && !Object.values(links).some(Boolean)) {
+    errors.links = "Please add at least one link where people can listen.";
+  }
+  if (Object.keys(errors).length) return { errors };
+  return { errors, values: { name, description: description || null, ...links } };
+}

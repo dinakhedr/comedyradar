@@ -37,6 +37,10 @@ export function ProfileCard({ p }: { p: ManagedProfile }) {
         </span>
         <span className="flex flex-wrap items-center gap-2">
           <Tag tone={status.tone}>{status.label}</Tag>
+          <Link href={`/dashboard/p/${p.slug}/edit${p.kind === "group" ? "?type=group" : ""}`} className="text-sm font-extrabold underline">
+            {p.role === "admin" ? "Edit" : "Open"}
+            <span className="sr-only"> {p.name}</span>
+          </Link>
           {href && (
             <Link href={href} className="text-sm font-extrabold underline">
               View page
