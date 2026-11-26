@@ -150,7 +150,7 @@ function StatusForm({
         ))}
       </select>
       <button
-        className={`${outlineBtn} h-11 w-11 shrink-0 px-0`}
+        className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`}
         aria-label={`Save status of ${name}`}
         title="Save status"
       >
@@ -248,7 +248,7 @@ function ShowPanel({
               ))}
             </select>
             <button
-              className={`${yellowBtn} h-11 w-11 shrink-0 px-0`}
+              className={`${yellowBtn} h-11 w-11 shrink-0 px-0!`}
               aria-label="Save status"
               title="Save status"
             >

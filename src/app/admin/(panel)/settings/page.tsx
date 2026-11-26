@@ -385,7 +385,7 @@ function Locations({
                                       ))}
                                     </select>
                                     <button
-                                      className={`${outlineBtn} h-11 w-11 shrink-0 px-0`}
+                                      className={`${outlineBtn} h-11 w-11 shrink-0 px-0!`}
                                       aria-label={`Save status of ${v.name}`}
                                       title="Save status"
                                     >
