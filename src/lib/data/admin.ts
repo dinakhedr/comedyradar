@@ -570,3 +570,14 @@ export async function getAdminMessages(opts: {
     more: rows.length > opts.limit,
   };
 }
+
+export type DeleteImpact = { name: string; solo_shows: number; shared_shows: number; tours: number; solo_podcasts: number };
+
+/** What deleting a profile would remove, for the confirm step. */
+export async function getDeleteImpact(kind: "comedian" | "group", id: string): Promise<DeleteImpact | null> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_profile_delete_impact", { p_kind: kind, p_id: id });
+  if (error) console.error("admin_profile_delete_impact", error.message);
+  return (data ?? null) as DeleteImpact | null;
+}

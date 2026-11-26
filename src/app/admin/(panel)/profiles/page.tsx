@@ -29,6 +29,7 @@ const VERIFIED = [
 ];
 const MSG: Record<string, string> = {
   saved: "Saved.",
+  deleted: "Profile deleted.",
   added: "Access added.",
   no_account: "Nobody has signed up with that email yet. Ask them to create an account first.",
   error: "Something went wrong. Please try again.",
