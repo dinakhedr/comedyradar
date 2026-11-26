@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/app/actions/auth";
 import { profileKey } from "@/lib/dashboard";
@@ -18,6 +19,11 @@ export async function TopBar() {
         <span />
       )}
       <div className="flex items-center gap-3">
+        {account.is_super_admin && (
+          <Link href="/admin" className="min-h-11 content-center rounded-button bg-stage-black px-3 text-sm font-extrabold text-white">
+            Admin panel
+          </Link>
+        )}
         <span className="hidden text-sm sm:inline">
           Signed in as <strong>{account.display_name || account.email}</strong>
         </span>
