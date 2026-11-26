@@ -13,6 +13,7 @@ import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fie
 import { card, yellowBtn } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { MemberPicker, TextField } from "@/components/profiles/create-form";
+import { coverOf } from "@/lib/covers";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { PODCAST_LINKS, SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
 
@@ -74,6 +75,7 @@ function ImageField({
   current,
   removable,
   wide,
+  preview,
   error,
 }: {
   label: string;
@@ -82,6 +84,8 @@ function ImageField({
   current: string | null;
   removable?: boolean;
   wide?: boolean;
+  /** What is shown when there is no image yet (the default cover). */
+  preview?: string;
   error?: string;
 }) {
   const id = useId();
@@ -92,7 +96,7 @@ function ImageField({
       </label>
       <div className="flex flex-wrap items-center gap-4">
         <span className={`shrink-0 overflow-hidden ${wide ? "h-20 w-40 rounded-xl" : "h-20 w-20 rounded-full"}`}>
-          <CoverImage src={current} alt="" iconSize={28} className="h-full w-full" tone="deep" />
+          <CoverImage src={current ?? preview ?? null} alt="" iconSize={28} className="h-full w-full" tone="deep" />
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
           <p id={`${id}-hint`} className="text-sm text-radar-purple/75">
@@ -149,10 +153,11 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
           name="cover"
           hint={
             group
-              ? "A wide photo for the top of your group page (3:1 works best). JPG, PNG or WebP, up to 10 MB."
-              : "A wide photo (3:1 works best), saved for your page. JPG, PNG or WebP, up to 10 MB."
+              ? "A wide photo for the top of your group page (3:1 works best). Until you add one, the Comedy Radar cover shows. JPG, PNG or WebP, up to 10 MB."
+              : "A wide photo (3:1 works best), saved for your page. Until you add one, the Comedy Radar cover is used. JPG, PNG or WebP, up to 10 MB."
           }
           current={p.cover_url}
+          preview={coverOf(p.cover_url)}
           removable
           wide
           error={e.cover}
