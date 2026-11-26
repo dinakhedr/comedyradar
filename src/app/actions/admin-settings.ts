@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import { requireSuperAdmin } from "@/lib/data/admin";
 import { text, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  venueMessage,
+  venueValues,
+  VENUE_STATUSES,
+  type VenueFormState,
+} from "@/lib/venue-forms";
 
 /** Admin Settings (spec 11.5 item 8). Each action runs a database function that checks the super admin and the limits again. */
 
@@ -74,61 +80,62 @@ export async function addCity(form: FormData): Promise<void> {
   );
 }
 
-/** Adds a published venue to a city: name, optional website, Google Maps link. */
-export async function addVenue(form: FormData): Promise<void> {
+/** Adds a published venue to a city, from the + beside the city. Returns a message shown in the form. */
+export async function addVenue(
+  _prev: VenueFormState,
+  form: FormData,
+): Promise<VenueFormState> {
   await requireSuperAdmin();
-  const back = (msg: string) =>
-    redirect(`/admin/settings?${openParam(form)}msg=${msg}#locations`);
-  let city = text(form.get("city_id"));
-  const newCity = text(form.get("new_city"))
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 80);
-  if (newCity) {
-    // A city that is not in the list yet: add it first (or use it if it already exists).
-    const country = text(form.get("new_city_country"));
-    if (!UUID.test(country)) return back("venue_city");
-    const added = await run("admin_add_city", {
-      p_country_id: country,
-      p_name: newCity,
-    });
-    if (added !== "ok" && added !== "exists") return back("venue_city");
-    const slug = newCity
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("cities")
-      .select("id, name, slug")
-      .eq("country_id", country);
-    const found = (data ?? []).find(
-      (c: { slug: string; name: string }) =>
-        c.slug === slug || c.name.toLowerCase() === newCity.toLowerCase(),
-    ) as { id: string } | undefined;
-    if (!found) return back("venue_city");
-    city = found.id;
-  }
-  if (!UUID.test(city)) return back("venue_city");
+  const v = venueValues(form);
+  const city = text(form.get("city_id"));
+  const cityName = text(form.get("city_name")).slice(0, 80);
+  if (!UUID.test(city))
+    return { ...venueMessage("error", "add", v.name, cityName), values: v };
   const r = await run("admin_add_venue", {
     p_city_id: city,
-    p_name: text(form.get("name")).slice(0, 140),
-    p_website: text(form.get("website")).trim().slice(0, 500) || null,
-    p_map_url: text(form.get("map_url")).trim().slice(0, 500),
-    p_instagram: text(form.get("instagram")).trim().slice(0, 300) || null,
-    p_facebook: text(form.get("facebook")).trim().slice(0, 300) || null,
+    p_name: v.name,
+    p_website: v.website || null,
+    p_map_url: v.map_url,
+    p_instagram: v.instagram || null,
+    p_facebook: v.facebook || null,
   });
-  back(
-    r === "ok"
-      ? newCity
-        ? "venue_city_added"
-        : "venue_added"
-      : r === "exists"
-        ? "venue_exists"
-        : r === "bad_value"
-          ? "venue_bad"
-          : "error",
-  );
+  return { ...venueMessage(r, "add", v.name, cityName), values: v };
+}
+
+/** Saves a venue's details and status, from the pencil on its row. */
+export async function editVenue(
+  _prev: VenueFormState,
+  form: FormData,
+): Promise<VenueFormState> {
+  await requireSuperAdmin();
+  const v = venueValues(form);
+  const id = text(form.get("id"));
+  const cityName = text(form.get("city_name")).slice(0, 80);
+  const fail = (r: string) => ({
+    ...venueMessage(r, "edit", v.name, cityName),
+    values: v,
+  });
+  if (!UUID.test(id)) return fail("error");
+  if (!VENUE_STATUSES.includes(v.status)) return fail("bad_status");
+  const r = await run("admin_update_venue", {
+    p_id: id,
+    p_name: v.name,
+    p_address: v.address,
+    p_website: v.website || null,
+    p_map_url: v.map_url,
+    p_instagram: v.instagram || null,
+    p_facebook: v.facebook || null,
+  });
+  if (r !== "ok") return fail(r);
+  if (v.status !== text(form.get("old_status"))) {
+    const st = await run("admin_set_content_status", {
+      p_kind: "venue",
+      p_id: id,
+      p_status: v.status,
+    });
+    if (st !== "ok") return fail(st);
+  }
+  return { ...venueMessage("ok", "edit", v.name, cityName), values: v };
 }
 
 /** Edits a venue's details from Shows and tours > Venues. */
