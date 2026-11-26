@@ -13,6 +13,7 @@ import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fie
 import { card, yellowBtn } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { MemberPicker, TextField } from "@/components/profiles/create-form";
+import { coverOf } from "@/lib/covers";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { PODCAST_LINKS, SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
 
@@ -25,6 +26,7 @@ export type EditValues = {
   name_ar: string | null;
   bio: string | null;
   photo_url: string | null;
+  cover_url: string | null;
   home_country_id: string | null;
   instagram_url: string | null;
   tiktok_url: string | null;
@@ -66,7 +68,26 @@ function TextArea({ label, name, rows, maxLength, defaultValue, error }: { label
   );
 }
 
-function ImageField({ label, name, hint, current, removable, error }: { label: string; name: string; hint: string; current: string | null; removable?: boolean; error?: string }) {
+function ImageField({
+  label,
+  name,
+  hint,
+  current,
+  removable,
+  wide,
+  preview,
+  error,
+}: {
+  label: string;
+  name: string;
+  hint: string;
+  current: string | null;
+  removable?: boolean;
+  wide?: boolean;
+  /** What is shown when there is no image yet (the default cover). */
+  preview?: string;
+  error?: string;
+}) {
   const id = useId();
   return (
     <div className="flex flex-col gap-2">
@@ -74,8 +95,8 @@ function ImageField({ label, name, hint, current, removable, error }: { label: s
         {label}
       </label>
       <div className="flex flex-wrap items-center gap-4">
-        <span className="h-20 w-20 shrink-0 overflow-hidden rounded-full">
-          <CoverImage src={current} alt="" iconSize={28} className="h-full w-full" tone="deep" />
+        <span className={`shrink-0 overflow-hidden ${wide ? "h-20 w-40 rounded-xl" : "h-20 w-20 rounded-full"}`}>
+          <CoverImage src={current ?? preview ?? null} alt="" iconSize={28} className="h-full w-full" tone="deep" />
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
           <p id={`${id}-hint`} className="text-sm text-radar-purple/75">
@@ -92,7 +113,7 @@ function ImageField({ label, name, hint, current, removable, error }: { label: s
           {removable && current && (
             <label className="flex min-h-11 items-center gap-3 text-sm font-bold">
               <input type="checkbox" name={`remove_${name}`} className="h-5 w-5 accent-radar-purple" />
-              Remove the current photo
+              Remove the current {wide ? "cover" : "photo"}
             </label>
           )}
         </div>
@@ -126,6 +147,20 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
           current={p.photo_url}
           removable
           error={e.photo}
+        />
+        <ImageField
+          label="Cover photo"
+          name="cover"
+          hint={
+            group
+              ? "A wide photo for the top of your group page (3:1 works best). Until you add one, the Comedy Radar cover shows. JPG, PNG or WebP, up to 10 MB."
+              : "A wide photo (3:1 works best), saved for your page. Until you add one, the Comedy Radar cover is used. JPG, PNG or WebP, up to 10 MB."
+          }
+          current={p.cover_url}
+          preview={coverOf(p.cover_url)}
+          removable
+          wide
+          error={e.cover}
         />
         <TextField label={group ? "Group name in English" : "Name in English"} name="name" required error={e.name} defaultValue={p.name} />
         <TextField label={group ? "Group name in Arabic" : "Name in Arabic"} name="name_ar" lang="ar" dir="rtl" error={e.name_ar} defaultValue={p.name_ar ?? ""} />

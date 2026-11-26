@@ -16,6 +16,7 @@ export type EditableProfile = {
   name_ar: string | null;
   bio: string | null;
   photo_url: string | null;
+  cover_url: string | null;
   home_country_id: string | null;
   instagram_url: string | null;
   tiktok_url: string | null;
@@ -56,7 +57,7 @@ export async function getEditableProfile(slug: string, type?: string): Promise<E
   const supabase = await createClient();
   const table = picked.kind === "group" ? "comedy_groups" : "comedians";
   const cols =
-    "id, slug, name, name_ar, bio, photo_url, home_country_id, instagram_url, tiktok_url, youtube_url, facebook_url, status, verified, archive_requested_at" +
+    "id, slug, name, name_ar, bio, photo_url, cover_url, home_country_id, instagram_url, tiktok_url, youtube_url, facebook_url, status, verified, archive_requested_at" +
     (picked.kind === "group" ? ", styles, performing_language" : "");
   const column = picked.kind === "group" ? "group_id" : "comedian_id";
   const [row, names, panel] = await Promise.all([

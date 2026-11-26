@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500" role="img" aria-label="Comedy Radar cover">
+<title>Comedy Radar cover</title>
+<defs><radialGradient id="glow" cx="0.773" cy="0.5" r="0.6"><stop offset="0" stop-color="#4A1470"/><stop offset="1" stop-color="#2B0B4F"/></radialGradient></defs>
+<rect width="1500" height="500" fill="#2B0B4F"/>
+<rect width="1500" height="500" fill="url(#glow)" opacity="0.9"/>
+<circle cx="1160" cy="250" r="150" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.9"/><circle cx="1160" cy="250" r="230" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.75"/><circle cx="1160" cy="250" r="320" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.6"/><circle cx="1160" cy="250" r="420" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.45"/><circle cx="1160" cy="250" r="530" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.32"/><circle cx="1160" cy="250" r="650" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.2"/><circle cx="1160" cy="250" r="780" fill="none" stroke="#4A1470" stroke-width="3" opacity="0.12"/>
+<circle cx="860" cy="120" r="7" fill="#FFD60A" opacity="0.9"/><circle cx="1430" cy="90" r="6" fill="#FF4D8D" opacity="0.8"/><circle cx="1390" cy="420" r="8" fill="#FFD60A" opacity="0.7"/><circle cx="930" cy="400" r="5" fill="#FF4D8D" opacity="0.7"/><circle cx="240" cy="110" r="5" fill="#FFD60A" opacity="0.35"/><circle cx="420" cy="390" r="4" fill="#FF4D8D" opacity="0.35"/>
+<g transform="translate(1025.6 124.0) scale(4.2)">
+<path d="M20.5 18.9 A13 13 0 0 0 20.5 31.1" fill="none" stroke="#FFD60A" stroke-width="4" stroke-linecap="round"/>
+<path d="M43.5 18.9 A13 13 0 0 1 43.5 31.1" fill="none" stroke="#FFD60A" stroke-width="4" stroke-linecap="round"/>
+<path d="M16.2 12.7 A20 20 0 0 0 16.2 37.3" fill="none" stroke="#FF4D8D" stroke-width="4" stroke-linecap="round"/>
+<path d="M47.8 12.7 A20 20 0 0 1 47.8 37.3" fill="none" stroke="#FF4D8D" stroke-width="4" stroke-linecap="round"/>
+<path d="M13.2 5.6 A27 27 0 0 0 13.2 44.4" fill="none" stroke="#FF4D8D" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+<path d="M50.8 5.6 A27 27 0 0 1 50.8 44.4" fill="none" stroke="#FF4D8D" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+<rect x="24" y="11" width="16" height="27" rx="8" fill="#FFFFFF"/>
+<path d="M26 17 H38 M25 21 H39 M25 30 H39 M26 34 H38" stroke="#2B0B4F" stroke-width="1.5"/>
+<rect x="22" y="23.5" width="20" height="3.5" rx="1.7" fill="#FF4D8D"/>
+<path d="M32 38 V51" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+<path d="M22 55 Q32 49 42 55" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+</g>
+</svg>
