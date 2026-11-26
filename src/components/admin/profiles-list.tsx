@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -6,19 +5,14 @@ import { changeAccess, grantAccess, setProfileStatus } from "@/app/actions/admin
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons";
+import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 import { LinkPending } from "@/components/link-pending";
 
-export const metadata: Metadata = { title: "Profiles" };
-
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-const KIND_TABS = [
-  { value: "all", label: "All" },
-  { value: "comedian", label: "Comedians" },
-  { value: "group", label: "Groups" },
-] as const;
 const STATUSES = [
   { value: "published", label: "Published" },
   { value: "pending", label: "Pending" },
@@ -39,12 +33,12 @@ const MSG: Record<string, string> = {
 };
 const iconBtn = "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-button text-radar-purple hover:bg-lavender";
 const smallSelect = "min-h-11 rounded-button border-2 border-radar-purple/25 bg-white px-2 text-sm font-bold";
+type Kind = "comedian" | "group";
 const pageOf = (p: AdminProfileRow) => `/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}`;
 
+
 function statusTag(p: AdminProfileRow) {
-  if (p.status === "published") return <Tag tone="yellow">Published</Tag>;
-  if (p.status === "pending") return <Tag tone="pink">Pending</Tag>;
-  return <Tag tone="outline">{p.status === "draft" ? "Draft" : "Archived"}</Tag>;
+  return <StatusPill status={p.status} />;
 }
 
 async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; close: string }) {
@@ -65,7 +59,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
             {p.kind === "group" ? "Group" : "Comedian"} {statusTag(p)} {p.verified && <Tag tone="purple">Verified</Tag>}
           </p>
         </div>
-        <Link href={`/admin/profiles/edit/${p.kind}/${p.id}`} className={iconBtn} aria-label={`Edit ${p.name}`} title="Edit">
+        <Link href={adminEditPath(p.kind, p.id)} className={iconBtn} aria-label={`Edit ${p.name}`} title="Edit">
           <LinkPending><EditIcon /></LinkPending>
         </Link>
         {p.status === "published" && (
@@ -172,26 +166,36 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
   );
 }
 
-async function Content({ searchParams }: { searchParams: PageProps<"/admin/profiles">["searchParams"] }) {
+type SP = Record<string, string | string[] | undefined>;
+
+async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promise<SP> }) {
   await connection();
   const sp = await searchParams;
-  const kind = KIND_TABS.some((t) => t.value === one(sp.kind)) ? one(sp.kind) : "all";
+  const base = adminListPath(kind);
   const q = one(sp.q).slice(0, 80);
   const status = STATUSES.some((s) => s.value === one(sp.status)) ? one(sp.status) : "";
   const verified = VERIFIED.some((v) => v.value === one(sp.verified)) ? one(sp.verified) : "";
-  const data = await getAdminProfiles({ kind, q, status, verified });
+  // The numbers count only this kind, whatever the filters say.
+  const [data, pendingAll, noAdminAll] = await Promise.all([
+    getAdminProfiles({ kind, q, status, verified }),
+    getAdminProfiles({ kind, q: "", status: "pending", verified: "" }),
+    getAdminProfiles({ kind, q: "", status: "", verified: "no_admin" }),
+  ]);
+  const total = kind === "group" ? data.stats.groups : data.stats.comedians;
+  const noAdmin = noAdminAll.rows.filter((r) => r.status !== "archived").length;
   const picked = data.rows.find((r) => `${r.kind}:${r.id}` === one(sp.p)) ?? null;
   const msg = MSG[one(sp.msg)];
 
   const link = (over: Record<string, string>) => {
     const u = new URLSearchParams();
-    const all = { kind, q, status, verified, ...over };
-    for (const [k, v] of Object.entries(all)) if (v && !(k === "kind" && v === "all")) u.set(k, v);
+    const all = { q, status, verified, ...over };
+    for (const [k, v] of Object.entries(all)) if (v) u.set(k, v);
     const qs = u.toString();
-    return qs ? `/admin/profiles?${qs}` : "/admin/profiles";
+    return qs ? `${base}?${qs}` : base;
   };
   const ret = link(picked ? { p: `${picked.kind}:${picked.id}` } : {});
   const filtered = q || status || verified;
+  const noun = kind === "group" ? "groups" : "comedians";
 
   return (
     <>
@@ -202,35 +206,18 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
           <ErrorNote>{msg}</ErrorNote>
         )
       )}
-      <section aria-label="Numbers" className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <StatTile label="Comedians" value={data.stats.comedians} />
-        <StatTile label="Groups" value={data.stats.groups} />
-        <StatTile label="No admin yet" value={data.stats.no_admin} />
-        <StatTile label="Pending review" value={data.stats.pending} />
+      <section aria-label="Numbers" className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+        <StatTile label={kind === "group" ? "Groups" : "Comedians"} value={total} />
+        <StatTile label="No admin yet" value={noAdmin} />
+        <StatTile label="Pending review" value={pendingAll.rows.length} />
       </section>
 
       <div className={`grid grid-cols-[minmax(0,1fr)] gap-6 ${picked ? "xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start" : ""}`}>
         <section aria-labelledby="list" className={`${card} flex min-w-0 flex-col gap-4`}>
           <h2 id="list" className="sr-only">
-            Profiles
+            {kind === "group" ? "Groups" : "Comedians"}
           </h2>
-          <nav aria-label="Profile types" className="-mx-1 flex gap-1 overflow-x-auto pb-1">
-            {KIND_TABS.map((t) => {
-              const active = t.value === kind;
-              return (
-                <Link
-                  key={t.value}
-                  href={link({ kind: t.value })}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center rounded-button px-3 text-[15px] font-extrabold ${active ? "bg-stage-black text-white" : "hover:bg-lavender"}`}
-                >
-                  {t.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <form method="get" action="/admin/profiles" className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto] md:items-end">
-            {kind !== "all" && <input type="hidden" name="kind" value={kind} />}
+          <form method="get" action={base} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto] md:items-end">
             <div className="flex flex-col gap-1">
               <label htmlFor="ap-q" className={labelCls}>
                 Search
@@ -276,14 +263,13 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
           </form>
 
           {data.rows.length === 0 ? (
-            <p className="text-radar-purple/80">{filtered ? "No profiles match these filters." : "No profiles yet."}</p>
+            <p className="text-radar-purple/80">{filtered ? `No ${noun} match these filters.` : `No ${noun} yet.`}</p>
           ) : (
             <div className="relative -mx-4 overflow-x-auto md:mx-0">
-              <table className="w-full min-w-[640px] text-left text-sm">
+              <table className="w-full min-w-[560px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
                     <th className="px-4 py-2 font-extrabold md:px-2">Profile</th>
-                    <th className="px-2 py-2 font-extrabold">Type</th>
                     <th className="px-2 py-2 font-extrabold">Status</th>
                     <th className="px-2 py-2 text-right font-extrabold">Admins</th>
                     <th className="px-2 py-2 text-right font-extrabold">Upcoming</th>
@@ -312,12 +298,11 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2">{r.kind === "group" ? "Group" : "Comedian"}</td>
                         <td className="px-2 py-2">{statusTag(r)}</td>
                         <td className={`px-2 py-2 text-right font-bold ${r.admins === 0 ? "text-laugh-pink-deep" : ""}`}>{r.admins}</td>
                         <td className="px-2 py-2 text-right">{r.upcoming}</td>
                         <td className="px-2 py-1 text-right">
-                          <Link href={`/admin/profiles/edit/${r.kind}/${r.id}`} className={iconBtn} aria-label={`Edit ${r.name}`} title="Edit">
+                          <Link href={adminEditPath(r.kind, r.id)} className={iconBtn} aria-label={`Edit ${r.name}`} title="Edit">
                             <LinkPending><EditIcon /></LinkPending>
                           </Link>
                         </td>
@@ -336,13 +321,16 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/profi
   );
 }
 
-/** Admin Profiles (spec 11.5 item 3). */
-export default function AdminProfilesPage({ searchParams }: PageProps<"/admin/profiles">) {
+/**
+ * Admin Comedians and Admin Groups (spec 11.5 item 3, Profiles split into two
+ * pages): the list with filters, and a side panel for status and access.
+ */
+export function AdminProfilesList({ kind, searchParams }: { kind: Kind; searchParams: Promise<SP> }) {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-[32px] leading-none md:text-[44px]">PROFILES</h1>
+      <h1 className="font-display text-[32px] leading-none md:text-[44px]">{kind === "group" ? "GROUPS" : "COMEDIANS"}</h1>
       <Suspense fallback={<div className={`${card} h-96 animate-pulse`} aria-busy="true" />}>
-        <Content searchParams={searchParams} />
+        <Content kind={kind} searchParams={searchParams} />
       </Suspense>
     </div>
   );

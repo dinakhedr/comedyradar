@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -10,9 +9,9 @@ import { getDeleteImpact, requireSuperAdmin } from "@/lib/data/admin";
 import { getProfileForSuperAdmin } from "@/lib/data/profile-edit";
 import { getCountries } from "@/lib/data/profiles";
 import { UUID } from "@/lib/profile-server";
+import { adminListPath } from "@/lib/admin-paths";
+import { StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
-
-export const metadata: Metadata = { title: "Edit profile" };
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -37,7 +36,7 @@ async function DeleteSection({ kind, id, msg }: { kind: "comedian" | "group"; id
         {impact.shared_shows > 0 && <li>{impact.name} is taken off the lineup of {plural(impact.shared_shows, "other show", "other shows")}. Those shows stay.</li>}
         <li>Anyone with access to it loses it.</li>
       </ul>
-      <p className="text-sm text-radar-purple/80">This can&apos;t be undone. To only hide the {what}, set its Status to Archived in the Profiles side panel instead.</p>
+      <p className="text-sm text-radar-purple/80">This can&apos;t be undone. To only hide the {what}, set its Status to Archived in the side panel of the list instead.</p>
       <form action={deleteProfile} className="flex flex-col gap-3">
         <input type="hidden" name="kind" value={kind} />
         <input type="hidden" name="id" value={id} />
@@ -57,26 +56,28 @@ async function DeleteSection({ kind, id, msg }: { kind: "comedian" | "group"; id
 
 const STATUS = { published: "Published", pending: "Pending", draft: "Draft", archived: "Archived" } as const;
 
-async function Content({ params, searchParams }: { params: PageProps<"/admin/profiles/edit/[kind]/[id]">["params"]; searchParams: PageProps<"/admin/profiles/edit/[kind]/[id]">["searchParams"] }) {
+type SP = Record<string, string | string[] | undefined>;
+
+async function Content({ kind, params, searchParams }: { kind: "comedian" | "group"; params: Promise<{ id: string }>; searchParams: Promise<SP> }) {
   await requireSuperAdmin();
-  const [{ kind, id }, sp] = await Promise.all([params, searchParams]);
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const msg = typeof sp.msg === "string" ? sp.msg : "";
-  if ((kind !== "comedian" && kind !== "group") || !UUID.test(id)) notFound();
+  if (!UUID.test(id)) notFound();
   const p = await getProfileForSuperAdmin(kind, id);
   if (!p) notFound();
   const countries = await getCountries();
-  const back = `/admin/profiles?p=${p.kind}:${p.id}`;
+  const back = `${adminListPath(p.kind)}?p=${p.kind}:${p.id}`;
 
   return (
     <>
       <div className="flex flex-col gap-1.5">
         <Link href={back} className="text-sm font-extrabold underline">
-          Back to Profiles
+          Back to {p.kind === "group" ? "Groups" : "Comedians"}
         </Link>
         <p className="text-sm font-extrabold tracking-wider text-radar-purple/75 uppercase">Edit {p.kind === "group" ? "group" : "comedian"}</p>
         <h1 className="font-display text-[32px] leading-none break-words md:text-[44px]">{p.name.toUpperCase()}</h1>
         <p className="flex flex-wrap items-center gap-2 text-sm">
-          <Tag tone={p.status === "published" ? "yellow" : p.status === "pending" ? "pink" : "outline"}>{STATUS[p.status]}</Tag>
+          <StatusPill status={p.status} label={STATUS[p.status]} />
           {p.verified && <Tag tone="purple">Verified</Tag>}
           {p.status === "published" && (
             <Link href={`/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}`} className="font-extrabold underline">
@@ -85,7 +86,7 @@ async function Content({ params, searchParams }: { params: PageProps<"/admin/pro
           )}
         </p>
         <p className="max-w-3xl text-sm text-radar-purple/80">
-          As super admin you can change any profile, claimed or not, and name changes save straight away. Delete is at the bottom. You don&apos;t become an admin of the profile. Status, Verified and Access stay in the Profiles side panel.
+          As super admin you can change any profile, claimed or not, and name changes save straight away. Delete is at the bottom. You don&apos;t become an admin of the profile. Status, Verified and Access stay in the side panel of the list.
         </p>
       </div>
       <div className="flex max-w-4xl min-w-0 flex-col gap-6">
@@ -97,12 +98,12 @@ async function Content({ params, searchParams }: { params: PageProps<"/admin/pro
   );
 }
 
-/** Admin > Profiles > Edit: the super admin edits any comedian or group. */
-export default function AdminEditProfilePage({ params, searchParams }: PageProps<"/admin/profiles/edit/[kind]/[id]">) {
+/** Admin > Comedians or Groups > Edit: the super admin edits any comedian or group. */
+export function AdminProfileEdit({ kind, params, searchParams }: { kind: "comedian" | "group"; params: Promise<{ id: string }>; searchParams: Promise<SP> }) {
   return (
     <div className="flex flex-col gap-6">
       <Suspense fallback={<div className={`${card} h-96 animate-pulse`} aria-busy="true" />}>
-        <Content params={params} searchParams={searchParams} />
+        <Content kind={kind} params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   );

@@ -53,10 +53,11 @@ function itemHref(e: ActivityEntry): string | null {
   const q = encodeURIComponent(e.target ?? "");
   switch (e.entity_type) {
     case "comedian":
+      return `/admin/comedians?q=${q}`;
     case "group":
-      return `/admin/profiles?kind=${e.entity_type}&q=${q}`;
+      return `/admin/groups?q=${q}`;
     case "access":
-      return `/admin/profiles?q=${q}`;
+      return `/admin/comedians?q=${q}`;
     case "show":
       return `/admin/shows?period=all&q=${q}`;
     case "tour":

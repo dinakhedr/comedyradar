@@ -10,6 +10,7 @@ import { itemsFor, PROOF_LABELS, RELATION_LABELS, REVIEW_TABS, reviewTab, TYPE_L
 import { formatShowDate } from "@/lib/dates";
 import { claimDocumentUrl, getReviewQueue } from "@/lib/data/admin";
 import { SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Review queue" };
@@ -405,7 +406,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/revie
                   <Tag tone="outline">{d.type === "claims" ? "Claim" : "Name change"}</Tag>
                   <span className="font-bold">{d.title}</span>
                   <span className="text-sm text-radar-purple/75">{d.sub}</span>
-                  {d.status === "approved" ? <Tag tone="yellow">Approved</Tag> : <Tag tone="pink">Rejected</Tag>}
+                  <StatusPill status={d.status === "approved" ? "approved" : "rejected"} label={d.status === "approved" ? "Approved" : "Rejected"} />
                   <span className="ml-auto text-sm text-radar-purple/70">{day(d.decided_at)}</span>
                   {d.reason && <p className="w-full text-sm text-radar-purple/80">“{d.reason}”</p>}
                 </li>

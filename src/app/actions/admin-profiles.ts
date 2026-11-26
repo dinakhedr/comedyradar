@@ -2,6 +2,7 @@
 
 import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { requireSuperAdmin } from "@/lib/data/admin";
 import { text, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
@@ -13,7 +14,8 @@ const KINDS = ["comedian", "group"];
 /** Back to the same list and profile, with a message. */
 function back(form: FormData, msg: string) {
   const ret = text(form.get("ret"));
-  const base = ret.startsWith("/admin/profiles") ? ret : "/admin/profiles";
+  const kind = text(form.get("kind"));
+  const base = ret.startsWith("/admin/comedians") || ret.startsWith("/admin/groups") ? ret : adminListPath(kind);
   const u = new URL(base, "http://x");
   u.searchParams.set("msg", msg);
   redirect(`${u.pathname}?${u.searchParams}`);
@@ -57,16 +59,16 @@ export async function changeAccess(form: FormData): Promise<void> {
   back(form, r === "ok" ? "saved" : "error");
 }
 
-/** Deletes a comedian or group for good (Admin > Profiles > Edit). Needs the "I understand" tick. */
+/** Deletes a comedian or group for good (Admin > Comedians or Groups > Edit). Needs the "I understand" tick. */
 export async function deleteProfile(form: FormData): Promise<void> {
   await requireSuperAdmin();
   const kind = text(form.get("kind"));
   const id = text(form.get("id"));
   if (!KINDS.includes(kind) || !UUID.test(id)) return;
-  if (form.get("confirm") !== "yes") redirect(`/admin/profiles/edit/${kind}/${id}?msg=confirm#delete`);
+  if (form.get("confirm") !== "yes") redirect(`${adminEditPath(kind, id)}?msg=confirm#delete`);
   const r = await run("admin_delete_profile", { p_kind: kind, p_id: id });
   updateTag("shows");
   updateTag("tours");
-  if (r !== "ok") redirect(`/admin/profiles/edit/${kind}/${id}?msg=error#delete`);
-  redirect("/admin/profiles?msg=deleted");
+  if (r !== "ok") redirect(`${adminEditPath(kind, id)}?msg=error#delete`);
+  redirect(`${adminListPath(kind)}?msg=deleted`);
 }

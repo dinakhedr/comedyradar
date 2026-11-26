@@ -7,6 +7,7 @@ import { card, outlineBtn, Tag } from "@/components/dashboard/ui";
 import { ShowForm } from "@/components/shows/show-form";
 import { SHOW_STATUS_LABELS } from "@/lib/dashboard";
 import { getEditableShow, getShowFormOptions } from "@/lib/data/my-shows";
+import { ShowStatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Edit show" };
@@ -22,7 +23,7 @@ async function Content({ params }: { params: PageProps<"/dashboard/shows/[id]/ed
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <Tag tone={show.status === "pending" ? "pink" : live ? "yellow" : "outline"}>{SHOW_STATUS_LABELS[show.status]}</Tag>
+        <ShowStatusPill status={show.status} label={SHOW_STATUS_LABELS[show.status]} />
         {show.signal !== "none" && <Tag tone="outline">{show.signal} signal</Tag>}
         {show.signal_request && <span className="text-sm">You asked for a {show.signal_request} signal.</span>}
         {live && (

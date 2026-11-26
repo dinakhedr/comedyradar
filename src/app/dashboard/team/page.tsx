@@ -4,13 +4,14 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { removeMember, resendInvite } from "@/app/actions/team";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
-import { card, outlineBtn, StatTile, Tag } from "@/components/dashboard/ui";
+import { card, outlineBtn, StatTile } from "@/components/dashboard/ui";
 import { CloseIcon } from "@/components/icons";
 import { CopyLink } from "@/components/profiles/claim-form";
 import { EditAccessForm, InviteForm } from "@/components/team/team-forms";
 import { pickProfile, profileKey } from "@/lib/dashboard";
 import { getTeam, type TeamMember } from "@/lib/data/team";
 import { ROLES } from "@/lib/team-forms";
+import { StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Team and access" };
@@ -141,7 +142,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/dashboard/t
                       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                         <p className="flex flex-wrap items-center gap-2 font-extrabold">
                           {m.email}
-                          {m.status === "expired" ? <Tag tone="outline">Expired</Tag> : <Tag tone="pink">Waiting</Tag>}
+                          {m.status === "expired" ? <StatusPill status="expired" label="Expired" /> : <StatusPill status="pending" label="Waiting" />}
                         </p>
                         <Chips m={m} />
                         <p className="text-xs text-radar-purple/70">

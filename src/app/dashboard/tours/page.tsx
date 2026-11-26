@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
-import { card, outlineBtn, StatTile, Tag, yellowBtn, type Tone } from "@/components/dashboard/ui";
+import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { EditIcon, ExternalIcon } from "@/components/icons";
 import { CoverImage } from "@/components/placeholder-image";
 import { pickProfile, profileKey } from "@/lib/dashboard";
@@ -11,17 +11,18 @@ import { getMyTours, type ListedTour } from "@/lib/data/my-tours";
 import { formatMonthRange, formatShowDate } from "@/lib/dates";
 import { TOUR_TABS, tourTab } from "@/lib/tour-forms";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
+import { StatusPill } from "@/components/status";
 import { LinkPending } from "@/components/link-pending";
 
 export const metadata: Metadata = { title: "Tours" };
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const iconBtn = "inline-flex h-11 w-11 items-center justify-center rounded-button text-radar-purple hover:bg-lavender";
-const STATUS: Record<ListedTour["status"], { label: string; tone: Tone }> = {
-  draft: { label: "Draft", tone: "outline" },
-  pending: { label: "In review", tone: "pink" },
-  published: { label: "Live", tone: "yellow" },
-  archived: { label: "Archived", tone: "outline" },
+const STATUS: Record<ListedTour["status"], { label: string }> = {
+  draft: { label: "Draft" },
+  pending: { label: "In review" },
+  published: { label: "Live" },
+  archived: { label: "Archived" },
 };
 
 function SavedNote({ sp }: { sp: Record<string, string | string[] | undefined> }) {
@@ -59,7 +60,7 @@ function TourRowCard({ t }: { t: ListedTour }) {
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Tag tone={status.tone}>{status.label}</Tag>
+          <StatusPill status={t.status} label={status.label} />
           <Tag tone="outline">{t.owner_kind === "group" ? "Group" : "Comedian"}</Tag>
           <span className="text-sm font-bold text-radar-purple/75">{t.owner_name}</span>
         </div>
