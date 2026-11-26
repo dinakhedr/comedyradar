@@ -15,6 +15,7 @@ import { getMoreTours, getTour, type TourDetail } from "@/lib/data/tour";
 import { paragraphs } from "@/lib/show-page";
 import { SITE_URL } from "@/lib/site";
 import { shortDate, splitDates, tourStats, tourZoneLabel } from "@/lib/tour-page";
+import { TrackView } from "@/components/page-tracker";
 
 const container = "mx-auto max-w-[1280px] px-[18px] md:px-8";
 const h2 = "font-display text-[24px] md:text-[40px]";
@@ -105,6 +106,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
 
   return (
     <>
+      <TrackView kind="tour_view" id={tour.id} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(seriesJsonLd(tour)).replace(/</g, "\\u003c") }}

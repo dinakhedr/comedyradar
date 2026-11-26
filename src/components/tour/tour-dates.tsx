@@ -21,7 +21,7 @@ function Action({ date }: { date: TourDate }) {
   const cls = "relative z-10 inline-flex min-h-11 shrink-0 items-center rounded-button px-4 text-sm font-extrabold";
   if (date.status === "published" && date.ticket_url) {
     return (
-      <a href={date.ticket_url} target="_blank" rel="noopener" className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}>
+      <a href={date.ticket_url} target="_blank" rel="noopener" data-ticket-show={date.id} className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}>
         Get tickets
       </a>
     );

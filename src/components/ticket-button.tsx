@@ -44,6 +44,7 @@ export function TicketButton({
         href={link.href}
         target="_blank"
         rel={sponsored ? "noopener sponsored" : "noopener"}
+        data-ticket-show={show.id}
         className={cls}
         aria-label={`Get tickets for ${show.title}`}
       >

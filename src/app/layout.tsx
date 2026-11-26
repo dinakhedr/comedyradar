@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Luckiest_Guy, Nunito } from "next/font/google";
 import "./globals.css";
+import { TicketClickTracker } from "@/components/page-tracker";
 import { SITE_URL } from "@/lib/site";
 
 const luckiestGuy = Luckiest_Guy({
@@ -40,7 +41,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${luckiestGuy.variable} ${nunito.variable} antialiased`}>
-      <body className="min-h-screen bg-radar-purple text-white">{children}</body>
+      <body className="min-h-screen bg-radar-purple text-white">
+        {children}
+        <TicketClickTracker />
+      </body>
     </html>
   );
 }
