@@ -25,7 +25,10 @@ select pg_temp.check((select count(*) = 3 from public.accounts), 'sign-up create
 select pg_temp.check((select account_type = 'manager' from public.accounts where id = '00000000-0000-0000-0000-00000000000b'),
                      'account type comes from sign-up');
 
--- Locations (as the database owner)
+-- Locations (as the database owner). The starting list from the migrations is
+-- replaced by fixed test rows (the whole test is rolled back).
+delete from public.cities;
+delete from public.countries;
 insert into public.countries (id, code, name, region, is_market) values
   ('10000000-0000-0000-0000-000000000001', 'EG', 'Egypt', 'Egypt', true);
 insert into public.cities (id, country_id, name, slug) values

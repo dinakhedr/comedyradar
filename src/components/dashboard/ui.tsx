@@ -51,3 +51,13 @@ export function ProfileCard({ p }: { p: ManagedProfile }) {
     </li>
   );
 }
+
+export function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {
+  return (
+    <div className={`${card} flex flex-col gap-1`}>
+      <span className="text-sm font-bold text-radar-purple/75">{label}</span>
+      <span className="font-display text-[34px] leading-none md:text-[40px]">{value.toLocaleString("en")}</span>
+      {note && <span className="text-xs text-radar-purple/70">{note}</span>}
+    </div>
+  );
+}
