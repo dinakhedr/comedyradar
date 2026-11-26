@@ -1093,7 +1093,7 @@ async function VenuesTab({ sp, link }: Ctx) {
           </p>
         ) : (
           <div className="relative -mx-4 overflow-x-auto md:mx-0">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[860px] text-left text-sm">
               <thead>
                 <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
                   <th className="px-4 py-2 font-extrabold md:px-2">Venue</th>
