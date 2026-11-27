@@ -129,10 +129,10 @@ function CityControl({ c, id }: { c: Ctx; id: string }) {
     );
   }
   const options: NavOption[] = [
-    { value: "", label: "City: All", href: href(c, { city: null }) },
+    { value: "", label: "All cities", href: href(c, { city: null }) },
     ...c.cities.map((city) => ({
       value: city.slug,
-      label: `City: ${city.name}`,
+      label: city.name,
       href: href(c, { city: city.slug }),
       group: city.country_name,
     })),

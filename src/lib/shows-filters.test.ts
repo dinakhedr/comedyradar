@@ -10,6 +10,7 @@ import {
   showsHref,
   showsWindow,
   trendingSort,
+  whenLabel,
 } from "./shows-filters";
 
 describe("parseShowsFilters", () => {
@@ -46,7 +47,7 @@ describe("parseShowsFilters", () => {
 
   it("ignores unknown values", () => {
     const f = parseShowsFilters({ when: "yesterday", zone: "moon", sort: "price", page: "-2", city: "Cairo!" });
-    expect(f).toMatchObject({ when: "month", zone: "all", sort: "date", page: 1, city: null });
+    expect(f).toMatchObject({ when: "all", zone: "all", sort: "date", page: 1, city: null });
   });
 
   it("keeps picked dates in order and drops them without when=dates", () => {
@@ -55,7 +56,7 @@ describe("parseShowsFilters", () => {
       from: "2026-12-05",
       to: "2026-12-12",
     });
-    expect(parseShowsFilters({ when: "dates" }).when).toBe("month");
+    expect(parseShowsFilters({ when: "dates" }).when).toBe("all");
     expect(parseShowsFilters({ from: "2026-12-05" }).from).toBeNull();
   });
 
@@ -101,6 +102,13 @@ describe("showsWindow", () => {
     expect(w.from).toEqual(now);
     expect(w.to!.toISOString()).toBe("2026-12-05T22:00:00.000Z");
     expect(showsWindow({ when: "dates", from: "2026-12-05", to: null }, now).to).toBeNull();
+  });
+
+  it("all has no end date and is kept in the address", () => {
+    expect(showsWindow({ when: "all", from: null, to: null }, now)).toEqual({ from: now, to: null });
+    expect(parseShowsFilters({ when: "all" }).when).toBe("all");
+    expect(showsHref(DEFAULT_FILTERS, { when: "month" })).toBe("/shows?when=month");
+    expect(whenLabel({ when: "all", from: null, to: null })).toBe("All dates");
   });
 });
 
