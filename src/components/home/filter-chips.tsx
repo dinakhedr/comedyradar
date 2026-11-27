@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { City } from "@/lib/data/types";
 import { countriesOf } from "@/lib/countries";
-import { parseWhen, type WhenFilter } from "@/lib/dates";
+import type { WhenFilter } from "@/lib/dates";
+import type { HomeWhen } from "@/lib/home-filters";
 import { CountrySelect } from "../country-select";
 import { homeFilters } from "./params";
 
@@ -11,9 +12,9 @@ const WHEN_LABELS: { value: WhenFilter; label: string }[] = [
   { value: "month", label: "This month" },
 ];
 
-function href(when: WhenFilter, withinRange: boolean, country: string | null) {
+function href(when: HomeWhen, withinRange: boolean, country: string | null) {
   const p = new URLSearchParams();
-  if (when !== "month") p.set("when", when);
+  if (when !== "all") p.set("when", when);
   if (country) p.set("country", country.toLowerCase());
   if (withinRange) p.set("range", "1");
   const qs = p.toString();
@@ -25,10 +26,12 @@ const on = "border-spotlight-yellow bg-spotlight-yellow font-extrabold text-rada
 const off = "border-plum-line font-bold text-white hover:border-spotlight-yellow";
 
 /**
- * Filter chips: Tonight · This weekend · This month (default) · Within range,
+ * Filter chips: Tonight · This weekend · This month · Within range,
  * plus the country dropdown. "Within range" = shows in the chosen country
  * (Egypt by default). The country is the same one as in the header menu, so the
  * two always match. The choice lives in the address, e.g. /?when=weekend&country=ae&range=1.
+ * No date chip is picked by default: Coming up shows the next shows, any date.
+ * Tapping the picked date chip again clears it.
  */
 export async function FilterChips({
   searchParams,
@@ -44,7 +47,7 @@ export async function FilterChips({
       {WHEN_LABELS.map((w) => (
         <Link
           key={w.value}
-          href={href(w.value, withinRange, country)}
+          href={href(when === w.value ? "all" : w.value, withinRange, country)}
           scroll={false}
           aria-current={when === w.value ? "true" : undefined}
           className={`${chip} ${when === w.value ? on : off}`}
@@ -67,11 +70,10 @@ export async function FilterChips({
 }
 
 export function FilterChipsSkeleton() {
-  const w = parseWhen(undefined);
   return (
     <div className="flex gap-2 overflow-hidden" aria-hidden>
       {WHEN_LABELS.map((x) => (
-        <span key={x.value} className={`${chip} ${x.value === w ? on : off}`}>
+        <span key={x.value} className={`${chip} ${off}`}>
           {x.label}
         </span>
       ))}

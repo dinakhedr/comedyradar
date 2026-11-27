@@ -158,7 +158,7 @@ Section order, top to bottom. Header, hero and the Spotlight must fit on the fir
 - Headline (Luckiest Guy): **ON THE RADAR THIS MONTH** (yellow on "THIS MONTH"). No "Now live in Egypt" tag.
 - One short supporting line in Nunito.
 - **Full-width search bar** (same width as the content container): placeholder "Search a comedian, group, show or venue" + purple "Scan the radar" button (icon-only on mobile). Searches shows, comedians, groups and venues.
-- Filter chips (pill): **Tonight · This weekend · This month (default, selected) · Within range** + city dropdown. Chips filter "Coming up" (URL query string, e.g. `/?when=month&city=cairo`). **"This month" means the next 30 days** (decided 2026-11-27), so early next-month shows still appear at the end of a month; the same rule is used for "Performing this month".
+- Filter chips (pill): **Tonight · This weekend · This month · Within range** + country dropdown. **No date chip is selected by default:** "Coming up" shows the next 8 upcoming shows flagged for the homepage, whatever their date (decided 2026-11-27). Tapping a chip narrows the list (URL query string, e.g. `/?when=month`); tapping it again clears it. **"This month" means the current calendar month in Cairo** (PR 81); the same rule is used for "Performing this month".
 
 ### 5.3 Spotlight — carousel (future revenue slot)
 - Title **SPOTLIGHT** with the subtitle **"This month"**. No "Featured" label on the cards.
