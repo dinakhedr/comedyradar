@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 
 /** Add, edit and update shows from the creator dashboard (spec 11.4 items 4 and 9). */
 
-const ADMIN_SHOW_STATUSES = ["published", "pending", "draft"] as const;
+const ADMIN_SHOW_STATUSES = ["published", "pending", "draft", "sold_out", "cancelled"] as const;
 
 export type ShowState = { message?: string; errors?: ShowErrors & { poster?: string }; attempt?: number; input?: Partial<ShowInput> };
 
@@ -50,7 +50,7 @@ export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowSt
  */
 export async function adminSaveShow(_prev: ShowState, form: FormData): Promise<ShowState> {
   const account = await requireSuperAdmin();
-  form.delete("show_id");
+  // With a show_id the super admin edits any show (Admin > Shows and tours > pencil).
   return storeShow(form, account.id, true);
 }
 
@@ -98,8 +98,9 @@ async function storeShow(form: FormData, accountId: string, admin: boolean): Pro
     language: values.language,
     age_rating: values.age_rating,
     good_to_know: values.good_to_know,
-    signal_request: admin ? null : values.signal_request,
     tour_id: values.tour_id,
+    // The admin form has no signal request: a creator's open request stays as it is.
+    ...(admin ? {} : { signal_request: values.signal_request }),
   };
 
   let id = showId;
@@ -125,10 +126,15 @@ async function storeShow(form: FormData, accountId: string, admin: boolean): Pro
   }
 
   if (admin) {
-    const status = ADMIN_SHOW_STATUSES.find((x) => x === text(form.get("status"))) ?? "published";
-    if (status !== "draft") await supabase.from("shows").update({ status }).eq("id", id);
+    const picked = ADMIN_SHOW_STATUSES.find((x) => x === text(form.get("status")));
+    // A new show is saved as a draft first; Sold out and Cancelled are only for shows that exist.
+    const status = picked && (showId || ["published", "pending", "draft"].includes(picked)) ? picked : "published";
+    if (showId || status !== "draft") {
+      const { error } = await supabase.from("shows").update({ status }).eq("id", id);
+      if (error) console.error("admin show status", error.message);
+    }
     updateTag("shows");
-    redirect(`/admin/shows?msg=created`);
+    redirect(`/admin/shows?msg=${showId ? "saved" : "created"}`);
   }
 
   // Publish: live at once for verified profiles; the database sends the others to review.

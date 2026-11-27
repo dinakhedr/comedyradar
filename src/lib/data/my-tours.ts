@@ -53,8 +53,9 @@ type RawDate = Omit<TourDate, "city_name" | "venue_name"> & { cities: { name: st
 const toDate = (d: RawDate): TourDate => ({ id: d.id, title: d.title, starts_at: d.starts_at, status: d.status, ticket_url: d.ticket_url, city_name: d.cities?.name ?? null, venue_name: d.venues?.name ?? null });
 
 /** A tour this account manages, with its dates, for the edit form. */
-export async function getEditableTour(id: string): Promise<EditableTour | null> {
-  const profiles = await getMyProfiles();
+export async function getEditableTour(id: string, opts: { anyOwner?: boolean } = {}): Promise<EditableTour | null> {
+  // anyOwner: the super admin (checked by the caller) edits any tour.
+  const profiles = opts.anyOwner ? [] : await getMyProfiles();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tours")
@@ -66,7 +67,7 @@ export async function getEditableTour(id: string): Promise<EditableTour | null> 
   const t = data as unknown as Omit<EditableTour, "performer" | "dates"> & { comedian_id: string | null; group_id: string | null; shows: RawDate[] };
   const performer = key(t);
   // Published tours of other people are readable too; only the ones this account manages are editable.
-  if (!profiles.some((p) => `${p.kind === "group" ? "g" : "c"}:${p.id}` === performer)) return null;
+  if (!opts.anyOwner && !profiles.some((p) => `${p.kind === "group" ? "g" : "c"}:${p.id}` === performer)) return null;
   return {
     id: t.id,
     slug: t.slug,

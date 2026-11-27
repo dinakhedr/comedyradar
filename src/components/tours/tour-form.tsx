@@ -231,7 +231,7 @@ export function TourForm({
                       {d.status !== "published" && <span className="text-radar-purple/70"> · {d.status === "sold_out" ? "Sold out" : d.status === "pending" ? "In review" : d.status === "draft" ? "Draft" : "Cancelled"}</span>}
                       {d.status === "published" && !d.ticket_url && <span className="text-radar-purple/70"> · No ticket link</span>}
                     </span>
-                    <Link href={`/dashboard/shows/${d.id}/edit`} aria-label={`Edit the ${formatShowDate(new Date(d.starts_at))} date`} title="Edit date" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-button hover:bg-lavender">
+                    <Link href={admin ? `/admin/shows/${d.id}/edit` : `/dashboard/shows/${d.id}/edit`} aria-label={`Edit the ${formatShowDate(new Date(d.starts_at))} date`} title="Edit date" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-button hover:bg-lavender">
                       <LinkPending><EditIcon /></LinkPending>
                     </Link>
                   </li>
@@ -370,7 +370,13 @@ export function TourForm({
         </section>
 
         {admin ? (
-          <AdminSaveRow noun="tour" pending={pending} />
+          <AdminSaveRow
+            noun="tour"
+            pending={pending}
+            editing={!!tour}
+            defaultStatus={tour?.status}
+            extraStatuses={tour ? [{ value: "archived", label: "Archived" }] : []}
+          />
         ) : (
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
