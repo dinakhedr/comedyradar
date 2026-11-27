@@ -676,7 +676,7 @@ async function ShowsTab({ sp, link }: Ctx) {
           <form
             method="get"
             action="/admin/shows"
-            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:items-end"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:items-end xl:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))_auto] xl:gap-2.5"
           >
             <div className="flex flex-col gap-1">
               <label htmlFor="as-q" className={labelCls}>
