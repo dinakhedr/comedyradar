@@ -33,7 +33,7 @@ export function cardBadge(show: ShowRow): BadgeInfo | null {
   if (show.display_signal === "fading") return { label: "Fading", tone: "pink", icon: "fading" };
   if (show.display_signal === "new") return { label: "New", tone: "yellow", icon: "new" };
   if (show.headliner_type === "group") return { label: "Group show", tone: "purple", icon: "group" };
-  if (show.zone === "inbound") return { label: "Visiting", tone: "yellow", icon: "visiting" };
+  if (show.zone === "inbound") return { label: "Visiting", tone: "pink", icon: "visiting" };
   return null;
 }
 
