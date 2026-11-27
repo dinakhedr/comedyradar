@@ -188,6 +188,9 @@ Section order, top to bottom. Header, hero and the Spotlight must fit on the fir
 - Sub-line per item: e.g. "2 upcoming shows", "On tour", "New podcast episode", "New on the radar".
 - Desktop: 6 in a row. Mobile: 3 × 2 grid.
 
+### 5.6b Venues (added 2026-11-27)
+- After Comedians to track: title "Venues" + "All venues" link to `/venues`. Six venues with the most upcoming shows (largest first, then A to Z): square logo in a yellow frame (map pin when there is no logo), name, "Area, City", "N upcoming shows".
+
 ### 5.7 Newsletter band (yellow)
 - Title **GET EVERY NEW SIGNAL**; text "New shows and tours in your inbox, every Thursday."; email field + Subscribe (purple button).
 

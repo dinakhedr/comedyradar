@@ -20,7 +20,9 @@ function VenueCard({ v }: { v: VenueListItem }) {
         </Link>
       </h2>
       <p className="text-[13px] text-lavender-text md:text-sm">
-        {venuePlace(v.area, v.city.name)}, {v.country_name}
+        {venuePlace(v.area, v.city.name)}
+        <br />
+        {v.country_name}
       </p>
       <p className={`text-[13px] md:text-sm ${v.upcoming ? "font-extrabold text-spotlight-yellow" : "text-lavender-text"}`}>
         {v.upcoming === 0 ? "No shows right now" : v.upcoming === 1 ? "1 show coming up" : `${v.upcoming} shows coming up`}
