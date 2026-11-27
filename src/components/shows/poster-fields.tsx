@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { errorCls } from "@/components/auth/fields";
-import { TALL_GUIDE, WIDE_GUIDE } from "@/lib/posters";
+import { shrinkTo, TALL_GUIDE, WIDE_GUIDE } from "@/lib/posters";
 
 /**
  * The two poster boxes on the show and tour forms (Dina, 2026-11-27):
@@ -98,11 +98,28 @@ function PosterBox({
     if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
   }, [url]);
 
-  const pick = (files: FileList | null) => {
+  const [busy, setBusy] = useState(false);
+
+  // Big posters are shrunk here before sending, so two of them fit in one save.
+  const pick = async (files: FileList | null) => {
     const f = files?.[0];
     if (!f) return;
     setRemoved(false);
     setUrl(URL.createObjectURL(f));
+    if (!f.type.startsWith("image/")) return;
+    setBusy(true);
+    try {
+      const small = await shrink(f);
+      if (small && input.current) {
+        const dt = new DataTransfer();
+        dt.items.add(small);
+        input.current.files = dt.files;
+      }
+    } catch {
+      // Keep the original file; the server still checks its type and size.
+    } finally {
+      setBusy(false);
+    }
   };
 
   const smallBtn =
@@ -128,7 +145,7 @@ function PosterBox({
         accept="image/jpeg,image/png,image/webp"
         aria-describedby={error ? `${guideId} ${errId}` : guideId}
         aria-invalid={error ? true : undefined}
-        onChange={(ev) => pick(ev.target.files)}
+        onChange={(ev) => void pick(ev.target.files)}
         className="sr-only"
       />
       {removed && <input type="hidden" name={`${name}_remove`} value="1" />}
@@ -166,7 +183,7 @@ function PosterBox({
             setOver(false);
             if (input.current && ev.dataTransfer.files.length) {
               input.current.files = ev.dataTransfer.files;
-              pick(ev.dataTransfer.files);
+              void pick(ev.dataTransfer.files);
             }
           }}
           className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-3 text-center text-[15px] font-bold text-radar-purple/75 ${ratio} ${
@@ -176,6 +193,11 @@ function PosterBox({
           <span className="rounded-[10px] border-2 border-radar-purple bg-white px-4 py-2 font-extrabold text-radar-purple">Choose image</span>
           <span>or drop it here</span>
         </label>
+      )}
+      {busy && (
+        <p role="status" className="text-[13px] font-bold text-radar-purple/75">
+          Getting the poster ready…
+        </p>
       )}
       {error && (
         <p id={errId} className={errorCls}>
@@ -187,4 +209,31 @@ function PosterBox({
       </p>
     </div>
   );
+}
+
+/** Shrinks a big poster to a JPG of at most 2000 px on its long side; null = it is fine as it is. */
+async function shrink(file: File): Promise<File | null> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const size = shrinkTo(img.naturalWidth, img.naturalHeight, file.size);
+    if (!size) return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = size.width;
+    canvas.height = size.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#ffffff"; // transparent PNGs get a white background
+    ctx.fillRect(0, 0, size.width, size.height);
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, size.width, size.height);
+    const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.88));
+    if (!blob || blob.size >= file.size) return null;
+    const base = file.name.replace(/\.[^.]+$/, "") || "poster";
+    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

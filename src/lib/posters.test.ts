@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasPoster, pickPosters } from "./posters";
+import { hasPoster, pickPosters, shrinkTo } from "./posters";
 
 describe("pickPosters", () => {
   it("uses each poster in its place when both are there", () => {
@@ -24,5 +24,19 @@ describe("pickPosters", () => {
     expect(pickPosters({ poster_url: " ", poster_tall_url: "" }, { poster_url: "tw" })).toEqual({ wide: "tw", tall: "tw" });
     expect(hasPoster({ poster_url: "", poster_tall_url: null })).toBe(false);
     expect(hasPoster({ poster_tall_url: "t" })).toBe(true);
+  });
+});
+
+describe("shrinkTo", () => {
+  it("keeps small posters as they are", () => {
+    expect(shrinkTo(1920, 1080, 500_000)).toBeNull();
+    expect(shrinkTo(1080, 1350, 220_000)).toBeNull();
+  });
+  it("shrinks big posters to 2000 px on the long side", () => {
+    expect(shrinkTo(4000, 2250, 3_000_000)).toEqual({ width: 2000, height: 1125 });
+    expect(shrinkTo(2160, 2700, 2_000_000)).toEqual({ width: 1600, height: 2000 });
+  });
+  it("re-saves a heavy file even when its size in pixels is fine", () => {
+    expect(shrinkTo(1920, 1080, 2_500_000)).toEqual({ width: 1920, height: 1080 });
   });
 });

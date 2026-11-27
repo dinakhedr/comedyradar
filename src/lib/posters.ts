@@ -12,6 +12,22 @@ export type Posters = { wide: string | null; tall: string | null };
 export const WIDE_GUIDE = "Landscape 16:9, best size 1920 × 1080.";
 export const TALL_GUIDE = "Portrait 4:5, best size 1080 × 1350.";
 
+/** Posters are shrunk in the browser to at most this many pixels on the long side before upload. */
+export const POSTER_MAX_SIDE = 2000;
+/** Files at or under this size that are already small enough are sent as they are. */
+export const POSTER_KEEP_BYTES = 900_000;
+
+/**
+ * The size to shrink a poster to so two posters fit in one form save:
+ * null = send the file as it is; otherwise the new width and height.
+ */
+export function shrinkTo(width: number, height: number, bytes: number, max = POSTER_MAX_SIDE): { width: number; height: number } | null {
+  const long = Math.max(width, height);
+  if (long <= max && bytes <= POSTER_KEEP_BYTES) return null;
+  const scale = Math.min(1, max / long);
+  return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
+}
+
 const clean = (v: string | null | undefined) => (v && v.trim() ? v : null);
 
 export function pickPosters(own: Partial<PosterPair> | null | undefined, tour?: Partial<PosterPair> | null): Posters {
