@@ -90,7 +90,6 @@ export type ProfileInput = {
   bio: string;
   country: string;
   socials: Record<Social, string>;
-  /** Groups only. */
   website?: string;
   styles: string[];
   language: string;
@@ -132,7 +131,7 @@ export function checkProfile(f: ProfileInput): { values?: ProfileValues; errors:
     if (v === "invalid") errors[key] = `Please paste a ${label} link${key === "instagram" || key === "tiktok" ? " or @handle" : ""}.`;
     else links[key] = v;
   }
-  const website = f.kind === "group" ? cleanWebsite(f.website ?? "") : null;
+  const website = cleanWebsite(f.website ?? "");
   if (website === "invalid") errors.website = "Please paste a website link, like https://example.com.";
   const styles = GROUP_STYLES.map((s) => s.value).filter((v) => f.styles.includes(v));
   const language = f.language ? GROUP_LANGUAGES.find((l) => l.value === f.language)?.value : null;
@@ -149,7 +148,8 @@ export function checkProfile(f: ProfileInput): { values?: ProfileValues; errors:
       tiktok_url: links.tiktok,
       youtube_url: links.youtube,
       facebook_url: links.facebook,
-      ...(f.kind === "group" ? { website_url: website, styles, performing_language: language ?? null } : {}),
+      website_url: website,
+      ...(f.kind === "group" ? { styles, performing_language: language ?? null } : {}),
     },
   };
 }

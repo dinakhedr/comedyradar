@@ -60,7 +60,7 @@ export default function ComedianPage({ params }: PageProps<"/comedians/[slug]">)
 }
 
 function jsonLd(c: ComedianDetail) {
-  const sameAs = [c.instagram_url, c.tiktok_url, c.youtube_url, c.facebook_url].filter(Boolean);
+  const sameAs = [c.website_url, c.instagram_url, c.tiktok_url, c.youtube_url, c.facebook_url].filter(Boolean);
   const url = `${SITE_URL}/comedians/${c.slug}`;
   return [
     {

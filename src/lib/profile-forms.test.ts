@@ -89,7 +89,7 @@ describe("checkPodcast", () => {
   });
 });
 
-describe("group website", () => {
+describe("website", () => {
   it("cleans a website link", () => {
     expect(cleanWebsite("")).toBeNull();
     expect(cleanWebsite(" highfive.com ")).toBe("https://highfive.com/");
@@ -98,10 +98,12 @@ describe("group website", () => {
     expect(cleanWebsite("localhost")).toBe("invalid");
   });
 
-  it("is saved for groups only", () => {
+  it("is saved for groups and comedians", () => {
     const g = { name: "High Five", name_ar: "", bio: "", country: "", socials: { instagram: "", tiktok: "", youtube: "", facebook: "" }, styles: [], language: "" };
     expect(checkProfile({ ...g, kind: "group", website: "highfive.com" }).values?.website_url).toBe("https://highfive.com/");
     expect(checkProfile({ ...g, kind: "group", website: "nope" }).errors.website).toBeTruthy();
-    expect(checkProfile({ ...g, kind: "comedian", website: "highfive.com" }).values).not.toHaveProperty("website_url");
+    expect(checkProfile({ ...g, kind: "comedian", website: "momos.com" }).values?.website_url).toBe("https://momos.com/");
+    expect(checkProfile({ ...g, kind: "comedian", website: "nope" }).errors.website).toBeTruthy();
+    expect(checkProfile({ ...g, kind: "comedian" }).values?.website_url).toBeNull();
   });
 });

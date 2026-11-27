@@ -58,7 +58,7 @@ export default function GroupPage({ params }: PageProps<"/groups/[slug]">) {
 }
 
 function groupJsonLd(g: GroupDetail) {
-  const sameAs = [g.instagram_url, g.tiktok_url, g.youtube_url, g.facebook_url].filter(Boolean);
+  const sameAs = [g.website_url, g.instagram_url, g.tiktok_url, g.youtube_url, g.facebook_url].filter(Boolean);
   return {
     "@context": "https://schema.org",
     "@type": "PerformingGroup",

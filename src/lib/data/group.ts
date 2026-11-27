@@ -7,7 +7,6 @@ import type { Person } from "./show";
 import type { ShowRow, TourRow } from "./types";
 
 export type Socials = {
-  /** Groups only (Dina, 2026-11-27). */
   website_url?: string | null;
   instagram_url: string | null;
   tiktok_url: string | null;
