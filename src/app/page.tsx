@@ -4,6 +4,7 @@ import { ComingUp, ComingUpSkeleton } from "@/components/home/coming-up";
 import { Hero } from "@/components/home/hero";
 import { OnTour } from "@/components/home/on-tour";
 import { SpotlightSection } from "@/components/home/spotlight-section";
+import { VenuesRow } from "@/components/home/venues-row";
 import { NewsletterBand } from "@/components/newsletter-band";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -21,6 +22,7 @@ export default function HomePage({ searchParams }: PageProps<"/">) {
         </Suspense>
         <OnTour />
         <ComediansToTrack />
+        <VenuesRow />
         <NewsletterBand />
       </main>
       <SiteFooter />
