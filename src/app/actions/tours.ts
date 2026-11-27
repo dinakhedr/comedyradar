@@ -2,6 +2,8 @@
 
 import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireSuperAdmin } from "@/lib/data/admin";
+import { findAnyPerformer } from "@/lib/data/admin-create";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { slugify } from "@/lib/profile-forms";
 import { photoError, text, UUID } from "@/lib/profile-server";
@@ -11,6 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import { checkTour, type TourDateInput, type TourErrors, type TourSame } from "@/lib/tour-forms";
 
 /** Add and edit tours, and put shows on a tour (spec 11.4 items 8, 9 and 10). */
+
+const ADMIN_TOUR_STATUSES = ["published", "pending", "draft"] as const;
 
 export type TourState = {
   message?: string;
@@ -41,6 +45,21 @@ async function ownShows(db: Db, ids: string[], owner: Performer): Promise<string
 export async function saveTour(_prev: TourState, form: FormData): Promise<TourState> {
   const account = await requireAccount();
   if (account.is_suspended) return { message: "This account is suspended." };
+  return storeTour(form, account.id, false);
+}
+
+/**
+ * Admin > Shows and tours > Add new tour: any comedian or group, and the
+ * status the super admin picks for the tour and its new dates.
+ */
+export async function adminSaveTour(_prev: TourState, form: FormData): Promise<TourState> {
+  const account = await requireSuperAdmin();
+  form.delete("tour_id");
+  form.delete("import_ids");
+  return storeTour(form, account.id, true);
+}
+
+async function storeTour(form: FormData, accountId: string, admin: boolean): Promise<TourState> {
   const tourId = text(form.get("tour_id"));
   if (tourId && !UUID.test(tourId)) return { message: "We couldn't find this tour." };
   const intent = text(form.get("intent")) === "draft" ? "draft" : "publish";
@@ -73,10 +92,11 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
     return fail({ errors: { ...checked.errors, ...(posterErr ? { poster: posterErr } : {}) }, dateErrors: checked.dateErrors });
   }
 
-  // The owner must be one of the profiles this account manages (spec 11.4 item 8).
-  const profiles = await getMyProfiles();
-  const owner = profiles.find((p) => p.kind === checked.performer!.kind && p.id === checked.performer!.id);
-  if (!owner) return fail({ errors: { performer: "Please choose one of your profiles." } });
+  // The owner must be one of the profiles this account manages (spec 11.4 item 8); the super admin may pick any.
+  const owner = admin
+    ? await findAnyPerformer(checked.performer.kind, checked.performer.id)
+    : (await getMyProfiles()).find((p) => p.kind === checked.performer!.kind && p.id === checked.performer!.id);
+  if (!owner) return fail({ errors: { performer: admin ? "Please choose a comedian or group." : "Please choose one of your profiles." } });
   const performer: Performer = { kind: owner.kind, id: owner.id };
 
   // 1. The tour itself.
@@ -102,7 +122,7 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
       const trySlug = attempt === 0 ? base : `${base}-${Math.random().toString(36).slice(2, 6)}`;
       const { data, error } = await supabase
         .from("tours")
-        .insert({ ...details, slug: trySlug, status: "draft", created_by: account.id, ...(performer.kind === "group" ? { group_id: performer.id } : { comedian_id: performer.id }) })
+        .insert({ ...details, slug: trySlug, status: "draft", created_by: accountId, ...(performer.kind === "group" ? { group_id: performer.id } : { comedian_id: performer.id }) })
         .select("id")
         .single();
       if (data) {
@@ -134,7 +154,7 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
     }
     // Only Comedy Radar adds venues (Dina, 2026-11-26): a typed new venue is left empty.
     const venueId = v.new_venue ? null : v.venue_id;
-    const show = await insertShow(supabase, account.id, {
+    const show = await insertShow(supabase, accountId, {
       title: v.title,
       description: details.description,
       starts_at: v.starts_at,
@@ -156,7 +176,7 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
       failed.push(v.title);
       continue;
     }
-    await savePerformers(supabase, account.id, show.id, performer, guests, new Set());
+    await savePerformers(supabase, accountId, show.id, performer, guests, new Set());
     made.push({ id: show.id, soldOut: v.sold_out });
   }
 
@@ -165,6 +185,17 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
   if (imported.length) {
     const { error } = await supabase.from("shows").update({ tour_id: id }).in("id", imported).is("tour_id", null);
     if (error) console.error("import shows", error.message);
+  }
+
+  if (admin) {
+    const status = ADMIN_TOUR_STATUSES.find((x) => x === text(form.get("status"))) ?? "published";
+    if (status !== "draft") {
+      await supabase.from("tours").update({ status }).eq("id", id);
+      for (const m of made) await supabase.from("shows").update({ status: status === "published" && m.soldOut ? "sold_out" : status }).eq("id", m.id);
+    }
+    updateTag("shows");
+    updateTag("tours");
+    redirect(`/admin/shows?tab=tours&msg=${failed.length ? "tour_some_failed" : "created"}`);
   }
 
   // 4. Publish: the tour and its draft dates go live (or to review for unverified profiles).

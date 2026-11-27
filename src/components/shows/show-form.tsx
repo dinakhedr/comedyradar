@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useId, useMemo, useState } from "react";
-import { saveShow, type ShowState } from "@/app/actions/shows";
+import { adminSaveShow, saveShow, type ShowState } from "@/app/actions/shows";
+import { AdminSaveRow } from "@/components/admin/admin-save-row";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { MemberPicker } from "@/components/profiles/create-form";
@@ -47,18 +48,21 @@ export function ShowForm({
   show,
   copy,
   defaultPerformer,
+  admin = false,
 }: {
   profiles: ManagedProfile[];
   cities: CityOption[];
   venues: VenueOption[];
   tours: TourOption[];
+  /** Admin > Add new show: any profile, and a status to pick. */
+  admin?: boolean;
   /** Editing this show. */
   show?: EditableShow | null;
   /** A show to copy (Duplicate): everything but the date. */
   copy?: EditableShow | null;
   defaultPerformer?: string;
 }) {
-  const [state, action, pending] = useActionState<ShowState, FormData>(saveShow, {});
+  const [state, action, pending] = useActionState<ShowState, FormData>(admin ? adminSaveShow : saveShow, {});
   const e = state.errors ?? {};
   const src = show ?? copy ?? null;
   // What was typed, sent back when the form had errors (React clears the other fields after a submit).
@@ -131,7 +135,7 @@ export function ShowForm({
           <h2 id="who" className="text-heading font-extrabold">
             Who is performing
           </h2>
-          <Field label="Performer" error={e.performer} hint="Only the profiles you manage are listed.">
+          <Field label="Performer" error={e.performer} hint={admin ? "Every comedian and group on Comedy Radar. Type a name to jump to it." : "Only the profiles you manage are listed."}>
             {(id, d) => (
               <select id={id} name="performer" value={performer} onChange={(ev) => setPerformer(ev.target.value)} aria-describedby={d} aria-invalid={e.performer ? true : undefined} className={inputCls}>
                 <option value="">Choose a profile</option>
@@ -240,7 +244,7 @@ export function ShowForm({
               </select>
             )}
           </Field>
-          <Field label="Venue" error={e.venue} optional hint={cityId ? "Pick the venue. Not on the list? Contact Comedy Radar and we will add it." : "Choose the city first."}>
+          <Field label="Venue" error={e.venue} optional hint={cityId ? (admin ? "Pick the venue. Not on the list? Add it first under Shows and tours > Venues." : "Pick the venue. Not on the list? Contact Comedy Radar and we will add it.") : "Choose the city first."}>
             {(id, d) => (
               <select id={id} name="venue_id" value={venueId} disabled={!cityId} onChange={(ev) => setVenueId(ev.target.value)} aria-describedby={d} className={inputCls}>
                 <option value="">No venue yet</option>
@@ -325,6 +329,7 @@ export function ShowForm({
               )}
             </Field>
           )}
+          {!admin && (
           <Field label="Signal" optional hint="New shows get the “New” signal. Ask for Strong or Fading and Comedy Radar decides.">
             {(id, d) => (
               <select id={id} name="signal_request" defaultValue={back?.signal_request ?? src?.signal_request ?? ""} aria-describedby={d} className={inputCls}>
@@ -337,8 +342,12 @@ export function ShowForm({
               </select>
             )}
           </Field>
+          )}
         </section>
 
+        {admin ? (
+          <AdminSaveRow noun="show" pending={pending} />
+        ) : (
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
             {pending ? "Saving…" : publishLabel}
@@ -352,6 +361,7 @@ export function ShowForm({
             <p className="text-sm text-radar-purple/75">{picked.name} isn&apos;t verified yet, so Comedy Radar checks the show before it goes live.</p>
           )}
         </div>
+        )}
       </div>
 
       <aside aria-label="Preview" className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-6">

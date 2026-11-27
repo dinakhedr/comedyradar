@@ -59,6 +59,7 @@ import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { ShowStatusPill, StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 import { LinkPending } from "@/components/link-pending";
+import { AddNewLink } from "@/components/admin/add-new-link";
 
 export const metadata: Metadata = { title: "Shows and tours" };
 
@@ -66,6 +67,8 @@ const one = (v: string | string[] | undefined) =>
   (Array.isArray(v) ? v[0] : v) ?? "";
 const MSG: Record<string, string> = {
   saved: "Saved.",
+  created: "Added.",
+  tour_some_failed: "The tour was added, but some dates could not be saved. Open the tour to check its dates.",
   declined: "Signal change request declined. The signal stays as it is.",
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
@@ -1304,7 +1307,7 @@ async function Content({
   return (
     <>
       {msg && (
-        ["saved", "declined", "venue_saved"].includes(msgKey) ? (
+        ["saved", "created", "declined", "venue_saved"].includes(msgKey) ? (
           <SuccessNote>{msg}</SuccessNote>
         ) : (
           <ErrorNote>{msg}</ErrorNote>
@@ -1346,9 +1349,17 @@ export default function AdminShowsPage({
 }: PageProps<"/admin/shows">) {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-[32px] leading-none md:text-[44px]">
-        SHOWS AND TOURS
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-[32px] leading-none md:text-[44px]">
+          SHOWS AND TOURS
+        </h1>
+        <div className="flex flex-wrap gap-2">
+          <AddNewLink href="/admin/shows/new">Add new show</AddNewLink>
+          <AddNewLink href="/admin/shows/new-tour" outline>
+            Add new tour
+          </AddNewLink>
+        </div>
+      </div>
       <Suspense
         fallback={
           <div className={`${card} h-96 animate-pulse`} aria-busy="true" />

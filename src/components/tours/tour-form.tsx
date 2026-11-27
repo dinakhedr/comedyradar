@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
-import { saveTour, type TourState } from "@/app/actions/tours";
+import { adminSaveTour, saveTour, type TourState } from "@/app/actions/tours";
+import { AdminSaveRow } from "@/components/admin/admin-save-row";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon } from "@/components/icons";
@@ -43,6 +44,7 @@ export function TourForm({
   tour,
   defaultPerformer,
   focusDates,
+  admin = false,
 }: {
   profiles: ManagedProfile[];
   cities: CityOption[];
@@ -52,8 +54,10 @@ export function TourForm({
   defaultPerformer?: string;
   /** Opened from "+ Add dates": scroll to the dates. */
   focusDates?: boolean;
+  /** Admin > Add new tour: any profile, and a status to pick. */
+  admin?: boolean;
 }) {
-  const [state, action, pending] = useActionState<TourState, FormData>(saveTour, {});
+  const [state, action, pending] = useActionState<TourState, FormData>(admin ? adminSaveTour : saveTour, {});
   const e = state.errors ?? {};
   const back = state.input;
 
@@ -165,7 +169,7 @@ export function TourForm({
               </p>
             </>
           ) : (
-            <Field label="Comedian or group" error={e.performer} hint="One comedian or one group. Only the profiles you manage are listed.">
+            <Field label="Comedian or group" error={e.performer} hint={admin ? "One comedian or one group. Every profile on Comedy Radar is listed: type a name to jump to it." : "One comedian or one group. Only the profiles you manage are listed."}>
               {(id, d) => (
                 <select id={id} name="performer" value={performer} onChange={(ev) => setPerformer(ev.target.value)} aria-describedby={d} aria-invalid={e.performer ? true : undefined} className={inputCls}>
                   <option value="">Choose a profile</option>
@@ -365,6 +369,9 @@ export function TourForm({
           <p className="text-sm text-radar-purple/75">Prices show only on the show pages, never on cards. You can change any single date later.</p>
         </section>
 
+        {admin ? (
+          <AdminSaveRow noun="tour" pending={pending} />
+        ) : (
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
             {pending ? "Saving…" : publishLabel}
@@ -376,6 +383,7 @@ export function TourForm({
           )}
           {picked && !picked.verified && !live && <p className="text-sm text-radar-purple/75">{picked.name} isn&apos;t verified yet, so Comedy Radar checks the tour before it goes live.</p>}
         </div>
+        )}
       </div>
 
       <aside aria-label="Preview" className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-6">

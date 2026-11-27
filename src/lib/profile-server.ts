@@ -74,7 +74,14 @@ export async function freeSlug(db: Db, table: "comedians" | "comedy_groups" | "p
  * (`new_members`, one per line, saved as draft comedians). Members this account
  * does not manage get a link request and show once their admin accepts (spec 11.3).
  */
-export async function addMembers(db: Db, accountId: string, groupId: string, form: FormData, startOrder = 1) {
+export async function addMembers(
+  db: Db,
+  accountId: string,
+  groupId: string,
+  form: FormData,
+  startOrder = 1,
+  newStatus = "draft",
+): Promise<{ count: number; created: string[] }> {
   const existing = [...new Set(form.getAll("member_ids").map(String).filter((v) => UUID.test(v)))].slice(0, 20);
   const newNames = text(form.get("new_members"))
     .split("\n")
@@ -85,13 +92,13 @@ export async function addMembers(db: Db, accountId: string, groupId: string, for
   const created: string[] = [];
   for (const name of newNames) {
     const { slug } = await freeSlug(db, "comedians", name, "comedian");
-    const { data, error } = await db.from("comedians").insert({ name, slug, status: "draft" }).select("id").single();
+    const { data, error } = await db.from("comedians").insert({ name, slug, status: newStatus }).select("id").single();
     if (error) console.error("member draft", error.message);
     if (data) created.push((data as { id: string }).id);
   }
 
   const all = [...existing, ...created];
-  if (!all.length) return 0;
+  if (!all.length) return { count: 0, created };
   const { data: rows, error } = await db
     .from("group_members")
     .upsert(
@@ -101,7 +108,7 @@ export async function addMembers(db: Db, accountId: string, groupId: string, for
     .select("comedian_id, link_status");
   if (error) {
     console.error("group members", error.message);
-    return 0;
+    return { count: 0, created };
   }
   const pending = ((rows ?? []) as { comedian_id: string; link_status: string }[]).filter((r) => r.link_status === "pending");
   if (pending.length) {
@@ -110,5 +117,5 @@ export async function addMembers(db: Db, accountId: string, groupId: string, for
     );
     if (reqErr) console.error("link requests", reqErr.message);
   }
-  return rows?.length ?? 0;
+  return { count: rows?.length ?? 0, created };
 }

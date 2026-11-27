@@ -411,3 +411,12 @@ export function PinIcon({ className, size = 20 }: IconProps) {
     </svg>
   );
 }
+
+/** A plus: "Add new …" buttons. */
+export function PlusIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}

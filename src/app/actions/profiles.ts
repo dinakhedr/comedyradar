@@ -9,6 +9,8 @@ import {
   type ProfileErrors,
   type ProfileKind,
 } from "@/lib/profile-forms";
+import { adminListPath } from "@/lib/admin-paths";
+import { requireSuperAdmin } from "@/lib/data/admin";
 import { requireAccount } from "@/lib/data/dashboard";
 import { addMembers, freeSlug, origin, photoError, readProfileForm, text, uploadImage, UUID } from "@/lib/profile-server";
 import { createClient } from "@/lib/supabase/server";
@@ -46,6 +48,8 @@ export async function findComedians(q: string): Promise<{ id: string; name: stri
 // Create a profile
 // ---------------------------------------------------------------------------
 
+const ADMIN_STATUSES = ["published", "pending", "draft"] as const;
+
 export type CreateState = {
   message?: string;
   errors?: ProfileErrors & { photo?: string; cover?: string };
@@ -58,7 +62,7 @@ export type CreateState = {
 
 function echo(form: FormData): NonNullable<CreateState["input"]> {
   const fields: Record<string, string> = {};
-  for (const k of ["name", "name_ar", "bio", "country", "instagram", "tiktok", "youtube", "facebook", "language", "new_members"]) {
+  for (const k of ["name", "name_ar", "bio", "country", "instagram", "tiktok", "youtube", "facebook", "language", "new_members", "status"]) {
     fields[k] = text(form.get(k)).slice(0, 2000);
   }
   const ids = form.getAll("member_ids").map(String);
@@ -73,6 +77,20 @@ function echo(form: FormData): NonNullable<CreateState["input"]> {
 export async function createProfile(_prev: CreateState, form: FormData): Promise<CreateState> {
   const account = await requireAccount();
   if (account.is_suspended) return { message: "This account is suspended." };
+  return makeProfile(form, account.id, false);
+}
+
+/**
+ * Admin > Comedians or Groups > Add new: the super admin adds a profile with
+ * the status she picks (Published by default), marked "seeded by Comedy
+ * Radar". She does not become its admin, so it waits for its owner to claim it.
+ */
+export async function adminCreateProfile(_prev: CreateState, form: FormData): Promise<CreateState> {
+  const account = await requireSuperAdmin();
+  return makeProfile(form, account.id, true);
+}
+
+async function makeProfile(form: FormData, accountId: string, admin: boolean): Promise<CreateState> {
   const kind: ProfileKind = text(form.get("kind")) === "group" ? "group" : "comedian";
   const { values, errors } = readProfileForm(form, kind);
 
@@ -106,11 +124,19 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
   const free = await freeSlug(supabase, table, values.name, kind);
   const base = free.base;
   let slug = free.slug;
-  const status = text(form.get("intent")) === "draft" ? "draft" : "pending";
+  const status = admin
+    ? (ADMIN_STATUSES.find((x) => x === text(form.get("status"))) ?? "published")
+    : text(form.get("intent")) === "draft"
+      ? "draft"
+      : "pending";
 
   let id: string | null = null;
   for (let attempt = 0; attempt < 3 && !id; attempt++) {
-    const { data, error } = await supabase.from(table).insert({ ...values, slug, status }).select("id").single();
+    const { data, error } = await supabase
+      .from(table)
+      .insert({ ...values, slug, status, ...(admin ? { seeded: true } : {}) })
+      .select("id")
+      .single();
     if (data) id = (data as { id: string }).id;
     else if (error?.code === "23505") slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
     else {
@@ -130,7 +156,16 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
     if (url) await supabase.from(table).update({ cover_url: url }).eq("id", id);
   }
 
-  if (kind === "group") await addMembers(supabase, account.id, id, form);
+  const members = kind === "group" ? await addMembers(supabase, accountId, id, form, 1, admin ? status : "draft") : null;
+
+  if (admin) {
+    // The database makes the creator an admin; the super admin should not be one.
+    const col = kind === "group" ? "group_id" : "comedian_id";
+    await supabase.from("profile_access").delete().eq("account_id", accountId).eq(col, id);
+    if (members?.created.length) await supabase.from("profile_access").delete().eq("account_id", accountId).in("comedian_id", members.created);
+    updateTag("profiles");
+    redirect(`${adminListPath(kind)}?msg=created&p=${kind}:${id}`);
+  }
 
   updateTag("profiles");
   redirect(`/dashboard/profiles?created=${kind === "group" ? "g" : "c"}:${slug}`);

@@ -11,6 +11,8 @@ import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 import { LinkPending } from "@/components/link-pending";
+import { AddNewLink } from "@/components/admin/add-new-link";
+import { LETTERS, nameLetter, usedLetters } from "@/lib/comedians-filters";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const STATUSES = [
@@ -26,6 +28,7 @@ const VERIFIED = [
 ];
 const MSG: Record<string, string> = {
   saved: "Saved.",
+  created: "Added.",
   deleted: "Profile deleted.",
   added: "Access added.",
   no_account: "Nobody has signed up with that email yet. Ask them to create an account first.",
@@ -175,6 +178,8 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
   const q = one(sp.q).slice(0, 80);
   const status = STATUSES.some((s) => s.value === one(sp.status)) ? one(sp.status) : "";
   const verified = VERIFIED.some((v) => v.value === one(sp.verified)) ? one(sp.verified) : "";
+  // A–Z bar on Comedians, like the public Comedians page.
+  const letter = kind === "comedian" && LETTERS.includes(one(sp.letter)) ? one(sp.letter) : "";
   // The numbers count only this kind, whatever the filters say.
   const [data, pendingAll, noAdminAll] = await Promise.all([
     getAdminProfiles({ kind, q, status, verified }),
@@ -183,24 +188,26 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
   ]);
   const total = kind === "group" ? data.stats.groups : data.stats.comedians;
   const noAdmin = noAdminAll.rows.filter((r) => r.status !== "archived").length;
+  const letters = usedLetters(data.rows);
+  const rows = letter ? data.rows.filter((r) => nameLetter(r.name) === letter) : data.rows;
   const picked = data.rows.find((r) => `${r.kind}:${r.id}` === one(sp.p)) ?? null;
   const msg = MSG[one(sp.msg)];
 
   const link = (over: Record<string, string>) => {
     const u = new URLSearchParams();
-    const all = { q, status, verified, ...over };
+    const all = { q, status, verified, letter, ...over };
     for (const [k, v] of Object.entries(all)) if (v) u.set(k, v);
     const qs = u.toString();
     return qs ? `${base}?${qs}` : base;
   };
   const ret = link(picked ? { p: `${picked.kind}:${picked.id}` } : {});
-  const filtered = q || status || verified;
+  const filtered = q || status || verified || letter;
   const noun = kind === "group" ? "groups" : "comedians";
 
   return (
     <>
       {msg && (
-        ["saved", "deleted", "added"].includes(one(sp.msg)) ? (
+        ["saved", "created", "deleted", "added"].includes(one(sp.msg)) ? (
           <SuccessNote>{msg}</SuccessNote>
         ) : (
           <ErrorNote>{msg}</ErrorNote>
@@ -218,6 +225,7 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
             {kind === "group" ? "Groups" : "Comedians"}
           </h2>
           <form method="get" action={base} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto] md:items-end">
+            {letter && <input type="hidden" name="letter" value={letter} />}
             <div className="flex flex-col gap-1">
               <label htmlFor="ap-q" className={labelCls}>
                 Search
@@ -255,14 +263,45 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
                 Show
               </button>
               {filtered && (
-                <Link href={link({ q: "", status: "", verified: "" })} className={`${outlineBtn} border-transparent`}>
+                <Link href={link({ q: "", status: "", verified: "", letter: "" })} className={`${outlineBtn} border-transparent`}>
                   Clear
                 </Link>
               )}
             </div>
           </form>
 
-          {data.rows.length === 0 ? (
+          {kind === "comedian" && (
+            <nav aria-label="Jump to letter" className="flex flex-wrap items-center gap-0.5">
+              <span className="w-11 shrink-0 text-[13px] font-extrabold tracking-[1px] text-radar-purple/70">A–Z</span>
+              <Link
+                href={link({ letter: "" })}
+                scroll={false}
+                aria-current={!letter ? "true" : undefined}
+                className={`inline-flex h-11 items-center rounded-[10px] px-2.5 text-sm font-extrabold ${!letter ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
+              >
+                All
+              </Link>
+              {LETTERS.map((l) =>
+                letters.has(l) || l === letter ? (
+                  <Link
+                    key={l}
+                    href={link({ letter: l })}
+                    scroll={false}
+                    aria-current={letter === l ? "true" : undefined}
+                    className={`inline-flex h-11 min-w-8 items-center justify-center rounded-[10px] text-sm font-extrabold ${letter === l ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
+                  >
+                    {l}
+                  </Link>
+                ) : (
+                  <span key={l} aria-hidden="true" className="inline-flex h-11 min-w-8 items-center justify-center text-sm font-bold text-radar-purple/30">
+                    {l}
+                  </span>
+                ),
+              )}
+            </nav>
+          )}
+
+          {rows.length === 0 ? (
             <p className="text-radar-purple/80">{filtered ? `No ${noun} match these filters.` : `No ${noun} yet.`}</p>
           ) : (
             <div className="relative -mx-4 overflow-x-auto md:mx-0">
@@ -279,7 +318,7 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
                   </tr>
                 </thead>
                 <tbody>
-                  {data.rows.map((r) => {
+                  {rows.map((r) => {
                     const on = picked?.id === r.id;
                     return (
                       <tr key={`${r.kind}-${r.id}`} className={`border-b border-radar-purple/10 ${on ? "bg-lavender" : ""}`}>
@@ -328,7 +367,10 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
 export function AdminProfilesList({ kind, searchParams }: { kind: Kind; searchParams: Promise<SP> }) {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-[32px] leading-none md:text-[44px]">{kind === "group" ? "GROUPS" : "COMEDIANS"}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-[32px] leading-none md:text-[44px]">{kind === "group" ? "GROUPS" : "COMEDIANS"}</h1>
+        <AddNewLink href={`${adminListPath(kind)}/new`}>{kind === "group" ? "Add new group" : "Add new comedian"}</AddNewLink>
+      </div>
       <Suspense fallback={<div className={`${card} h-96 animate-pulse`} aria-busy="true" />}>
         <Content kind={kind} searchParams={searchParams} />
       </Suspense>
