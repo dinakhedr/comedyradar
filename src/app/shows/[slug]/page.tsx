@@ -69,6 +69,34 @@ function ShowSkeleton() {
   );
 }
 
+/**
+ * The show poster, never cropped: the box follows the poster's own shape.
+ * A very tall poster is capped at 4:5 (125% of the box width) and the space
+ * left at the sides shows a soft blurred copy of the same poster.
+ */
+function ShowPoster({ src, title, cancelled }: { src: string | null; title: string; cancelled: boolean }) {
+  return (
+    <div className="@container relative overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px]">
+      {src ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- posters come from Supabase Storage */}
+          <img src={src} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- posters come from Supabase Storage */}
+          <img
+            src={src}
+            alt={`Poster for ${title}`}
+            fetchPriority="high"
+            className="relative block h-auto max-h-[125cqw] w-full object-contain"
+          />
+        </>
+      ) : (
+        <CoverImage src={null} alt={`Poster for ${title}`} iconSize={88} className="aspect-[4/5] w-full" />
+      )}
+      {cancelled && <span aria-hidden="true" className="absolute inset-0 bg-radar-purple/55" />}
+    </div>
+  );
+}
+
 function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: string; compact?: boolean }) {
   if (show.status !== "published" || !show.ticket_url) {
     const text = show.status === "sold_out" ? "Sold out" : "Tickets soon";
@@ -387,10 +415,7 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
       )}
 
       <section className={`${container} grid gap-5 pb-8 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:items-start md:gap-10 md:pb-14`}>
-        <div className="relative overflow-hidden rounded-[22px] md:rounded-[28px]">
-          <CoverImage src={show.poster_url} alt={`Poster for ${show.title}`} iconSize={88} className="aspect-[4/5] w-full" />
-          {cancelled && <span aria-hidden="true" className="absolute inset-0 bg-radar-purple/55" />}
-        </div>
+        <ShowPoster src={show.poster_url} title={show.title} cancelled={cancelled} />
 
         <div className="flex flex-col gap-3.5 md:gap-[18px]">
           <div className="flex flex-wrap gap-1.5 md:gap-2">
