@@ -41,19 +41,19 @@ describe("whenRange", () => {
     expect(r.to.toISOString()).toBe("2026-11-28T22:00:00.000Z");
   });
 
-  it("this month is the next 30 days", () => {
+  it("this month is the rest of the current calendar month in Cairo", () => {
     const r = whenRange("month", thu);
     expect(r.from).toEqual(thu);
-    // Thu 26 Nov + 30 days = Sat 26 Dec, included until midnight Cairo.
-    expect(r.to.toISOString()).toBe("2026-12-26T22:00:00.000Z");
+    // Thu 26 Nov: until midnight Cairo on 1 Dec.
+    expect(r.to.toISOString()).toBe("2026-11-30T22:00:00.000Z");
     const dec = new Date("2026-12-10T10:00:00Z");
-    expect(whenRange("month", dec).to.toISOString()).toBe("2027-01-09T22:00:00.000Z");
+    expect(whenRange("month", dec).to.toISOString()).toBe("2026-12-31T22:00:00.000Z");
   });
 
-  it("this month includes early next-month shows late in a month", () => {
+  it("this month leaves out next-month shows late in a month", () => {
     const lateNov = new Date("2026-11-27T02:00:00Z");
     const show = Date.parse("2026-12-02T17:00:00Z");
-    expect(show).toBeLessThan(whenRange("month", lateNov).to.getTime());
+    expect(show).toBeGreaterThanOrEqual(whenRange("month", lateNov).to.getTime());
   });
 });
 
