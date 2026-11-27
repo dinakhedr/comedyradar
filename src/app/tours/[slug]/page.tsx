@@ -131,7 +131,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
         >
           {tall ? (
             // A tall tour poster sits beside the details, like on a show page (Dina, 2026-11-27).
-            <PosterImage src={tall} alt={`Poster for ${tour.name}`} eager className="aspect-[4/5] w-full" />
+            <PosterImage src={tall} alt={`Poster for ${tour.name}`} eager className="aspect-[3/4] w-full" />
           ) : (
             // Wide banner on top, details below (Dina picked option B, 2026-11-27). Shown whole, never cropped.
             <PosterImage
@@ -141,7 +141,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
               iconSize={88}
               tone="deep"
               eager
-              className="aspect-[16/9] w-full md:max-h-[480px]"
+              className="aspect-[1376/768] w-full"
             />
           )}
           <div

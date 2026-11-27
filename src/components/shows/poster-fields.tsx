@@ -6,7 +6,7 @@ import { shrinkTo, TALL_GUIDE, WIDE_GUIDE } from "@/lib/posters";
 
 /**
  * The two poster boxes on the show and tour forms (Dina, 2026-11-27):
- * wide (16:9, used everywhere) and tall (4:5, used only on the single page).
+ * wide (1376 × 768, used everywhere) and tall (896 × 1200, 3:4, used only on the single page).
  * Both optional; if only one is added the site uses it everywhere, uncropped.
  * Sends `poster` / `poster_tall` files, and `poster_remove` / `poster_tall_remove`
  * when an existing poster is taken off.
@@ -47,7 +47,7 @@ export function PosterFields({
           label="Wide poster"
           guide={WIDE_GUIDE}
           where="homepage Spotlight, show cards, lists, search and tour banners"
-          ratio="aspect-[16/9]"
+          ratio="aspect-[1376/768]"
           url={w}
           setUrl={setW}
           error={errors?.poster}
@@ -57,7 +57,7 @@ export function PosterFields({
           label="Tall poster"
           guide={TALL_GUIDE}
           where={`the ${page} page only`}
-          ratio="aspect-[4/5]"
+          ratio="aspect-[3/4]"
           url={t}
           setUrl={setT}
           error={errors?.poster_tall}

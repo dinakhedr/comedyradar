@@ -1,7 +1,7 @@
 /**
  * Two posters per show and tour (Dina, 2026-11-27):
- *   wide (poster_url, 16:9)       used everywhere: Spotlight, cards, lists, search, tour banners.
- *   tall (poster_tall_url, 4:5)   used only on the single show page and single tour page.
+ *   wide (poster_url, 1376 × 768)  used everywhere: Spotlight, cards, lists, search, tour banners.
+ *   tall (poster_tall_url, 896 × 1200, 3:4)  used only on the single show page and single tour page.
  * If only one is there, it is used for both. A tour date with any poster of its
  * own uses its own; otherwise it uses the tour's. (The database views do the same.)
  */
@@ -9,8 +9,9 @@
 export type PosterPair = { poster_url: string | null; poster_tall_url: string | null };
 export type Posters = { wide: string | null; tall: string | null };
 
-export const WIDE_GUIDE = "Landscape 16:9, best size 1920 × 1080.";
-export const TALL_GUIDE = "Portrait 4:5, best size 1080 × 1350.";
+// Dina makes every poster in Google Flow at these two sizes (2026-11-27); the frames on the site match them.
+export const WIDE_GUIDE = "Landscape, best size 1376 × 768.";
+export const TALL_GUIDE = "Portrait 3:4, best size 896 × 1200.";
 
 /** Posters are shrunk in the browser to at most this many pixels on the long side before upload. */
 export const POSTER_MAX_SIDE = 2000;
