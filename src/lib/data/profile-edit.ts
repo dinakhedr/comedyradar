@@ -23,6 +23,8 @@ export type EditableProfile = {
   tiktok_url: string | null;
   youtube_url: string | null;
   facebook_url: string | null;
+  /** Groups only. */
+  website_url: string | null;
   styles: GroupStyle[];
   performing_language: GroupLanguage | null;
   status: "draft" | "pending" | "published" | "archived";
@@ -68,7 +70,7 @@ async function loadEditable(picked: { kind: ProfileKind; id: string; role: Profi
   const table = picked.kind === "group" ? "comedy_groups" : "comedians";
   const cols =
     "id, slug, name, name_ar, bio, photo_url, cover_url, home_country_id, instagram_url, tiktok_url, youtube_url, facebook_url, status, verified, archive_requested_at" +
-    (picked.kind === "group" ? ", styles, performing_language" : "");
+    (picked.kind === "group" ? ", styles, performing_language, website_url" : "");
   const column = picked.kind === "group" ? "group_id" : "comedian_id";
   const [row, names, panel] = await Promise.all([
     supabase.from(table).select(cols).eq("id", picked.id).maybeSingle(),
@@ -88,6 +90,7 @@ async function loadEditable(picked: { kind: ProfileKind; id: string; role: Profi
     ...p,
     styles: p.styles ?? [],
     performing_language: p.performing_language ?? null,
+    website_url: p.website_url ?? null,
     kind: picked.kind,
     role: picked.role,
     pendingName: (names.data as EditableProfile["pendingName"]) ?? null,

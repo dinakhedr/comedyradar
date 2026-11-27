@@ -7,6 +7,8 @@ import type { Person } from "./show";
 import type { ShowRow, TourRow } from "./types";
 
 export type Socials = {
+  /** Groups only (Dina, 2026-11-27). */
+  website_url?: string | null;
   instagram_url: string | null;
   tiktok_url: string | null;
   youtube_url: string | null;
@@ -50,7 +52,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
   const { data, error } = await db
     .from("comedy_groups")
     .select(
-      "id, name, slug, bio, photo_url, cover_url, styles, performing_language, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
+      "id, name, slug, bio, photo_url, cover_url, styles, performing_language, website_url, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
         "group_members(display_order, left_on, comedians(id, name, slug, photo_url, status))",
     )
     .eq("slug", slug)
@@ -111,6 +113,7 @@ export async function getGroup(slug: string): Promise<GroupDetail | null> {
     country_name: g.countries?.name ?? null,
     styles: cleanStyles(g.styles),
     performing_language: isGroupLanguage(g.performing_language) ? g.performing_language : null,
+    website_url: g.website_url ?? null,
     instagram_url: g.instagram_url,
     tiktok_url: g.tiktok_url,
     youtube_url: g.youtube_url,
