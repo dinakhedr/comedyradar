@@ -15,7 +15,8 @@ const now = new Date("2026-12-01T00:00:00Z");
 
 describe("tour titles and doors", () => {
   it("fills the title pattern", () => {
-    expect(applyTitle("", "Gulf Tour", "Dubai")).toBe("Gulf Tour — Dubai");
+    expect(applyTitle("", "Gulf Tour", "Dubai")).toBe("Gulf Tour");
+    expect(applyTitle("[Tour] — [City]", "Gulf Tour", "Dubai")).toBe("Gulf Tour — Dubai");
     expect(applyTitle("[city]: [tour] live", "Gulf Tour", "Dubai")).toBe("Dubai: Gulf Tour live");
   });
   it("works out doors from the show time", () => {
@@ -30,7 +31,7 @@ describe("checkTour", () => {
     const r = checkTour({ performer: PERF, name: "Gulf Tour", description: "" }, [row(), row({ date: "", time: "", city_id: "" }), row({ city_id: CAIRO, ticket_status: "sold_out", ticket_url: "tix.com/a" })], same, { now, cityName, needDates: true });
     expect(r.errors).toEqual({});
     expect(r.values).toHaveLength(2);
-    expect(r.values![0].title).toBe("Gulf Tour — Dubai");
+    expect(r.values![0].title).toBe("Gulf Tour");
     expect(r.values![0].doors_at).not.toBeNull();
     expect(r.values![1].sold_out).toBe(true);
     expect(r.values![1].ticket_url).toBe("https://tix.com/a");

@@ -304,7 +304,7 @@ export function TourForm({
           <h2 id="same" className="text-heading font-extrabold">
             4. Same for every {tour ? "new " : ""}date
           </h2>
-          <Field label="Show title" error={e.title_pattern} hint="[Tour] and [City] are filled in for each date, like “Gulf Tour — Dubai”.">
+          <Field label="Show title" error={e.title_pattern} hint="[Tour] is filled in with the tour name. The city already shows on each card, so you don't need to add it.">
             {(id, d) => <input id={id} name="title_pattern" maxLength={120} defaultValue={back?.title_pattern ?? DEFAULT_TITLE_PATTERN} aria-describedby={d} className={inputCls} />}
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
