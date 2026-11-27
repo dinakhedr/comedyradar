@@ -103,7 +103,7 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           <label htmlFor="p-status" className={labelCls}>
             Status
           </label>
-          <select id="p-status" name="status" defaultValue={p.status} className={`${inputCls} min-h-11`}>
+          <select key={p.status} id="p-status" name="status" defaultValue={p.status} className={`${inputCls} min-h-11`}>
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
