@@ -749,6 +749,10 @@ select pg_temp.check(public.admin_save_setting('track_count', '99') = 'bad_value
                      and public.admin_save_setting('is_super_admin', 'true') = 'bad_value'
                      and public.admin_save_setting('default_city', '"atlantis"') = 'bad_value',
   'settings stay within their limits and known keys');
+select pg_temp.check(public.admin_save_setting('tours_count', '4') = 'ok'
+                     and public.admin_save_setting('tours_count', '1') = 'bad_value'
+                     and public.admin_save_setting('tours_count', '13') = 'bad_value',
+  'the homepage tours count stays between 2 and 12');
 select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', '  New   Giza ') = 'ok', 'the super admin adds a city');
 select pg_temp.check(public.admin_add_city('10000000-0000-0000-0000-000000000001', 'new giza') = 'exists', 'a city is added only once');
 select pg_temp.check((select slug = 'new-giza' and name = 'New Giza' from public.cities where name = 'New Giza'), 'a new city gets a clean name and address');

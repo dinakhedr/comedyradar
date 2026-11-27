@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getActiveTours } from "@/lib/data/home";
+import { getActiveTours, getHomeSettings } from "@/lib/data/home";
 import { TourCard } from "../tour-card";
 
 /** On tour (spec 5.5): one card per tour; hidden when no tour is active. */
 export async function OnTour() {
-  const tours = await getActiveTours(3);
+  const settings = await getHomeSettings();
+  const tours = await getActiveTours(settings.toursCount);
   if (tours.length === 0) return null;
   return (
     <section aria-labelledby="on-tour-title" className="bg-plum-deep">
@@ -22,7 +23,7 @@ export async function OnTour() {
             All tours
           </Link>
         </div>
-        <div className="no-scrollbar flex snap-x scroll-px-[18px] gap-3 overflow-x-auto px-[18px] md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
+        <div className="no-scrollbar flex snap-x scroll-px-[18px] gap-3 overflow-x-auto px-[18px] md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-5 md:overflow-visible md:px-0">
           {tours.map((t) => (
             <TourCard key={t.id} tour={t} />
           ))}

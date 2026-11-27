@@ -103,7 +103,7 @@ function NumberField({
   help: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex w-[200px] max-w-full flex-col gap-1">
       <label htmlFor={id} className={labelCls}>
         {label}
       </label>
@@ -244,7 +244,7 @@ async function Content({
         <Card id="homepage" title="Homepage">
           <form action={saveSettings} className="flex flex-col gap-4">
             <input type="hidden" name="section" value="homepage" />
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-wrap gap-4">
               <NumberField
                 id="hp-coming"
                 name="coming_up_count"
@@ -263,6 +263,17 @@ async function Content({
                 max={12}
                 help="Comedians and groups in the row"
               />
+              <NumberField
+                id="hp-tours"
+                name="tours_count"
+                label="Tours"
+                value={num(s, "tours_count", 4)}
+                min={2}
+                max={12}
+                help="Tours in the On tour section"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <label htmlFor="hp-city" className={labelCls}>
                   Default city

@@ -18,6 +18,7 @@ export type HomeSettings = {
   spotlightAutoadvanceSeconds: number;
   comingUpCount: number;
   trackCount: number;
+  toursCount: number;
   defaultCity: string;
 };
 
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: HomeSettings = {
   spotlightAutoadvanceSeconds: 6,
   comingUpCount: 8,
   trackCount: 6,
+  toursCount: 4,
   defaultCity: "cairo",
 };
 
@@ -46,6 +48,7 @@ export async function getHomeSettings(): Promise<HomeSettings> {
     spotlightAutoadvanceSeconds: num("spotlight_autoadvance_s", 6),
     comingUpCount: num("coming_up_count", 8),
     trackCount: num("track_count", 6),
+    toursCount: num("tours_count", 4),
     defaultCity: typeof map.get("default_city") === "string" ? (map.get("default_city") as string) : "cairo",
   };
 }
@@ -106,7 +109,7 @@ export async function getSpotlight(slots: number): Promise<SpotlightSlide<ShowRo
 }
 
 /** On tour: tours with at least one upcoming show, by next show date. */
-export async function getActiveTours(limit = 3): Promise<TourRow[]> {
+export async function getActiveTours(limit = 4): Promise<TourRow[]> {
   "use cache";
   cacheLife(LISTING_CACHE);
   cacheTag("tours");
