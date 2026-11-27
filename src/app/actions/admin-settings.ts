@@ -16,7 +16,7 @@ import {
 
 /** Admin Settings (spec 11.5 item 8). Each action runs a database function that checks the super admin and the limits again. */
 
-const NUMBER_KEYS = ["coming_up_count", "track_count", "new_signal_days"];
+const NUMBER_KEYS = ["coming_up_count", "track_count", "tours_count", "new_signal_days"];
 
 async function run(fn: string, args: Record<string, unknown>): Promise<string> {
   const supabase = await createClient();
