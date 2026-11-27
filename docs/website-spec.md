@@ -170,7 +170,7 @@ Section order, top to bottom. Header, hero and the Spotlight must fit on the fir
 
 ### 5.4 Coming up
 - Title **COMING UP** + link "See all shows".
-- **8 cards, no date sections**: the next 8 upcoming published shows ordered by start date/time (soonest first), after the hero filters are applied.
+- **8 cards, no date sections**: the next 8 upcoming published shows ordered by start date/time (soonest first), after the hero filters are applied. Only shows with **Show on homepage** on are listed: every show and tour date starts with it on, and the super admin turns it off with the house icon in Admin > Shows and tours (decided 2026-11-27). Off shows still appear on `/shows`.
 - Desktop: 4 × 2 grid. Mobile: 8 compact rows (image, date · time, title, comedian/group · city, button).
 - Card: image, badge (New / Strong / Fading Signal, Group show, Visiting, Sold out), **date · time line in yellow** (e.g. "TONIGHT · 8:30 PM", "FRI 28 NOV · 9:00 PM"), show title, comedian or group (links to its page), venue and city, **"Get tickets"**. No price.
 - Button below: "See all upcoming shows" → `/shows`.

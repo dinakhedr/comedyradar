@@ -199,6 +199,30 @@ set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
 select pg_temp.check(not private.can_manage_comedian('30000000-0000-0000-0000-00000000000a'),
                      'removed team member loses access to the profile immediately');
 
+-- ---------------------------------------------------------------- show on homepage flag
+reset role;
+select pg_temp.check((select on_homepage from public.shows where id = '40000000-0000-0000-0000-000000000001'),
+                     'a new show is on the homepage by default');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+update public.shows set on_homepage = false where id = '40000000-0000-0000-0000-000000000001';
+select pg_temp.check((select on_homepage from public.shows where id = '40000000-0000-0000-0000-000000000001'),
+                     'a creator cannot take a show off the homepage');
+select pg_temp.check(public.admin_set_show_homepage('40000000-0000-0000-0000-000000000001', false) = 0,
+                     'only the super admin can use the homepage switch');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check(public.admin_set_show_homepage('40000000-0000-0000-0000-000000000001', false) = 1,
+                     'the super admin uses the homepage switch');
+select pg_temp.check((select not on_homepage from public.shows where id = '40000000-0000-0000-0000-000000000001'),
+                     'the super admin takes a show off the homepage');
+select pg_temp.check((select (r -> 'rows' -> 0 ->> 'on_homepage')::boolean = false
+                      from (select public.admin_shows('', '', '', null, 'all', '') r) x),
+                     'the admin list shows the homepage flag');
+select public.admin_set_show_homepage('40000000-0000-0000-0000-000000000001', true);
+set local request.jwt.claim.aal = '';
+reset role;
+
 -- ---------------------------------------------------------------- spotlight + views as anon
 reset role;
 insert into public.spotlight_placements (show_id, ends_at, priority)
@@ -211,6 +235,7 @@ select pg_temp.check((select headliner_name = 'Comic A' and city_slug = 'cairo' 
                       from public.v_upcoming_shows), 'view returns headliner, city and signal');
 select pg_temp.check((select performer_count = 1 from public.v_upcoming_shows),
                      'unpublished tagged profile is not shown as a performer');
+select pg_temp.check((select on_homepage from public.v_upcoming_shows), 'the public list carries the homepage flag');
 select pg_temp.check((select count(*) = 1 from public.v_spotlight), 'anon sees the active spotlight placement');
 do $$ begin
   perform * from public.profile_access;

@@ -51,6 +51,16 @@ export async function setShowSignal(form: FormData): Promise<void> {
   back(form, r && Number(r) > 0 ? "saved" : "error");
 }
 
+/** House icon: put a show on the homepage "Coming up" section, or take it off. */
+export async function setShowHomepage(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const id = text(form.get("id"));
+  const on = text(form.get("on"));
+  if (!UUID.test(id) || (on !== "1" && on !== "0")) return back(form, "error");
+  const r = await run("admin_set_show_homepage", { p_id: id, p_on: on === "1" });
+  back(form, r && Number(r) > 0 ? (on === "1" ? "home_on" : "home_off") : "error");
+}
+
 export async function declineSignalRequest(form: FormData): Promise<void> {
   await requireSuperAdmin();
   const id = text(form.get("id"));

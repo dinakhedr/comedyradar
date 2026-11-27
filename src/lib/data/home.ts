@@ -79,6 +79,8 @@ export async function getComingUp(when: WhenFilter, city: string | null, limit: 
     .select(SHOW_COLUMNS)
     .gte("starts_at", from.toISOString())
     .lt("starts_at", to.toISOString())
+    // Only shows left on the homepage (house icon in Admin > Shows and tours).
+    .eq("on_homepage", true)
     .order("starts_at")
     .limit(limit);
   if (city) q = q.eq("city_slug", city);

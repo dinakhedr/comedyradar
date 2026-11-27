@@ -231,9 +231,10 @@ export function InfoIcon({ className, size = 20 }: IconProps) {
 
 /* Menu icons for the admin and dashboard sidebars. */
 
-export function HomeIcon({ className, size = 20 }: IconProps) {
+/** A house. `filled` = solid (used for "on the homepage"). */
+export function HomeIcon({ className, size = 20, filled = false }: IconProps & { filled?: boolean }) {
   return (
-    <svg {...base(size)} strokeWidth={2} className={className}>
+    <svg {...base(size)} fill={filled ? "currentColor" : "none"} strokeWidth={2} className={className}>
       <path d="M4 11 L12 4 L20 11 V20 H14.5 V14.5 H9.5 V20 H4 Z" />
     </svg>
   );

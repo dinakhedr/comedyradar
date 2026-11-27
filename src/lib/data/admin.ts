@@ -215,6 +215,8 @@ export type AdminShowRow = {
   venue: string | null;
   tour: string | null;
   tour_id: string | null;
+  /** Listed in the homepage "Coming up" section (on by default). */
+  on_homepage: boolean;
   /** The show's own poster (null = it uses the tour poster). */
   poster_url: string | null;
   tour_poster_url: string | null;
