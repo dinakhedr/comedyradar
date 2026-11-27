@@ -458,7 +458,7 @@ function DateRow({
           <CloseIcon size={18} />
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-2 2xl:grid-cols-[150px_120px_minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-2 gap-2 2xl:grid-cols-[160px_170px_minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <div className="flex flex-col gap-1">
           <label htmlFor={f("date")} className={small}>
             Date
