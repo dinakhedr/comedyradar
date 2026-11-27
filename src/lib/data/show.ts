@@ -39,7 +39,7 @@ export type Performer = (Person & { kind: "group"; members: Person[] }) | (Perso
 type Raw = Omit<ShowDetail, "city" | "venue" | "tour" | "performers"> & {
   cities: { name: string; slug: string; countries: { name: string; code: string } };
   venues: { name: string; slug: string; address: string | null; map_url: string | null; capacity: number | null; status: string } | null;
-  tours: { name: string; slug: string; status: string } | null;
+  tours: { name: string; slug: string; status: string; poster_url: string | null } | null;
   show_performers: {
     billing_order: number;
     comedians: (Person & { status: string }) | null;
@@ -72,7 +72,7 @@ export async function getShow(slug: string): Promise<ShowDetail | null> {
       "id, slug, title, description, starts_at, ends_at, doors_at, good_to_know, status, zone, signal, created_at, updated_at, price_min, " +
         "price_max, currency, ticket_url, poster_url, language, age_rating, " +
         "cities!inner(name, slug, countries!inner(name, code)), " +
-        "venues(name, slug, address, map_url, capacity, status), tours(name, slug, status), " +
+        "venues(name, slug, address, map_url, capacity, status), tours(name, slug, status, poster_url), " +
         `show_performers(billing_order, comedians(${PERSON}), ` +
         `comedy_groups(${PERSON}, group_members(display_order, left_on, comedians(${PERSON}))))`,
     )
@@ -105,6 +105,8 @@ export async function getShow(slug: string): Promise<ShowDetail | null> {
   void _sp;
   return {
     ...rest,
+    // A tour date without its own poster uses the tour's poster.
+    poster_url: rest.poster_url ?? (pub(tours) ? tours.poster_url : null),
     city: { name: cities.name, slug: cities.slug, country_name: cities.countries.name, country_code: cities.countries.code },
     venue: pub(venues) ? { name: venues.name, slug: venues.slug, address: venues.address, map_url: venues.map_url, capacity: venues.capacity } : null,
     tour: pub(tours) ? { name: tours.name, slug: tours.slug } : null,

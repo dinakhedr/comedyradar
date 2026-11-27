@@ -81,7 +81,7 @@ async function storeTour(form: FormData, accountId: string, admin: boolean): Pro
   const dates = readDates(form);
   const importIds = [...new Set(form.getAll("import_ids").map(String))].filter((v) => UUID.test(v)).slice(0, 100);
 
-  // City names for the title pattern ("[Tour] — [City]").
+  // City names for the title pattern (only used if it has [City]).
   const cityIds = [...new Set(dates.map((d) => d.city_id).filter((v) => UUID.test(v)))];
   const { data: cityRows } = cityIds.length ? await supabase.from("cities").select("id, name").in("id", cityIds) : { data: [] };
   const names = new Map(((cityRows ?? []) as { id: string; name: string }[]).map((c) => [c.id, c.name]));

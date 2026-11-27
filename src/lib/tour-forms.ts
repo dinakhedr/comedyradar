@@ -6,7 +6,7 @@
 import { checkShow, type ShowErrors, type ShowInput, type ShowValues } from "./show-forms";
 
 export const MAX_TOUR_DATES = 40;
-export const DEFAULT_TITLE_PATTERN = "[Tour] — [City]";
+export const DEFAULT_TITLE_PATTERN = "[Tour]";
 
 /** What a date's ticket column says (spec 11.4 item 8). */
 export const TICKET_STATUSES = [
@@ -48,7 +48,7 @@ export type TourInput = { performer: string; name: string; description: string }
 export type TourErrors = Partial<Record<"performer" | "name" | "description" | "dates" | "title_pattern" | "price" | "currency" | "language" | "age_rating", string>>;
 export type TourDateValues = ShowValues & { sold_out: boolean };
 
-/** "[Tour] — [City]" → "Gulf Tour — Dubai". */
+/** "[Tour]" → "Gulf Tour"; "[Tour] — [City]" → "Gulf Tour — Dubai". */
 export function applyTitle(pattern: string, tour: string, city: string): string {
   const p = pattern.trim() || DEFAULT_TITLE_PATTERN;
   return p.replace(/\[tour\]/gi, tour.trim()).replace(/\[city\]/gi, city.trim()).replace(/\s+/g, " ").trim();
