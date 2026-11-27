@@ -7,7 +7,7 @@ import { cairoMidnight, cairoParts, whenRange } from "./dates";
 
 export const SHOWS_PER_PAGE = 24;
 
-export type ShowsWhen = "tonight" | "weekend" | "month" | "next" | "dates";
+export type ShowsWhen = "all" | "tonight" | "weekend" | "month" | "next" | "dates";
 export type ShowsZone = "all" | "local" | "outbound" | "inbound";
 export type ShowsType = "all" | "comedian" | "group";
 export type ShowsSort = "date" | "new" | "trending";
@@ -48,6 +48,7 @@ export const DEFAULT_FILTERS: ShowsFilters = {
 };
 
 export const WHEN_OPTIONS: { value: ShowsWhen; label: string }[] = [
+  { value: "all", label: "All" },
   { value: "tonight", label: "Tonight" },
   { value: "weekend", label: "This weekend" },
   { value: "month", label: "This month" },
@@ -158,6 +159,7 @@ function nextDay(iso: string): Date {
 
 /** The time window of the "when" filter, in UTC. Never starts before now. */
 export function showsWindow(f: Pick<ShowsFilters, "when" | "from" | "to">, now: Date): { from: Date; to: Date | null } {
+  if (f.when === "all") return { from: now, to: null };
   if (f.when === "next") {
     const p = cairoParts(now);
     const start = p.month === 12 ? { y: p.year + 1, m: 1 } : { y: p.year, m: p.month + 1 };
@@ -215,6 +217,7 @@ export function datesLabel(from: string | null, to: string | null): string {
 /** The label of the "when" filter in the results bar ("This month", "5 Dec – 12 Dec"). */
 export function whenLabel(f: Pick<ShowsFilters, "when" | "from" | "to">): string {
   if (f.when === "dates") return datesLabel(f.from, f.to);
+  if (f.when === "all") return "All dates";
   return WHEN_OPTIONS.find((o) => o.value === f.when)!.label;
 }
 

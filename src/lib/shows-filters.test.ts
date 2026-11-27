@@ -10,6 +10,7 @@ import {
   showsHref,
   showsWindow,
   trendingSort,
+  whenLabel,
 } from "./shows-filters";
 
 describe("parseShowsFilters", () => {
@@ -101,6 +102,13 @@ describe("showsWindow", () => {
     expect(w.from).toEqual(now);
     expect(w.to!.toISOString()).toBe("2026-12-05T22:00:00.000Z");
     expect(showsWindow({ when: "dates", from: "2026-12-05", to: null }, now).to).toBeNull();
+  });
+
+  it("all has no end date and is kept in the address", () => {
+    expect(showsWindow({ when: "all", from: null, to: null }, now)).toEqual({ from: now, to: null });
+    expect(parseShowsFilters({ when: "all" }).when).toBe("all");
+    expect(showsHref(DEFAULT_FILTERS, { when: "all" })).toBe("/shows?when=all");
+    expect(whenLabel({ when: "all", from: null, to: null })).toBe("All dates");
   });
 });
 
