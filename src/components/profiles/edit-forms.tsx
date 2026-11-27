@@ -14,7 +14,6 @@ import { card, yellowBtn } from "@/components/dashboard/ui";
 import { CoverImage } from "@/components/placeholder-image";
 import { MemberPicker, TextField } from "@/components/profiles/create-form";
 import { PhotoCropField } from "@/components/profiles/photo-crop-field";
-import { coverOf } from "@/lib/covers";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { PODCAST_LINKS, SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
 import { SubmitButton } from "@/components/submit-button";
@@ -142,31 +141,8 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
         <h2 id="details" className="text-heading font-extrabold">
           Details
         </h2>
-        {group ? (
-          <ImageField
-            label="Photo"
-            name="photo"
-            hint="A square photo works best. JPG, PNG or WebP, up to 10 MB."
-            current={p.photo_url}
-            removable
-            error={e.photo}
-          />
-        ) : (
-          <PhotoCropField hint="JPG, PNG or WebP, up to 10 MB. You can pick the square to show after choosing it." current={p.photo_url} removable error={e.photo} />
-        )}
-        {/* Comedians have no cover photo any more (Dina, 2026-11-27); groups keep theirs. */}
-        {group && (
-          <ImageField
-            label="Cover photo"
-            name="cover"
-            hint="A wide photo for the top of your group page (3:1 works best). Until you add one, the Comedy Radar cover shows. JPG, PNG or WebP, up to 10 MB."
-            current={p.cover_url}
-            preview={coverOf(p.cover_url)}
-            removable
-            wide
-            error={e.cover}
-          />
-        )}
+        {/* No cover photos any more (Dina, 2026-11-27): just the square photo, cropped in a popup. */}
+        <PhotoCropField hint="JPG, PNG or WebP, up to 10 MB. You can pick the square to show after choosing it." current={p.photo_url} removable error={e.photo} />
         <TextField label={group ? "Group name in English" : "Name in English"} name="name" required error={e.name} defaultValue={p.name} />
         <TextField label={group ? "Group name in Arabic" : "Name in Arabic"} name="name_ar" lang="ar" dir="rtl" error={e.name_ar} defaultValue={p.name_ar ?? ""} />
         {p.verified && <p className="-mt-2 text-sm text-radar-purple/80">This profile is verified, so a new name shows once Comedy Radar approves it.</p>}

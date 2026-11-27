@@ -5,7 +5,6 @@ import { useActionState, useId, useState, useTransition } from "react";
 import { createProfile, findComedians, type CreateState } from "@/app/actions/profiles";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
-import { DEFAULT_COVER } from "@/lib/covers";
 import { PhotoCropField } from "@/components/profiles/photo-crop-field";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
@@ -183,7 +182,7 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
   const v = state.input?.fields ?? {};
   const styles = state.input?.styles ?? [];
   const group = kind === "group";
-  const ids = { country: useId(), bio: useId(), photo: useId(), cover: useId(), language: useId(), newMembers: useId() };
+  const ids = { country: useId(), bio: useId(), language: useId(), newMembers: useId() };
 
   return (
     // The key re-fills the fields with what was typed after each answer.
@@ -260,52 +259,8 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
             {e.country && <p className={errorCls}>{e.country}</p>}
           </div>
         )}
-        {group ? (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={ids.photo} className={labelCls}>
-              Photo <span className="font-bold text-radar-purple/70">(optional)</span>
-            </label>
-            <p id={`${ids.photo}-hint`} className="text-sm text-radar-purple/75">
-              A square photo works best. JPG, PNG or WebP, up to 10 MB.
-            </p>
-            <input
-              id={ids.photo}
-              name="photo"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              aria-describedby={`${ids.photo}-hint`}
-              className="text-base file:mr-3 file:min-h-11 file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-4 file:font-extrabold file:text-radar-purple"
-            />
-            {e.photo && <p className={errorCls}>{e.photo}</p>}
-          </div>
-        ) : (
-          <PhotoCropField optional hint="JPG, PNG or WebP, up to 10 MB. You can pick the square to show after choosing it." current={null} error={e.photo} />
-        )}
-        {/* Comedians have no cover photo any more (Dina, 2026-11-27); groups keep theirs. */}
-        {group && (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={ids.cover} className={labelCls}>
-              Cover photo <span className="font-bold text-radar-purple/70">(optional)</span>
-            </label>
-            <div className="flex flex-wrap items-center gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element -- the default cover, a local file */}
-              <img src={DEFAULT_COVER} alt="" className="h-16 w-48 shrink-0 rounded-xl object-cover object-right" />
-              <p id={`${ids.cover}-hint`} className="min-w-0 flex-1 text-sm text-radar-purple/75">
-                A wide photo (3:1 works best). Until you add one, the Comedy Radar cover on the left is used. JPG, PNG or WebP, up to
-                10 MB.
-              </p>
-            </div>
-            <input
-              id={ids.cover}
-              name="cover"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              aria-describedby={`${ids.cover}-hint`}
-              className="max-w-full text-base file:mr-3 file:min-h-11 file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-4 file:font-extrabold file:text-radar-purple"
-            />
-            {e.cover && <p className={errorCls}>{e.cover}</p>}
-          </div>
-        )}
+        {/* No cover photos any more (Dina, 2026-11-27): just the square photo, cropped in a popup. */}
+        <PhotoCropField optional hint="JPG, PNG or WebP, up to 10 MB. You can pick the square to show after choosing it." current={null} error={e.photo} />
       </section>
 
       {group && (

@@ -48,7 +48,7 @@ export async function findComedians(q: string): Promise<{ id: string; name: stri
 
 export type CreateState = {
   message?: string;
-  errors?: ProfileErrors & { photo?: string; cover?: string };
+  errors?: ProfileErrors & { photo?: string };
   duplicates?: FoundProfile[];
   /** What was typed, so the form keeps it after an error. */
   input?: { fields: Record<string, string>; styles: string[]; members: { id: string; name: string }[] };
@@ -77,11 +77,10 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
   const { values, errors } = readProfileForm(form, kind);
 
   const { file, error: photoErr } = photoError(form, "photo");
-  // Only groups have a cover photo (comedians' was removed, Dina 2026-11-27).
-  const { file: coverFile, error: coverErr } = kind === "group" ? photoError(form, "cover") : { file: null, error: null };
-  if (!values || photoErr || coverErr) {
+  // Profiles have no cover photo any more (Dina, 2026-11-27).
+  if (!values || photoErr) {
     return {
-      errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}), ...(coverErr ? { cover: coverErr } : {}) },
+      errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}) },
       message: "Please check the highlighted fields.",
       input: echo(form),
       attempt: Date.now(),
@@ -125,10 +124,6 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
   if (file) {
     const url = await uploadImage(supabase, kind === "group" ? "groups" : "comedians", id, "photo", file);
     if (url) await supabase.from(table).update({ photo_url: url }).eq("id", id);
-  }
-  if (coverFile) {
-    const url = await uploadImage(supabase, kind === "group" ? "groups" : "comedians", id, "cover", coverFile);
-    if (url) await supabase.from(table).update({ cover_url: url }).eq("id", id);
   }
 
   if (kind === "group") await addMembers(supabase, account.id, id, form);
