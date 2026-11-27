@@ -135,6 +135,7 @@ export async function getComedian(slug: string): Promise<ComedianDetail | null> 
     bio: c.bio,
     photo_url: c.photo_url,
     country_name: c.countries?.name ?? null,
+    website_url: c.website_url ?? null,
     instagram_url: c.instagram_url,
     tiktok_url: c.tiktok_url,
     youtube_url: c.youtube_url,
