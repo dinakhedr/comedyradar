@@ -124,78 +124,83 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
 
       {/* Tour header card */}
       <section className={`${container} pb-8 md:pb-14`}>
-        <div className="overflow-hidden rounded-[22px] bg-radar-plum md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:rounded-[28px]">
+        <div className="overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px]">
+          {/* Wide banner on top, details below (Dina picked option B, 2026-11-27) */}
           <CoverImage
             src={tour.poster_url ?? owner.photo_url}
             alt={`Poster for ${tour.name}`}
             iconSize={88}
             tone="deep"
-            className="aspect-[4/5] w-full md:aspect-auto md:h-full md:min-h-[500px]"
+            className="aspect-[16/9] w-full object-center md:max-h-[480px]"
           />
-          <div className="flex flex-col justify-center gap-3.5 p-4 md:gap-4 md:px-11 md:py-10">
-            <div className="flex flex-wrap gap-1.5 md:gap-2">
-              <Badge tone={owner.kind === "group" ? "yellow" : "pink"} size="md">
-                {owner.kind === "group" ? "Group tour" : "Comedian tour"}
-              </Badge>
-              {zone && (
-                <Badge tone="purple" size="md">
-                  {zone}
+          <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:items-start md:gap-8 md:px-11 md:py-9">
+            <div className="flex flex-col gap-3.5 md:gap-4">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
+                <Badge tone={owner.kind === "group" ? "yellow" : "pink"} size="md">
+                  {owner.kind === "group" ? "Group tour" : "Comedian tour"}
                 </Badge>
+                {zone && (
+                  <Badge tone="purple" size="md">
+                    {zone}
+                  </Badge>
+                )}
+              </div>
+              <h1 className="font-display text-[36px] leading-[1.02] md:text-[56px] md:leading-none">{tour.name}</h1>
+              <div className="flex items-center gap-3">
+                <Avatar person={owner} ring={owner.kind === "group" ? "yellow" : "pink"} size="h-11 w-11 md:h-[52px] md:w-[52px]" />
+                <div className="flex min-w-0 flex-col">
+                  <Link href={ownerHref} className="text-[17px] font-extrabold text-spotlight-yellow hover:text-white md:text-xl">
+                    {owner.name}
+                  </Link>
+                  <span className="text-[13px] text-lavender-text md:text-small">
+                    {owner.kind === "group"
+                      ? `Comedy group${owner.members.length ? ` · ${owner.members.length} comedians` : ""}`
+                      : "Comedian"}
+                  </span>
+                </div>
+              </div>
+              {about.length > 0 && (
+                <div className="flex flex-col gap-2 text-[15px] leading-6 text-lavender md:text-base md:leading-[26px]">
+                  {about.map((p, i) => (
+                    <p key={i} className="whitespace-pre-line">
+                      {p}
+                    </p>
+                  ))}
+                </div>
               )}
             </div>
-            <h1 className="font-display text-[36px] leading-[1.02] md:text-[56px] md:leading-none">{tour.name}</h1>
-            <div className="flex items-center gap-3">
-              <Avatar person={owner} ring={owner.kind === "group" ? "yellow" : "pink"} size="h-11 w-11 md:h-[52px] md:w-[52px]" />
-              <div className="flex min-w-0 flex-col">
-                <Link href={ownerHref} className="text-[17px] font-extrabold text-spotlight-yellow hover:text-white md:text-xl">
-                  {owner.name}
-                </Link>
-                <span className="text-[13px] text-lavender-text md:text-small">
-                  {owner.kind === "group"
-                    ? `Comedy group${owner.members.length ? ` · ${owner.members.length} comedians` : ""}`
-                    : "Comedian"}
-                </span>
+            <div className="flex flex-col gap-3.5 md:gap-4">
+              {stats.shows > 0 && (
+                <dl className="grid grid-cols-3 gap-2 md:gap-3">
+                  {[
+                    [String(stats.shows), stats.shows === 1 ? "show" : "shows"],
+                    [String(stats.countries), stats.countries === 1 ? "country" : "countries"],
+                    [stats.months ?? "", stats.year ?? ""],
+                  ].map(([value, label], i) => (
+                    <div key={i} className="flex flex-col gap-0.5 rounded-2xl bg-radar-purple px-3 py-3 md:px-4 md:py-3.5">
+                      <dt className="sr-only">{i === 2 ? "Dates" : label}</dt>
+                      <dd className={`font-display leading-tight text-spotlight-yellow ${i === 2 ? "text-lg md:text-2xl" : "text-[26px] md:text-[32px]"}`}>
+                        {value}
+                      </dd>
+                      <dd className="text-[13px] text-lavender-text md:text-small">{label}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <div className="flex gap-2 md:gap-3">
+                <a
+                  href="#dates"
+                  className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-spotlight-yellow px-5 font-extrabold text-radar-purple hover:bg-white md:flex-none md:px-6"
+                >
+                  See all dates
+                </a>
+                <ShareButton
+                  title={tour.name}
+                  url={`${SITE_URL}/tours/${tour.slug}`}
+                  label="Share tour"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-button border-2 border-plum-line hover:border-spotlight-yellow hover:text-spotlight-yellow"
+                />
               </div>
-            </div>
-            {stats.shows > 0 && (
-              <dl className="grid grid-cols-3 gap-2 md:gap-3">
-                {[
-                  [String(stats.shows), stats.shows === 1 ? "show" : "shows"],
-                  [String(stats.countries), stats.countries === 1 ? "country" : "countries"],
-                  [stats.months ?? "", stats.year ?? ""],
-                ].map(([value, label], i) => (
-                  <div key={i} className="flex flex-col gap-0.5 rounded-2xl bg-radar-purple px-3 py-3 md:px-4 md:py-3.5">
-                    <dt className="sr-only">{i === 2 ? "Dates" : label}</dt>
-                    <dd className={`font-display leading-tight text-spotlight-yellow ${i === 2 ? "text-lg md:text-2xl" : "text-[26px] md:text-[32px]"}`}>
-                      {value}
-                    </dd>
-                    <dd className="text-[13px] text-lavender-text md:text-small">{label}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-            {about.length > 0 && (
-              <div className="flex flex-col gap-2 text-[15px] leading-6 text-lavender md:text-base md:leading-[26px]">
-                {about.map((p, i) => (
-                  <p key={i} className="whitespace-pre-line">
-                    {p}
-                  </p>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-2 md:gap-3">
-              <a
-                href="#dates"
-                className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-spotlight-yellow px-5 font-extrabold text-radar-purple hover:bg-white md:flex-none md:px-6"
-              >
-                See all dates
-              </a>
-              <ShareButton
-                title={tour.name}
-                url={`${SITE_URL}/tours/${tour.slug}`}
-                label="Share tour"
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-button border-2 border-plum-line hover:border-spotlight-yellow hover:text-spotlight-yellow"
-              />
             </div>
           </div>
         </div>
@@ -207,7 +212,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
           Tour <span className="text-spotlight-yellow">dates</span>
         </h2>
         {upcoming.length > 0 ? (
-          <TourDates dates={upcoming} nowIso={now.toISOString()} performer={tour.owner.name} />
+          <TourDates dates={upcoming} performer={tour.owner.name} />
         ) : (
           <p className="rounded-card bg-radar-plum p-5 text-base text-lavender-text">
             No upcoming dates right now. New dates will show up here as soon as they are announced.

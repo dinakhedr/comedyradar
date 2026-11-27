@@ -4,17 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { trackTicketsClick } from "@/lib/analytics";
 import type { TourDate } from "@/lib/data/tour";
-import { displaySignal } from "@/lib/show-page";
 import { countryCounts, dateTile } from "@/lib/tour-page";
 import { Badge } from "../badge";
+import { InfoIcon } from "../icons";
 
-function DateBadge({ date, now }: { date: TourDate; now: Date }) {
+/** Only cancelled and sold out are shown on a tour date: no signal pill here (Dina, 2026-11-27). */
+function DateBadge({ date }: { date: TourDate }) {
   if (date.status === "cancelled") return <Badge tone="pink">Cancelled</Badge>;
   if (date.status === "sold_out") return <Badge tone="outline">Sold out</Badge>;
-  const signal = displaySignal(date.signal, date.created_at, now);
-  if (signal === "strong") return <Badge tone="pink">Strong signal</Badge>;
-  if (signal === "fading") return <Badge tone="pink">Fading signal</Badge>;
-  if (signal === "new") return <Badge tone="yellow">New signal</Badge>;
   return null;
 }
 
@@ -38,10 +35,9 @@ function Action({ date, performer }: { date: TourDate; performer: string }) {
   return null;
 }
 
-/** Tour dates with country chips (spec 6.2, item 3). Desktop 3 columns; mobile one row per date. */
-export function TourDates({ dates, nowIso, performer }: { dates: TourDate[]; nowIso: string; performer: string }) {
+/** Tour dates with country chips (spec 6.2, item 3): one compact row per date (Dina, 2026-11-27). */
+export function TourDates({ dates, performer }: { dates: TourDate[]; performer: string }) {
   const [country, setCountry] = useState<string | null>(null);
-  const now = new Date(nowIso);
   const countries = countryCounts(dates);
   const shown = country ? dates.filter((d) => d.country_code === country) : dates;
   const chip = "inline-flex min-h-11 shrink-0 items-center rounded-full border-2 px-4 text-sm";
@@ -72,40 +68,45 @@ export function TourDates({ dates, nowIso, performer }: { dates: TourDate[]; now
         </div>
       )}
 
-      <ul className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
+      <ul className="flex flex-col gap-2.5">
         {shown.map((date) => {
           const tile = dateTile(date.starts_at);
           const grey = date.status !== "published";
           return (
-            <li key={date.id} className="relative flex items-center gap-3 rounded-2xl bg-radar-plum p-3 md:flex-col md:items-stretch md:gap-3.5 md:rounded-[20px] md:p-[18px]">
-              <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-3.5">
-                <div
-                  className={`flex h-16 w-[60px] shrink-0 flex-col items-center justify-center rounded-xl md:h-[76px] md:w-[72px] md:rounded-[14px] ${
-                    grey ? "bg-lavender-text/40 text-radar-purple" : "bg-spotlight-yellow text-radar-purple"
-                  }`}
-                >
-                  <span className="font-display text-[26px] leading-none md:text-[32px]">{tile.day}</span>
-                  <span className="text-[11px] font-extrabold tracking-wider md:text-xs">{tile.month}</span>
-                </div>
-                <div className="flex min-w-0 flex-col gap-0.5">
+            <li key={date.id} className="relative flex items-center gap-3 rounded-2xl bg-radar-plum p-3 md:gap-5 md:rounded-[18px] md:px-4">
+              <div
+                className={`flex h-[60px] w-[56px] shrink-0 flex-col items-center justify-center rounded-xl md:h-[60px] md:w-[60px] ${
+                  grey ? "bg-lavender-text/40 text-radar-purple" : "bg-spotlight-yellow text-radar-purple"
+                }`}
+              >
+                <span className="font-display text-[24px] leading-none md:text-[26px]">{tile.day}</span>
+                <span className="text-[11px] font-extrabold tracking-wider">{tile.month}</span>
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5 md:flex-row md:items-center md:gap-5">
+                <div className="min-w-0 md:w-56 md:shrink-0">
                   <h3 className={`truncate text-base font-extrabold md:text-lg ${date.status === "cancelled" ? "line-through" : ""}`}>
                     <Link href={`/shows/${date.slug}`} className="after:absolute after:inset-0 after:content-[''] hover:text-spotlight-yellow">
                       {date.city_name}
                     </Link>
+                    <span className="text-[13px] font-bold text-lavender-text md:hidden"> · {tile.line}</span>
                   </h3>
-                  <p className="truncate text-[13px] text-lavender-text md:text-small">
-                    {date.country_name}
-                    <span className="md:hidden">{date.venue_name ? ` · ${date.venue_name}` : ""}</span>
-                  </p>
-                  <p className="text-[13px] font-bold md:text-small">{tile.line}</p>
+                  <p className="hidden truncate text-small text-lavender-text md:block">{date.country_name}</p>
                 </div>
+                <p className="truncate text-[13px] text-lavender-text md:flex-1 md:text-[15px]">
+                  <span className="hidden font-bold text-white md:inline">{tile.line}</span>
+                  {date.venue_name ? <span><span className="hidden md:inline"> · </span>{date.venue_name}</span> : <span className="md:hidden">{date.country_name}</span>}
+                </p>
               </div>
-              {date.venue_name && <p className="hidden truncate text-small text-lavender-text md:block">{date.venue_name}</p>}
-              <div className="flex shrink-0 flex-col items-end gap-1.5 md:flex-row md:items-center md:justify-between">
-                <span className="hidden md:inline">
-                  <DateBadge date={date} now={now} />
-                </span>
-                <span className="md:hidden">{date.status !== "published" && <DateBadge date={date} now={now} />}</span>
+              <div className="flex shrink-0 items-center gap-3 md:gap-5">
+                {date.status !== "published" && <DateBadge date={date} />}
+                <Link
+                  href={`/shows/${date.slug}`}
+                  aria-label={`More details about ${date.city_name}, ${tile.line}`}
+                  className="relative z-10 hidden min-h-11 items-center gap-1.5 text-sm font-extrabold underline decoration-white/45 underline-offset-[3px] hover:decoration-white md:inline-flex"
+                >
+                  <InfoIcon size={18} />
+                  More details
+                </Link>
                 <Action date={date} performer={performer} />
               </div>
             </li>
