@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { signOut } from "@/app/actions/auth";
+import type { Viewer } from "@/lib/data/viewer";
 import { CloseIcon, MenuIcon } from "./icons";
+import { SubmitButton } from "./submit-button";
 import { NAV_LINKS } from "./nav-links";
 
-/** Mobile: menu button that opens the navigation as a full-width panel. */
-export function MobileMenu() {
+/**
+ * Mobile: menu button that opens the navigation as a full-width panel.
+ * Signed out it ends with Sign in; signed in with Dashboard, Admin panel
+ * (super admin only) and Sign out.
+ */
+export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -48,13 +55,42 @@ export function MobileMenu() {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/signin"
-            onClick={() => setOpen(false)}
-            className="mt-6 flex min-h-12 items-center justify-center rounded-button bg-spotlight-yellow text-base font-extrabold text-radar-purple"
-          >
-            Sign in
-          </Link>
+          {viewer ? (
+            <>
+              <p className="mt-6 truncate text-sm text-lavender-text">
+                Signed in as <strong className="text-white">{viewer.name}</strong>
+              </p>
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="flex min-h-12 items-center justify-center rounded-button bg-spotlight-yellow text-base font-extrabold text-radar-purple"
+              >
+                Dashboard
+              </Link>
+              {viewer.isSuperAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-12 items-center justify-center rounded-button bg-stage-black text-base font-extrabold text-white"
+                >
+                  Admin panel
+                </Link>
+              )}
+              <form action={signOut}>
+                <SubmitButton className="flex min-h-12 w-full items-center justify-center gap-2 rounded-button border-2 border-plum-line text-base font-extrabold text-white">
+                  Sign out
+                </SubmitButton>
+              </form>
+            </>
+          ) : (
+            <Link
+              href="/signin"
+              onClick={() => setOpen(false)}
+              className="mt-6 flex min-h-12 items-center justify-center rounded-button bg-spotlight-yellow text-base font-extrabold text-radar-purple"
+            >
+              Sign in
+            </Link>
+          )}
         </nav>
       )}
     </div>
