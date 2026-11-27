@@ -60,7 +60,7 @@ export default function ShowPage({ params }: PageProps<"/shows/[slug]">) {
 function ShowSkeleton() {
   return (
     <div className={`${container} grid gap-6 pb-14 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:gap-10`} aria-hidden="true">
-      <div className="aspect-[4/5] rounded-[22px] bg-radar-plum md:rounded-[28px]" />
+      <div className="aspect-[3/4] rounded-[22px] bg-radar-plum md:rounded-[28px]" />
       <div className="flex flex-col gap-4">
         <div className="h-12 w-3/4 rounded-lg bg-radar-plum" />
         <div className="h-64 rounded-card bg-radar-plum" />
@@ -71,7 +71,7 @@ function ShowSkeleton() {
 
 /**
  * The tall show poster (or the only one), never cropped: the box follows the poster's own shape.
- * A very tall poster is capped at 4:5 (125% of the box width) and the space
+ * A very tall poster is capped at 3:4 (133% of the box width, the standard tall poster 896 × 1200) and the space
  * left at the sides shows a soft blurred copy of the same poster.
  */
 function ShowPoster({ src, title, cancelled }: { src: string | null; title: string; cancelled: boolean }) {
@@ -86,11 +86,11 @@ function ShowPoster({ src, title, cancelled }: { src: string | null; title: stri
             src={src}
             alt={`Poster for ${title}`}
             fetchPriority="high"
-            className="relative block h-auto max-h-[125cqw] w-full object-contain"
+            className="relative block h-auto max-h-[133.34cqw] w-full object-contain"
           />
         </>
       ) : (
-        <CoverImage src={null} alt={`Poster for ${title}`} iconSize={88} className="aspect-[4/5] w-full" />
+        <CoverImage src={null} alt={`Poster for ${title}`} iconSize={88} className="aspect-[3/4] w-full" />
       )}
       {cancelled && <span aria-hidden="true" className="absolute inset-0 bg-radar-purple/55" />}
     </div>

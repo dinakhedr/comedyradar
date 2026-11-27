@@ -236,15 +236,15 @@ function Slide({
         trackSpotlightClick(show.id, position);
         if (slide.placed) sendStat("spotlight_click", show.id);
       }}
-      className="overflow-hidden rounded-[22px] bg-radar-plum md:grid md:min-h-[420px] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:rounded-spotlight"
+      className="overflow-hidden rounded-[22px] bg-radar-plum md:grid md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:items-center md:rounded-spotlight"
     >
-      {/* The wide poster, shown whole; a tall one sits in the middle with a blurred fill, so the slide keeps its height. */}
+      {/* The frame has the shape of the standard wide poster (1376 × 768), so it fills exactly; a tall one sits in the middle with a blurred fill. */}
       <PosterImage
         src={show.poster_url}
         alt=""
         iconSize={96}
         eager={position === 1}
-        className="h-[230px] w-full md:h-full md:min-h-[420px]"
+        className="aspect-[1376/768] w-full md:self-start"
       />
       <div className="flex flex-col justify-center gap-2 p-[18px] md:gap-3.5 md:px-11 md:py-10">
         <div className="flex flex-wrap gap-1.5 md:gap-2">

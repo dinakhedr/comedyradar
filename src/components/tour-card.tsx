@@ -19,7 +19,7 @@ export function TourCard({ tour }: { tour: TourRow }) {
         alt=""
         tone="purple"
         iconSize={48}
-        className="h-[130px] w-full md:h-[180px]"
+        className="aspect-[1376/768] w-full"
       />
       <div className="flex flex-1 flex-col gap-1.5 p-3.5 md:gap-2 md:px-5 md:pt-[18px] md:pb-5">
         <div>

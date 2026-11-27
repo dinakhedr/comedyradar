@@ -51,7 +51,7 @@ function TourGridCard({ tour }: { tour: TourListItem }) {
         alt=""
         tone="deep"
         iconSize={48}
-        className="h-[150px] w-full md:h-[190px]"
+        className="aspect-[1376/768] w-full"
       />
       <div className="flex flex-1 flex-col gap-1.5 px-4 pt-3.5 pb-4 md:gap-2 md:px-5 md:pt-[18px] md:pb-5">
         <div className="flex flex-wrap gap-1.5">

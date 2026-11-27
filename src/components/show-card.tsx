@@ -22,7 +22,7 @@ export function ShowCard({ show, now, badge: override }: { show: ShowRow; now: D
           alt=""
           iconSize={40}
           phoneCrop
-          className="h-[72px] w-[72px] rounded-xl md:h-40 md:w-full md:rounded-none"
+          className="h-[72px] w-[72px] rounded-xl md:aspect-[1376/768] md:h-auto md:w-full md:rounded-none"
         />
         {badge && (
           <>

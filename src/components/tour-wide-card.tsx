@@ -25,7 +25,7 @@ export function TourWideCard({ tour, label }: { tour: TourRow; label: string }) 
         alt=""
         iconSize={56}
         tone="deep"
-        className="h-[150px] w-full md:h-full md:min-h-[220px]"
+        className="aspect-[1376/768] w-full md:self-start"
       />
       <div className="flex flex-col gap-2 p-4 md:px-7 md:py-[26px]">
         <div className="flex gap-1.5">
