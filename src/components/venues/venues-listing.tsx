@@ -19,14 +19,12 @@ function VenueCard({ v }: { v: VenueListItem }) {
         <Link href={`/venues/${v.slug}`} className="after:absolute after:inset-0 hover:text-spotlight-yellow">
           {v.name}
         </Link>
-        <span role="img" aria-label={v.country_name} title={v.country_name} className="ml-1.5 font-normal">
-          {flagOf(v.country_code)}
-        </span>
       </h2>
       <p className="text-[13px] text-lavender-text md:text-sm">
         {venuePlace(v.area, v.city.name)}
         <br />
-        {v.country_name}
+        {v.country_name}{" "}
+        <span aria-hidden="true">{flagOf(v.country_code)}</span>
       </p>
       <p className={`text-[13px] md:text-sm ${v.upcoming ? "font-extrabold text-spotlight-yellow" : "text-lavender-text"}`}>
         {v.upcoming === 0 ? "No shows right now" : v.upcoming === 1 ? "1 show coming up" : `${v.upcoming} shows coming up`}
