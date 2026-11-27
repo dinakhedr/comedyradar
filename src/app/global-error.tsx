@@ -3,6 +3,7 @@
 import { Luckiest_Guy, Nunito } from "next/font/google";
 import { useEffect } from "react";
 import { ErrorScreen } from "@/components/error-screen";
+import { reportBrowserError } from "@/lib/report-browser-error";
 import "./globals.css";
 
 const luckiestGuy = Luckiest_Guy({
@@ -28,6 +29,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error(error);
+    reportBrowserError(error);
   }, [error]);
   return (
     <html

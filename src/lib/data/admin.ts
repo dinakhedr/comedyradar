@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { requireAccount } from "./dashboard";
+import type { SiteError } from "@/lib/site-errors";
 
 /**
  * Super admin panel access (spec 11.5): accounts.is_super_admin and 2-step
@@ -521,6 +522,39 @@ export async function getAdminActivity(
 ): Promise<AdminActivity> {
   await requireSuperAdmin();
   return (await fetchActivity(f)) ?? { rows: [], people: [], more: false };
+}
+
+export type SiteErrorFilters = {
+  q: string;
+  source: string;
+  period: string;
+  limit: number;
+};
+export type SiteErrorLog = { rows: SiteError[]; more: boolean; last24: number };
+
+/** Error log rows (the database checks the super admin and 2-step; null for anyone else). */
+export async function fetchSiteErrors(
+  f: SiteErrorFilters,
+): Promise<SiteErrorLog | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_site_errors", {
+    p_q: f.q,
+    p_source: f.source,
+    p_period: f.period,
+    p_limit: f.limit,
+  });
+  if (error) console.error("admin_site_errors", error.message);
+  return (data ?? null) as SiteErrorLog | null;
+}
+
+export async function getSiteErrors(f: SiteErrorFilters): Promise<SiteErrorLog> {
+  await requireSuperAdmin();
+  return (await fetchSiteErrors(f)) ?? { rows: [], more: false, last24: 0 };
+}
+
+/** How many different errors happened in the last 24 hours (for the red number on the tab). */
+export async function getSiteErrorCount(): Promise<number> {
+  return (await fetchSiteErrors({ q: "", source: "", period: "today", limit: 1 }))?.last24 ?? 0;
 }
 
 export type AdminSettings = {
