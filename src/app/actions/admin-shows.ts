@@ -15,7 +15,7 @@ const CONTENT_KINDS = ["tour", "podcast", "venue"];
 /** Back to the same list, with a message. */
 function back(form: FormData, msg: string) {
   const ret = text(form.get("ret"));
-  // Venue statuses can also be changed from Settings > Locations and venues.
+  // Venue statuses can also be changed from the old Settings venue list (links kept working).
   const settings = ret.startsWith("/admin/settings");
   const base = ret.startsWith("/admin/shows") || settings ? ret : "/admin/shows";
   const u = new URL(base, "http://x");
