@@ -6,6 +6,7 @@ import { AdminSaveRow } from "@/components/admin/admin-save-row";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { MemberPicker } from "@/components/profiles/create-form";
+import { PerformerPicker } from "@/components/shows/performer-picker";
 import { ShowCard } from "@/components/show-card";
 import type { ShowRow } from "@/lib/data/types";
 import type { ManagedProfile } from "@/lib/dashboard";
@@ -135,17 +136,8 @@ export function ShowForm({
           <h2 id="who" className="text-heading font-extrabold">
             Who is performing
           </h2>
-          <Field label="Performer" error={e.performer} hint={admin ? "Every comedian and group on Comedy Radar. Type a name to jump to it." : "Only the profiles you manage are listed."}>
-            {(id, d) => (
-              <select id={id} name="performer" value={performer} onChange={(ev) => setPerformer(ev.target.value)} aria-describedby={d} aria-invalid={e.performer ? true : undefined} className={inputCls}>
-                <option value="">Choose a profile</option>
-                {profiles.map((p) => (
-                  <option key={p.id} value={`${p.kind === "group" ? "g" : "c"}:${p.id}`}>
-                    {p.name} ({p.kind === "group" ? "group" : "comedian"})
-                  </option>
-                ))}
-              </select>
-            )}
+          <Field label="Performer" error={e.performer} hint={admin ? "Every comedian and group on Comedy Radar. Type part of the name, then pick it from the list." : "Only the profiles you manage are listed. Type part of the name, then pick it."}>
+            {(id, d) => <PerformerPicker id={id} name="performer" profiles={profiles} value={performer} onChange={setPerformer} describedBy={d} invalid={!!e.performer} />}
           </Field>
           {lineup.length > 0 && (
             <div className="flex flex-col gap-1.5">
