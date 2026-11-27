@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
 import { adminSaveTour, saveTour, type TourState } from "@/app/actions/tours";
 import { AdminSaveRow } from "@/components/admin/admin-save-row";
+import { PerformerPicker } from "@/components/shows/performer-picker";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon } from "@/components/icons";
@@ -169,17 +170,8 @@ export function TourForm({
               </p>
             </>
           ) : (
-            <Field label="Comedian or group" error={e.performer} hint={admin ? "One comedian or one group. Every profile on Comedy Radar is listed: type a name to jump to it." : "One comedian or one group. Only the profiles you manage are listed."}>
-              {(id, d) => (
-                <select id={id} name="performer" value={performer} onChange={(ev) => setPerformer(ev.target.value)} aria-describedby={d} aria-invalid={e.performer ? true : undefined} className={inputCls}>
-                  <option value="">Choose a profile</option>
-                  {profiles.map((p) => (
-                    <option key={pkey(p)} value={pkey(p)}>
-                      {p.name} ({p.kind === "group" ? "group" : "comedian"})
-                    </option>
-                  ))}
-                </select>
-              )}
+            <Field label="Comedian or group" error={e.performer} hint={admin ? "One comedian or one group. Every profile on Comedy Radar is listed: type part of the name, then pick it." : "One comedian or one group. Only the profiles you manage are listed: type part of the name, then pick it."}>
+              {(id, d) => <PerformerPicker id={id} name="performer" profiles={profiles} value={performer} onChange={setPerformer} describedBy={d} invalid={!!e.performer} />}
             </Field>
           )}
         </section>
