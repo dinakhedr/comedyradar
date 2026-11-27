@@ -202,6 +202,10 @@ export type AdminShowRow = {
   country_code: string;
   venue: string | null;
   tour: string | null;
+  tour_id: string | null;
+  /** The show's own poster (null = it uses the tour poster). */
+  poster_url: string | null;
+  tour_poster_url: string | null;
   performers: string | null;
   added_by: string | null;
 };
@@ -213,6 +217,8 @@ export type AdminShows = {
     inbound: number;
     missing_ticket: number;
     cancelled: number;
+    single?: number;
+    on_tours?: number;
   };
   quality: {
     signal_requests: number;
@@ -228,6 +234,7 @@ export type AdminTourRow = {
   slug: string;
   name: string;
   status: string;
+  poster_url: string | null;
   owner: string | null;
   owner_kind: "comedian" | "group";
   shows: number;
@@ -292,6 +299,8 @@ export async function getAdminShows(f: {
   status: string;
   city: string;
   period: string;
+  /** "single" = not on a tour, "tour" = tour dates only. */
+  kind: "single" | "tour" | "";
 }): Promise<AdminShows> {
   await requireSuperAdmin();
   const supabase = await createClient();
@@ -301,6 +310,7 @@ export async function getAdminShows(f: {
     p_status: f.status,
     p_city: f.city || null,
     p_period: f.period,
+    p_kind: f.kind,
   });
   if (error) console.error("admin_shows", error.message);
   return (data ?? EMPTY_SHOWS) as AdminShows;

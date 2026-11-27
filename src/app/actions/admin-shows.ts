@@ -4,7 +4,8 @@ import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignal } from "@/lib/admin-shows";
 import { requireSuperAdmin } from "@/lib/data/admin";
-import { text, UUID } from "@/lib/profile-server";
+import { photoError, text, UUID } from "@/lib/profile-server";
+import { uploadPoster } from "@/lib/show-server";
 import { createClient } from "@/lib/supabase/server";
 
 /** Admin Shows and tours (spec 11.5 item 4). Each action runs a database function that checks the super admin again. */
@@ -83,4 +84,40 @@ export async function setContentStatus(form: FormData): Promise<void> {
   if (!CONTENT_KINDS.includes(kind) || !UUID.test(id)) return;
   const r = await run("admin_set_content_status", { p_kind: kind, p_id: id, p_status: text(form.get("status")) });
   back(form, r === "ok" ? "saved" : "error");
+}
+
+/** Ticked tour dates drop their own poster and show the tour poster again. */
+export async function applyTourPoster(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const list = ids(form);
+  if (list.length === 0) return back(form, "none_picked");
+  const r = await run("admin_use_tour_poster", { p_ids: list });
+  back(form, r === null ? "error" : "tour_poster");
+}
+
+/**
+ * Tours tab > pencil: the tour name and poster, once for the whole tour.
+ * Its dates show the tour poster unless they have their own.
+ */
+export async function quickEditTour(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const id = text(form.get("id"));
+  if (!UUID.test(id)) return back(form, "error");
+  const name = text(form.get("name")).trim();
+  if (!name || name.length > 120) return back(form, "tour_bad_name");
+  const { file, error } = photoError(form, "poster");
+  if (error) return back(form, "tour_bad_poster");
+
+  let posterUrl: string | null = null;
+  if (file) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("tours").select("comedian_id, group_id").eq("id", id).maybeSingle();
+    const t = data as { comedian_id: string | null; group_id: string | null } | null;
+    if (!t) return back(form, "error");
+    const performer = t.group_id ? { kind: "group" as const, id: t.group_id } : { kind: "comedian" as const, id: t.comedian_id! };
+    posterUrl = await uploadPoster(supabase, performer, `tour-${id}`, file);
+    if (!posterUrl) return back(form, "tour_poster_failed");
+  }
+  const r = await run("admin_update_tour", { p_id: id, p_name: name, p_poster_url: posterUrl });
+  back(form, r === "ok" ? "tour_saved" : r === "bad_name" ? "tour_bad_name" : "error");
 }

@@ -1,16 +1,38 @@
 import type { BadgeTone } from "@/components/badge";
 import type { ShowRow } from "@/lib/data/types";
 
-export type BadgeInfo = { label: string; tone: BadgeTone };
+/** The small icon on a card pill (see CardPill). */
+export type PillIcon = "new" | "strong" | "fading" | "soldout" | "group" | "visiting" | "place" | "tour" | "lineup" | "solo";
+export type BadgeInfo = { label: string; tone: BadgeTone; icon?: PillIcon };
+
+/** Short English country names for card pills ("AE" → "UAE"). */
+const SHORT_COUNTRY: Record<string, string> = { AE: "UAE", GB: "UK", US: "USA" };
+export function countryLabel(code: string): string {
+  const c = code.toUpperCase();
+  if (SHORT_COUNTRY[c]) return SHORT_COUNTRY[c];
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(c) ?? c;
+  } catch {
+    return c;
+  }
+}
+
+/** Shows outside Egypt: the country, in place of the signal (Dina, 2026-11-27). */
+export function placeBadge(show: Pick<ShowRow, "country_code">): BadgeInfo | null {
+  if (!show.country_code || show.country_code.toUpperCase() === "EG") return null;
+  return { label: countryLabel(show.country_code), tone: "white", icon: "place" };
+}
 
 /** The one badge on a Coming up card (sold out, signal, group show or visiting). */
 export function cardBadge(show: ShowRow): BadgeInfo | null {
-  if (show.status === "sold_out") return { label: "Sold out", tone: "purple" };
-  if (show.display_signal === "strong") return { label: "Strong Signal", tone: "pink" };
-  if (show.display_signal === "fading") return { label: "Fading Signal", tone: "pink" };
-  if (show.display_signal === "new") return { label: "New Signal", tone: "yellow" };
-  if (show.headliner_type === "group") return { label: "Group show", tone: "purple" };
-  if (show.zone === "inbound") return { label: "Visiting", tone: "yellow" };
+  const place = placeBadge(show);
+  if (place) return place;
+  if (show.status === "sold_out") return { label: "Sold out", tone: "purple", icon: "soldout" };
+  if (show.display_signal === "strong") return { label: "Strong", tone: "pink", icon: "strong" };
+  if (show.display_signal === "fading") return { label: "Fading", tone: "pink", icon: "fading" };
+  if (show.display_signal === "new") return { label: "New", tone: "yellow", icon: "new" };
+  if (show.headliner_type === "group") return { label: "Group show", tone: "purple", icon: "group" };
+  if (show.zone === "inbound") return { label: "Visiting", tone: "yellow", icon: "visiting" };
   return null;
 }
 

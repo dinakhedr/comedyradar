@@ -34,7 +34,7 @@ const rowLabel = "w-16 shrink-0 text-[13px] font-extrabold tracking-[1px] text-l
 
 /** The badge on an All shows card: the Coming up badge, or ON TOUR for shows abroad. */
 function listBadge(show: ShowRow): BadgeInfo | null {
-  return cardBadge(show) ?? (show.zone === "outbound" ? { label: "On tour", tone: "purple" } : null);
+  return cardBadge(show) ?? (show.zone === "outbound" ? { label: "On tour", tone: "purple", icon: "tour" } : null);
 }
 
 /** Hidden inputs that keep the other filters when a plain form (search, dates) is sent. */
