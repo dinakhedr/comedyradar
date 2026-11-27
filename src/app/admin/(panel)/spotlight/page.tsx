@@ -99,8 +99,8 @@ async function LiveNow({
       </div>
       {carousel.length === 0 ? (
         <p className="text-radar-purple/80">
-          No upcoming shows yet, so the homepage shows the invitation for
-          comedians.
+          Nothing picked yet, so the homepage has no Spotlight section. Add
+          a placement below to show it.
         </p>
       ) : (
         <ol className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 xl:grid-cols-5">
@@ -120,7 +120,7 @@ async function LiveNow({
                   {p ? (
                     <TypeTag paid={p.is_paid} />
                   ) : (
-                    <Tag tone="outline">Auto fill</Tag>
+                    <Tag tone="outline">Picked</Tag>
                   )}
                 </p>
                 <p className="font-extrabold break-words">{s.show.title}</p>
@@ -171,9 +171,7 @@ async function LiveNow({
                   </>
                 ) : (
                   <p className="mt-auto text-xs text-radar-purple/75">
-                    {s.source === "strong"
-                      ? "Strong signal this month"
-                      : "Soonest upcoming show"}
+                    Placement details not found
                   </p>
                 )}
               </li>
@@ -502,8 +500,8 @@ async function Content({
           </h2>
           {data.placements.length === 0 ? (
             <p className="text-radar-purple/80">
-              No placements yet. Until there are, the carousel fills itself with
-              Strong signal shows, then the soonest shows.
+              No placements yet. The homepage shows a Spotlight only when you
+              add one here.
             </p>
           ) : (
             <div className="relative -mx-4 overflow-x-auto md:mx-0">
@@ -653,10 +651,9 @@ async function Content({
                 </div>
               </div>
               <p className="text-sm text-radar-purple/80">
-                Fallback order when there are fewer placements than slides:{" "}
-                <strong>Strong signal shows this month</strong>, then{" "}
-                <strong>the soonest upcoming shows</strong>. The carousel is
-                never empty.
+                Only the shows you add here appear in the Spotlight. Empty
+                slides stay empty, and with no placements the homepage hides
+                the Spotlight.
               </p>
               <SubmitButton className={`${outlineBtn} self-start`}>
                 Save settings

@@ -158,7 +158,7 @@ Section order, top to bottom. Header, hero and the Spotlight must fit on the fir
 - Headline (Luckiest Guy): **ON THE RADAR THIS MONTH** (yellow on "THIS MONTH"). No "Now live in Egypt" tag.
 - One short supporting line in Nunito.
 - **Full-width search bar** (same width as the content container): placeholder "Search a comedian, group, show or venue" + purple "Scan the radar" button (icon-only on mobile). Searches shows, comedians, groups and venues.
-- Filter chips (pill): **Tonight · This weekend · This month (default, selected) · Within range** + city dropdown. Chips filter "Coming up" (URL query string, e.g. `/?when=month&city=cairo`).
+- Filter chips (pill): **Tonight · This weekend · This month (default, selected) · Within range** + city dropdown. Chips filter "Coming up" (URL query string, e.g. `/?when=month&city=cairo`). **"This month" means the next 30 days** (decided 2026-11-27), so early next-month shows still appear at the end of a month; the same rule is used for "Performing this month".
 
 ### 5.3 Spotlight — carousel (future revenue slot)
 - Title **SPOTLIGHT** with the subtitle **"This month"**. No "Featured" label on the cards.
@@ -349,7 +349,7 @@ Build the full system now, even though placements are free at launch.
 1. One slot type: `spotlight` (the homepage carousel). Up to 5 active slides.
 2. A placement is active when `now()` is between `starts_at` and `ends_at`, the show is `published`, and the show has not started yet.
 3. Order slides by `priority` (high first), then show date (soonest first).
-4. **Fallback:** if fewer than 5 active placements, fill the rest automatically with `strong` signal shows this month, then the soonest upcoming shows. The carousel is never empty.
+4. **No automatic fill** (changed 2026-11-27): only shows Dina picks in Admin > Spotlight appear. Empty slides stay empty; with no placements the homepage hides the Spotlight section.
 5. Spotlight shows **also appear** in the normal lists.
 6. Placements expire automatically after the show date.
 7. Each placement records `is_paid`, `amount`, `currency`, `client_name` for revenue reporting later.
@@ -730,7 +730,7 @@ create table page_stats (             -- dashboard: daily totals, no visitor dat
 **Helper views**
 - `v_upcoming_shows`: published shows with `starts_at >= now()`, joined with venue, city, country and performers (headliner name and type), ordered by `starts_at`. The homepage takes `limit 8`.
 - `v_tours`: tours with owner (comedian or group), first and last show date, count of shows, list of cities; only tours with at least one upcoming show.
-- `v_spotlight`: active spotlight placements joined with show data, ordered by priority then `starts_at`. Fallback logic runs in server code.
+- `v_spotlight`: active spotlight placements joined with show data, ordered by priority then `starts_at`. No fallback (2026-11-27).
 - `v_comedian_shows`: for each comedian, their solo/lineup shows **plus** shows of groups they currently belong to (flag `via_group`).
 
 **Example seed data (structure only)**
@@ -839,7 +839,7 @@ Admin style: Stage Black sidebar (#121212) with a pink "SUPER ADMIN" label, an i
 **Phase 1 — Launch (MVP)**
 1. Repo, Next.js, Tailwind tokens, fonts, logo files.
 2. Supabase schema (section 10), RLS, views, seed data (Egypt, main cities, sample venues, sample comedians, HighFive group, one tour, one podcast, 10 sample shows).
-3. Homepage v2 (section 5) with Spotlight carousel and fallback.
+3. Homepage v2 (section 5) with Spotlight carousel (picked shows only).
 4. Show page, tour page, group page, comedian page (with podcasts).
 5. `/shows`, `/tours`, `/comedians`, `/groups` listings and search.
 6. Newsletter sign-up.

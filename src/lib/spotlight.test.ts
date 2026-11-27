@@ -1,18 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { buildSpotlight } from "./spotlight";
 
-const show = (id: string, day: number, signal = "none") => ({
+const show = (id: string, day: number) => ({
   id,
   starts_at: `2026-11-${String(day).padStart(2, "0")}T18:00:00Z`,
-  display_signal: signal,
 });
-const monthEnd = new Date("2026-11-30T22:00:00Z");
-type S = ReturnType<typeof show>;
-const none: S[] = [];
 
 describe("buildSpotlight", () => {
-  it("is empty when there are no shows", () => {
-    expect(buildSpotlight({ placements: [], upcoming: none, monthEnd, slots: 5 })).toEqual([]);
+  it("is empty when nothing is picked, even if shows exist", () => {
+    expect(buildSpotlight({ placements: [], slots: 5 })).toEqual([]);
   });
 
   it("orders placements by priority then date", () => {
@@ -22,42 +18,22 @@ describe("buildSpotlight", () => {
         { ...show("b", 28), priority: 5 },
         { ...show("c", 27), priority: 0 },
       ],
-      upcoming: none,
-      monthEnd,
       slots: 5,
     });
     expect(slides.map((s) => s.show.id)).toEqual(["b", "c", "a"]);
+    expect(slides.every((s) => s.source === "placement")).toBe(true);
   });
 
-  it("fills with strong shows this month, then the soonest shows, without duplicates", () => {
-    const upcoming = [
-      show("p", 27),
-      show("s1", 29, "strong"),
-      show("x", 27),
-      show("s-next-month", 30, "strong"),
-      show("y", 28),
-    ];
-    // s-next-month starts on 30 Nov 18:00 UTC = before month end, so it counts as this month.
+  it("keeps at most the number of slides and no show twice", () => {
     const slides = buildSpotlight({
-      placements: [{ ...show("p", 27), priority: 1 }],
-      upcoming,
-      monthEnd,
-      slots: 4,
+      placements: [
+        { ...show("a", 27), priority: 3 },
+        { ...show("a", 27), priority: 1 },
+        { ...show("b", 28), priority: 2 },
+        { ...show("c", 29), priority: 1 },
+      ],
+      slots: 2,
     });
-    expect(slides.map((s) => [s.show.id, s.source])).toEqual([
-      ["p", "placement"],
-      ["s1", "strong"],
-      ["s-next-month", "strong"],
-      ["x", "soonest"],
-    ]);
-  });
-
-  it("ignores strong shows after this month for the strong step", () => {
-    const later = { id: "dec", starts_at: "2026-12-05T18:00:00Z", display_signal: "strong" };
-    const slides = buildSpotlight({ placements: [], upcoming: [later, show("n", 28)], monthEnd, slots: 5 });
-    expect(slides.map((s) => [s.show.id, s.source])).toEqual([
-      ["n", "soonest"],
-      ["dec", "soonest"],
-    ]);
+    expect(slides.map((s) => s.show.id)).toEqual(["a", "b"]);
   });
 });

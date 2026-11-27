@@ -95,15 +95,11 @@ export async function getSpotlight(slots: number): Promise<SpotlightSlide<ShowRo
   cacheTag("shows", "spotlight");
   const db = createPublicClient();
   if (!db) return [];
-  const now = new Date();
-  const [placements, upcoming] = await Promise.all([
-    db.from("v_spotlight").select(`priority, is_paid, ${SHOW_COLUMNS}`).limit(slots),
-    db.from("v_upcoming_shows").select(SHOW_COLUMNS).order("starts_at").limit(50),
-  ]);
+  // Only the shows picked in Admin > Spotlight. No automatic fill.
+  const placements = await db.from("v_spotlight").select(`priority, is_paid, ${SHOW_COLUMNS}`).limit(slots);
+  if (placements.error) console.error("getSpotlight", placements.error.message);
   return buildSpotlight({
     placements: (placements.data ?? []) as unknown as (ShowRow & { priority: number })[],
-    upcoming: (upcoming.data ?? []) as unknown as ShowRow[],
-    monthEnd: whenRange("month", now).to,
     slots,
   });
 }
