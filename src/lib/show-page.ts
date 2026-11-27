@@ -32,7 +32,7 @@ export function showBadges(
   else if (performers.length > 1) badges.push({ label: "Lineup", tone: "plum", icon: "lineup" });
   else if (performers.length) badges.push({ label: "Solo", tone: "plum", icon: "solo" });
   if (show.zone === "outbound") badges.push({ label: "On tour", tone: "plum", icon: "tour" });
-  else if (show.zone === "inbound") badges.push({ label: "Visiting", tone: "plum", icon: "visiting" });
+  else if (show.zone === "inbound") badges.push({ label: "Visiting", tone: "pink", icon: "visiting" });
   else badges.push({ label: "In Egypt", tone: "plum", icon: "place" });
   return badges;
 }
