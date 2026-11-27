@@ -2,6 +2,8 @@
 
 import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireSuperAdmin } from "@/lib/data/admin";
+import { findAnyPerformer } from "@/lib/data/admin-create";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { photoError, text, UUID } from "@/lib/profile-server";
 import { checkShow, type ShowErrors, type ShowInput } from "@/lib/show-forms";
@@ -9,6 +11,8 @@ import { insertShow, performerHome, placeShow, publishShow, savePerformers, uplo
 import { createClient } from "@/lib/supabase/server";
 
 /** Add, edit and update shows from the creator dashboard (spec 11.4 items 4 and 9). */
+
+const ADMIN_SHOW_STATUSES = ["published", "pending", "draft"] as const;
 
 export type ShowState = { message?: string; errors?: ShowErrors & { poster?: string }; attempt?: number; input?: Partial<ShowInput> };
 
@@ -37,6 +41,20 @@ const FIELDS: (keyof ShowInput)[] = [
 export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowState> {
   const account = await requireAccount();
   if (account.is_suspended) return { message: "This account is suspended." };
+  return storeShow(form, account.id, false);
+}
+
+/**
+ * Admin > Shows and tours > Add new show: any comedian or group, any venue on
+ * the list, and the status the super admin picks (Published goes live at once).
+ */
+export async function adminSaveShow(_prev: ShowState, form: FormData): Promise<ShowState> {
+  const account = await requireSuperAdmin();
+  form.delete("show_id");
+  return storeShow(form, account.id, true);
+}
+
+async function storeShow(form: FormData, accountId: string, admin: boolean): Promise<ShowState> {
   const showId = text(form.get("show_id"));
   if (showId && !UUID.test(showId)) return { message: "We couldn't find this show." };
   const intent = text(form.get("intent")) === "draft" ? "draft" : "publish";
@@ -48,10 +66,13 @@ export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowSt
     return { errors: { ...errors, ...(posterErr ? { poster: posterErr } : {}) }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
   }
 
-  // The performer must be one of the profiles this account manages (spec 11.4 item 4).
-  const profiles = await getMyProfiles();
-  const performer = profiles.find((p) => p.kind === values.performer.kind && p.id === values.performer.id);
-  if (!performer) return { errors: { performer: "Please choose one of your profiles." }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
+  // The performer must be one of the profiles this account manages (spec 11.4 item 4); the super admin may pick any.
+  const performer = admin
+    ? await findAnyPerformer(values.performer.kind, values.performer.id)
+    : (await getMyProfiles()).find((p) => p.kind === values.performer.kind && p.id === values.performer.id);
+  if (!performer) {
+    return { errors: { performer: admin ? "Please choose a comedian or group." : "Please choose one of your profiles." }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
+  }
 
   const supabase = await createClient();
   const place = await placeShow(supabase, values.city_id, await performerHome(supabase, performer));
@@ -77,7 +98,7 @@ export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowSt
     language: values.language,
     age_rating: values.age_rating,
     good_to_know: values.good_to_know,
-    signal_request: values.signal_request,
+    signal_request: admin ? null : values.signal_request,
     tour_id: values.tour_id,
   };
 
@@ -91,16 +112,23 @@ export async function saveShow(_prev: ShowState, form: FormData): Promise<ShowSt
     }
     slug = (data as { slug: string }).slug;
   } else {
-    const made = await insertShow(supabase, account.id, row);
+    const made = await insertShow(supabase, accountId, row);
     if (!made) return { message: "We couldn't save the show. Please try again.", attempt: Date.now(), input };
     ({ id, slug } = made);
   }
 
-  await savePerformers(supabase, account.id, id, performer, form.getAll("member_ids").map(String), new Set(form.getAll("keep_lineup").map(String)));
+  await savePerformers(supabase, accountId, id, performer, form.getAll("member_ids").map(String), new Set(form.getAll("keep_lineup").map(String)));
 
   if (file) {
     const url = await uploadPoster(supabase, performer, `show-${id}`, file);
     if (url) await supabase.from("shows").update({ poster_url: url }).eq("id", id);
+  }
+
+  if (admin) {
+    const status = ADMIN_SHOW_STATUSES.find((x) => x === text(form.get("status"))) ?? "published";
+    if (status !== "draft") await supabase.from("shows").update({ status }).eq("id", id);
+    updateTag("shows");
+    redirect(`/admin/shows?msg=created`);
   }
 
   // Publish: live at once for verified profiles; the database sends the others to review.

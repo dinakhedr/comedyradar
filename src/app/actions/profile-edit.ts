@@ -107,7 +107,7 @@ export async function addGroupMembers(_prev: MembersState, form: FormData): Prom
   if (!p || p.kind !== "group") return { message: NOT_ADMIN };
   const supabase = await createClient();
   const { count } = await supabase.from("group_members").select("comedian_id", { count: "exact", head: true }).eq("group_id", p.id);
-  const added = await addMembers(supabase, p.account.id, p.id, form, (count ?? 0) + 1);
+  const added = (await addMembers(supabase, p.account.id, p.id, form, (count ?? 0) + 1)).count;
   updateTag("profiles");
   if (!added) return { message: "No one was added. Pick a comedian from the search, or type a new name.", attempt: Date.now() };
   return { ok: true, message: added === 1 ? "1 member added." : `${added} members added.`, attempt: Date.now() };

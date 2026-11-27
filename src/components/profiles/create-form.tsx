@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useActionState, useId, useState, useTransition } from "react";
-import { createProfile, findComedians, type CreateState } from "@/app/actions/profiles";
+import { adminCreateProfile, createProfile, findComedians, type CreateState } from "@/app/actions/profiles";
+import { adminEditPath } from "@/lib/admin-paths";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { PhotoCropField } from "@/components/profiles/photo-crop-field";
 import { GROUP_LANGUAGES, GROUP_STYLES } from "@/lib/group-styles";
 import { SOCIAL_FIELDS, type ProfileKind } from "@/lib/profile-forms";
 import { SubmitButton } from "@/components/submit-button";
+import { AdminSaveRow } from "@/components/admin/admin-save-row";
 
 type Country = { id: string; name: string };
 
@@ -176,8 +178,8 @@ export function MemberPicker({
 }
 
 /** Create a comedian or group profile (spec 11.3 and 11.4 item 2). */
-export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; countries: Country[] }) {
-  const [state, action, pending] = useActionState<CreateState, FormData>(createProfile, {});
+export function CreateProfileForm({ kind, countries, admin = false }: { kind: ProfileKind; countries: Country[]; admin?: boolean }) {
+  const [state, action, pending] = useActionState<CreateState, FormData>(admin ? adminCreateProfile : createProfile, {});
   const e = state.errors ?? {};
   const v = state.input?.fields ?? {};
   const styles = state.input?.styles ?? [];
@@ -207,7 +209,11 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
                   )}
                   {d.status === "pending" && <span className="text-sm font-normal"> · waiting for review</span>}
                 </span>
-                {d.status === "published" && d.slug && (
+                {admin ? (
+                  <Link href={adminEditPath(d.kind, d.id)} className={outlineBtn}>
+                    Open it<span className="sr-only">: {d.name}</span>
+                  </Link>
+                ) : d.status === "published" && d.slug && (
                   <Link href={`/dashboard/profiles/claim/${d.kind}/${d.slug}`} className={yellowBtn}>
                     Claim this one<span className="sr-only">: {d.name}</span>
                   </Link>
@@ -217,14 +223,14 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
           </ul>
           <label className="flex min-h-11 items-center gap-3 font-bold">
             <input type="checkbox" name="not_duplicate" className="h-5 w-5 accent-radar-purple" />
-            No, mine is someone else. Create it anyway.
+            {admin ? "No, this is someone else. Create it anyway." : "No, mine is someone else. Create it anyway."}
           </label>
         </section>
       )}
 
       <section aria-labelledby="basics" className={`${card} flex flex-col gap-4`}>
         <h2 id="basics" className="text-heading font-extrabold">
-          {group ? "About the group" : "About you"}
+          {group ? "About the group" : admin ? "About the comedian" : "About you"}
         </h2>
         <TextField label={group ? "Group name in English" : "Name in English"} name="name" required error={e.name} defaultValue={v.name} />
         <TextField label={group ? "Group name in Arabic" : "Name in Arabic"} name="name_ar" lang="ar" dir="rtl" error={e.name_ar} defaultValue={v.name_ar} />
@@ -309,7 +315,9 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
               New members, not on Comedy Radar yet <span className="font-bold text-radar-purple/70">(optional)</span>
             </label>
             <p id={`${ids.newMembers}-hint`} className="text-sm text-radar-purple/75">
-              One name per line, in English. Each one gets a draft page that only you can see for now.
+              {admin
+                ? "One name per line, in English. Each one gets a comedian page with the same status as this group."
+                : "One name per line, in English. Each one gets a draft page that only you can see for now."}
             </p>
             <textarea
               id={ids.newMembers}
@@ -335,6 +343,9 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
         </div>
       </section>
 
+      {admin ? (
+        <AdminSaveRow noun={group ? "group" : "comedian"} pending={pending} defaultStatus={v.status} />
+      ) : (
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <SubmitButton type="submit" name="intent" value="review" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>
           {pending ? "Saving…" : "Send for review"}
@@ -344,6 +355,7 @@ export function CreateProfileForm({ kind, countries }: { kind: ProfileKind; coun
         </SubmitButton>
         <p className="text-sm text-radar-purple/75">Comedy Radar checks new profiles before they go live.</p>
       </div>
+      )}
     </form>
   );
 }
