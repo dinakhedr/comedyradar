@@ -65,7 +65,7 @@ Decided by Dina, 2026-11-26. Success and error messages are never shown in a pil
 
 ## Status (pills and icons)
 Decided by Dina, 2026-11-26. One set of status colours across the admin panel and the creator dashboard.
-- Pills are for status only, and only in tables and grids. Compact lists (e.g. Settings > Locations and venues) use small round status icons instead, with the name on hover.
+- Pills are for status only, and only in tables and grids. Compact lists (e.g. admin Venues) use small round status icons instead, with the name on hover.
 - Published: green #157A3F with white text; icon = green circle with a white tick. Also used for Live, Verified, Approved, Accepted.
 - Pending: Spotlight Yellow with purple text; icon = yellow circle with a clock. Also used for In review, Waiting.
 - Draft: light grey #ECEAF0 with a dashed grey #A39CB3 border; icon = dashed grey circle with dots.

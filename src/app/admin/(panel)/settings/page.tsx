@@ -6,16 +6,8 @@ import { saveSettings } from "@/app/actions/admin-settings";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, Tag, yellowBtn } from "@/components/dashboard/ui";
 import { flagOf } from "@/lib/countries";
-import {
-  StatusLegend,
-  VenueLocations,
-} from "@/components/admin/venue-locations";
-import {
-  getAdminSettings,
-  getAdminVenues,
-  type AdminSettings,
-  type AdminVenueRow,
-} from "@/lib/data/admin";
+import { CountryCities } from "@/components/admin/country-cities";
+import { getAdminSettings, type AdminSettings } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -39,7 +31,7 @@ const SECTIONS = [
   { id: "general", label: "General" },
   { id: "social", label: "Social and contact" },
   { id: "homepage", label: "Homepage" },
-  { id: "locations", label: "Locations and venues" },
+  { id: "locations", label: "Countries and cities" },
   { id: "review", label: "Review rules" },
   { id: "security", label: "Security" },
   { id: "emails", label: "Email templates" },
@@ -60,7 +52,7 @@ function Card({
   id: string;
   title: string;
   children: React.ReactNode;
-  note?: string;
+  note?: React.ReactNode;
 }) {
   return (
     <section
@@ -136,48 +128,35 @@ const LOCATION_MSGS = new Set(["city_added", "city_exists", "city_bad"]);
 
 function Locations({
   data,
-  venues,
   open,
   msg,
 }: {
   data: AdminSettings;
-  venues: AdminVenueRow[];
   open: string;
   msg?: [string, boolean];
 }) {
   return (
     <Card
       id="locations"
-      title="Locations and venues"
-      note="Open a country to see its cities. Press + beside a city to add a venue there. Shows in a country marked as a market count as In Egypt; others are On tour."
+      title="Countries and cities"
+      note={
+        <>
+          Open a country to see and add its cities. Shows in a country marked as a market count as In Egypt; others are On
+          tour. Venues are on the{" "}
+          <Link href="/admin/venues" className="font-extrabold underline">
+            Venues page
+          </Link>
+          .
+        </>
+      }
     >
-      <StatusLegend />
-      {msg && (
-        msg[1] ? (
+      {msg &&
+        (msg[1] ? (
           <SuccessNote className="text-sm">{msg[0]}</SuccessNote>
         ) : (
           <ErrorNote className="text-sm">{msg[0]}</ErrorNote>
-        )
-      )}
-      <p className="text-sm">
-        Venues: {data.venues.published} published, {data.venues.pending}{" "}
-        waiting.{" "}
-        <Link
-          href="/admin/shows?tab=venues"
-          className="font-extrabold underline"
-        >
-          See all venues
-        </Link>
-        {data.venues.pending > 0 && (
-          <>
-            {" · "}
-            <Link href="/admin/review" className="font-extrabold underline">
-              Review waiting venues
-            </Link>
-          </>
-        )}
-      </p>
-      <VenueLocations countries={data.countries} venues={venues} open={open} />
+        ))}
+      <CountryCities countries={data.countries} open={open} />
     </Card>
   );
 }
@@ -189,10 +168,7 @@ async function Content({
 }) {
   await connection();
   const sp = await searchParams;
-  const [data, venues] = await Promise.all([
-    getAdminSettings(),
-    getAdminVenues("", ""),
-  ]);
+  const data = await getAdminSettings();
   const s = data.settings;
   const msgKey = one(sp.msg);
   const locMsg = LOCATION_MSGS.has(msgKey) ? MSG[msgKey] : undefined;
@@ -323,7 +299,7 @@ async function Content({
           </form>
         </Card>
 
-        <Locations data={data} venues={venues} open={open} msg={locMsg} />
+        <Locations data={data} open={open} msg={locMsg} />
 
         <Card id="review" title="Review rules">
           <form action={saveSettings} className="flex flex-col gap-4">

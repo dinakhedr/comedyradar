@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { changeAccess, grantAccess, setProfileStatus } from "@/app/actions/admin-profiles";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
-import { CloseIcon, EditIcon, ExternalIcon, SaveIcon } from "@/components/icons";
+import { CloseIcon, EditIcon, ExternalIcon, MicLineIcon, PeopleIcon, SaveIcon } from "@/components/icons";
 import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
@@ -39,6 +39,22 @@ const smallSelect = "min-h-11 rounded-button border-2 border-radar-purple/25 bg-
 type Kind = "comedian" | "group";
 const pageOf = (p: AdminProfileRow) => `/${p.kind === "group" ? "groups" : "comedians"}/${p.slug}`;
 
+
+/** The square profile photo before the name; a mic (comedian) or people icon (group) when there is none. */
+function ListPhoto({ url, kind }: { url: string | null; kind: Kind }) {
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-lavender text-radar-purple/45">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- photos come from Supabase Storage
+        <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+      ) : kind === "group" ? (
+        <PeopleIcon size={18} />
+      ) : (
+        <MicLineIcon size={18} />
+      )}
+    </span>
+  );
+}
 
 function statusTag(p: AdminProfileRow) {
   return <StatusPill status={p.status} />;
@@ -323,19 +339,24 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
                     return (
                       <tr key={`${r.kind}-${r.id}`} className={`border-b border-radar-purple/10 ${on ? "bg-lavender" : ""}`}>
                         <td className="px-4 py-2 md:px-2">
-                          <Link href={link({ p: `${r.kind}:${r.id}` })} className="font-extrabold hover:underline">
-                            {r.name}
-                          </Link>
-                          {r.verified && (
-                            <span className="ml-1.5 align-middle">
-                              <Tag tone="purple">Verified</Tag>
-                            </span>
-                          )}
-                          {r.name_ar && (
-                            <span dir="rtl" lang="ar" className="block text-xs text-radar-purple/70">
-                              {r.name_ar}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-3">
+                            <ListPhoto url={r.photo_url ?? null} kind={r.kind} />
+                            <div className="min-w-0">
+                              <Link href={link({ p: `${r.kind}:${r.id}` })} className="font-extrabold hover:underline">
+                                {r.name}
+                              </Link>
+                              {r.verified && (
+                                <span className="ml-1.5 align-middle">
+                                  <Tag tone="purple">Verified</Tag>
+                                </span>
+                              )}
+                              {r.name_ar && (
+                                <span dir="rtl" lang="ar" className="block text-left text-xs text-radar-purple/70">
+                                  {r.name_ar}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-2 py-2">{statusTag(r)}</td>
                         <td className={`px-2 py-2 text-right font-bold ${r.admins === 0 ? "text-laugh-pink-deep" : ""}`}>{r.admins}</td>

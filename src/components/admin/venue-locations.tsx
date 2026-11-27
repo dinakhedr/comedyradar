@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useActionState, useState } from "react";
-import { addCity, addVenue, editVenue } from "@/app/actions/admin-settings";
+import { addVenue, editVenue } from "@/app/actions/admin-settings";
 import { inputCls } from "@/components/auth/field-classes";
 import { EditIcon, SaveIcon } from "@/components/icons";
 import { flagOf } from "@/lib/countries";
@@ -14,7 +15,6 @@ import {
 import { ErrorNote, SuccessNote } from "@/components/status-note";
 import { StatusIcon } from "@/components/status";
 import { STATUS_LABELS } from "@/lib/status";
-import { SubmitButton } from "@/components/submit-button";
 import { LogoPicker } from "@/components/admin/logo-picker";
 import { PinIcon } from "@/components/icons";
 
@@ -289,7 +289,7 @@ function VenueRow({
   );
 }
 
-/** Settings > Locations and venues: countries, their cities as rows, and the venues in each city. */
+/** Admin Venues: countries, their cities as rows, and the venues in each city. */
 export function VenueLocations({
   countries,
   venues,
@@ -363,7 +363,11 @@ export function VenueLocations({
               <div className="border-t border-radar-purple/15">
                 {c.cities.length === 0 && (
                   <p className="px-3 py-2 text-sm text-radar-purple/70">
-                    No cities yet. Add the first one below.
+                    No cities yet. Add cities in{" "}
+                    <Link href={`/admin/settings?open=${c.code}#locations`} className="font-extrabold underline">
+                      Settings
+                    </Link>
+                    .
                   </p>
                 )}
                 {c.cities.map((x) => {
@@ -439,28 +443,6 @@ export function VenueLocations({
                     </section>
                   );
                 })}
-                <form
-                  action={addCity}
-                  className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
-                >
-                  <input type="hidden" name="country_id" value={c.id} />
-                  <input type="hidden" name="open" value={c.code} />
-                  <label htmlFor={`nc-${c.id}`} className="sr-only">
-                    New city in {c.name}
-                  </label>
-                  <input
-                    id={`nc-${c.id}`}
-                    name="name"
-                    required
-                    minLength={2}
-                    maxLength={60}
-                    placeholder={`New city in ${c.name}`}
-                    className={`${inputCls} min-h-11! flex-1`}
-                  />
-                  <SubmitButton className={`${purpleBtn} text-spotlight-yellow!`}>
-                    <PlusIcon /> Add city
-                  </SubmitButton>
-                </form>
               </div>
             </details>
           </li>

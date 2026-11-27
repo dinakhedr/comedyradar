@@ -1,5 +1,5 @@
 /**
- * Add and edit venue forms in admin Settings > Locations and venues.
+ * Add and edit venue forms in the admin Venues page.
  * Pure helpers (no server code) so the messages can be tested.
  */
 

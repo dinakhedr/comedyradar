@@ -2,7 +2,7 @@ import { STATUS_COLORS, STATUS_LABELS, statusKind, type StatusKind } from "@/lib
 
 /**
  * Status pills and icons, used everywhere a status is shown.
- * Pills: tables and grids. Round icons: compact lists (e.g. Locations and venues).
+ * Pills: tables and grids. Round icons: compact lists (e.g. admin Venues).
  * Colours come from src/lib/status.ts.
  */
 

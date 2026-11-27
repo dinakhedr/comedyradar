@@ -115,6 +115,8 @@ export type AdminProfileRow = {
   people: number;
   upcoming: number;
   created_at: string;
+  /** The square profile photo, added from the profile tables (not part of admin_profiles). */
+  photo_url?: string | null;
 };
 export type AdminProfiles = {
   stats: {
@@ -150,10 +152,25 @@ export async function getAdminProfiles(f: {
     p_verified: f.verified,
   });
   if (error) console.error("admin_profiles", error.message);
-  return (data ?? {
+  const out = (data ?? {
     stats: { comedians: 0, groups: 0, no_admin: 0, pending: 0 },
     rows: [],
   }) as AdminProfiles;
+  // Photos for the list: one small read per profile table that has rows (the super admin can read every profile).
+  const photos = new Map<string, string>();
+  const kinds = [...new Set(out.rows.map((r) => r.kind))];
+  await Promise.all(
+    kinds.map(async (k) => {
+      const { data: rows, error: e } = await supabase
+        .from(k === "group" ? "comedy_groups" : "comedians")
+        .select("id, photo_url")
+        .not("photo_url", "is", null);
+      if (e) console.error("admin profile photos", e.message);
+      for (const r of (rows ?? []) as { id: string; photo_url: string }[]) photos.set(`${k}:${r.id}`, r.photo_url);
+    }),
+  );
+  for (const r of out.rows) r.photo_url = photos.get(`${r.kind}:${r.id}`) ?? null;
+  return out;
 }
 
 export async function getAdminProfileAccess(
