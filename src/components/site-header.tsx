@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCities } from "@/lib/data/home";
+import { getViewer } from "@/lib/data/viewer";
+import { AccountMenu } from "./account-menu";
 import { countriesOf } from "@/lib/countries";
 import { CountrySelect } from "./country-select";
 import { Logo } from "./logo";
@@ -23,14 +25,36 @@ export async function SiteHeader() {
         <Suspense fallback={<div className="h-11 w-32 rounded-button border-2 border-plum-line" />}>
           <CountrySelect countries={countriesOf(cities)} id="header-country" />
         </Suspense>
-        <Link
-          href="/signin"
-          className="inline-flex min-h-11 items-center rounded-button bg-spotlight-yellow px-[18px] text-[15px] font-extrabold text-radar-purple hover:bg-white"
-        >
-          Sign in
-        </Link>
+        {/* Signed out (and while the session is read): Sign in. Signed in: the account menu. */}
+        <Suspense fallback={<SignInLink />}>
+          <HeaderAccount />
+        </Suspense>
       </div>
-      <MobileMenu />
+      <Suspense fallback={<MobileMenu viewer={null} />}>
+        <HeaderMobileMenu />
+      </Suspense>
     </header>
   );
+}
+
+function SignInLink() {
+  return (
+    <Link
+      href="/signin"
+      className="inline-flex min-h-11 items-center rounded-button bg-spotlight-yellow px-[18px] text-[15px] font-extrabold text-radar-purple hover:bg-white"
+    >
+      Sign in
+    </Link>
+  );
+}
+
+/** Reads the session cookie, so the rest of the header can stay prerendered. */
+async function HeaderAccount() {
+  const viewer = await getViewer();
+  if (!viewer) return <SignInLink />;
+  return <AccountMenu name={viewer.name} isSuperAdmin={viewer.isSuperAdmin} />;
+}
+
+async function HeaderMobileMenu() {
+  return <MobileMenu viewer={await getViewer()} />;
 }
