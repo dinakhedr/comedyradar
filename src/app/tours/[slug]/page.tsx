@@ -127,7 +127,7 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
       {/* Tour header card */}
       <section className={`${container} pb-8 md:pb-14`}>
         <div
-          className={`overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px] ${tall ? "md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:items-start" : ""}`}
+          className={`overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px] ${tall ? "md:grid md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] md:items-start" : ""}`}
         >
           {tall ? (
             // A tall tour poster sits beside the details, like on a show page (Dina, 2026-11-27).

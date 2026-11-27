@@ -244,7 +244,7 @@ function Slide({
         alt=""
         iconSize={96}
         eager={position === 1}
-        className="aspect-[1376/768] w-full md:self-start"
+        className="aspect-[1376/768] w-full md:self-center"
       />
       <div className="flex flex-col justify-center gap-2 p-[18px] md:gap-3.5 md:px-11 md:py-10">
         <div className="flex flex-wrap gap-1.5 md:gap-2">

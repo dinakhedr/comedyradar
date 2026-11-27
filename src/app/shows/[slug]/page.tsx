@@ -59,7 +59,7 @@ export default function ShowPage({ params }: PageProps<"/shows/[slug]">) {
 
 function ShowSkeleton() {
   return (
-    <div className={`${container} grid gap-6 pb-14 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:gap-10`} aria-hidden="true">
+    <div className={`${container} grid gap-6 pb-14 md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] md:gap-10`} aria-hidden="true">
       <div className="aspect-[3/4] rounded-[22px] bg-radar-plum md:rounded-[28px]" />
       <div className="flex flex-col gap-4">
         <div className="h-12 w-3/4 rounded-lg bg-radar-plum" />
@@ -414,7 +414,7 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
         </div>
       )}
 
-      <section className={`${container} grid gap-5 pb-8 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:items-start md:gap-10 md:pb-14`}>
+      <section className={`${container} grid gap-5 pb-8 md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] md:items-start md:gap-10 md:pb-14`}>
         <ShowPoster src={show.poster_tall_url} title={show.title} cancelled={cancelled} />
 
         <div className="flex flex-col gap-3.5 md:gap-[18px]">
