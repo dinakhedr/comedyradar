@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { VenueLogo, venuePlace } from "../venue-logo";
+import { flagOf } from "@/lib/countries";
 import { getVenuesListing } from "@/lib/data/venues";
 import { cityChips, filterVenues, type VenueListItem } from "@/lib/venues-list";
 
@@ -18,6 +19,9 @@ function VenueCard({ v }: { v: VenueListItem }) {
         <Link href={`/venues/${v.slug}`} className="after:absolute after:inset-0 hover:text-spotlight-yellow">
           {v.name}
         </Link>
+        <span role="img" aria-label={v.country_name} title={v.country_name} className="ml-1.5 font-normal">
+          {flagOf(v.country_code)}
+        </span>
       </h2>
       <p className="text-[13px] text-lavender-text md:text-sm">
         {venuePlace(v.area, v.city.name)}

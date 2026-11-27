@@ -10,7 +10,7 @@ type Raw = {
   slug: string;
   area: string | null;
   logo_url: string | null;
-  cities: { name: string; slug: string; countries: { name: string } };
+  cities: { name: string; slug: string; countries: { name: string; code: string } };
 };
 
 /** Every published venue with its number of upcoming shows (public /venues page). */
@@ -23,7 +23,7 @@ export async function getVenuesListing(): Promise<VenueListItem[]> {
   const [venues, shows] = await Promise.all([
     db
       .from("venues")
-      .select("id, name, slug, area, logo_url, cities!inner(name, slug, countries!inner(name))")
+      .select("id, name, slug, area, logo_url, cities!inner(name, slug, countries!inner(name, code))")
       .eq("status", "published")
       .limit(1000),
     db.from("v_upcoming_shows").select("venue_slug").limit(5000),
@@ -43,6 +43,7 @@ export async function getVenuesListing(): Promise<VenueListItem[]> {
       logo_url: r.logo_url,
       city: { name: r.cities.name, slug: r.cities.slug },
       country_name: r.cities.countries.name,
+      country_code: r.cities.countries.code,
       upcoming: counts.get(r.slug) ?? 0,
     })),
   );
