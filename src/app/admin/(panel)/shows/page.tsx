@@ -3,7 +3,9 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import {
+  applyTourPoster,
   declineSignalRequest,
+  quickEditTour,
   setContentStatus,
   setShowSignal,
   setShowStatus,
@@ -21,6 +23,7 @@ import {
   yellowBtn,
 } from "@/components/dashboard/ui";
 import {
+  ChevronDown,
   CloseIcon,
   EditIcon,
   ExternalIcon,
@@ -51,6 +54,8 @@ import {
   getAdminTours,
   getAdminVenues,
   type AdminShowRow,
+  type AdminShows,
+  type AdminTourRow,
   type AdminVenueRow,
 } from "@/lib/data/admin";
 import { formatShowDate } from "@/lib/dates";
@@ -60,6 +65,7 @@ import { ShowStatusPill, StatusPill } from "@/components/status";
 import { SubmitButton } from "@/components/submit-button";
 import { LinkPending } from "@/components/link-pending";
 import { AddNewLink } from "@/components/admin/add-new-link";
+import { CoverImage } from "@/components/placeholder-image";
 
 export const metadata: Metadata = { title: "Shows and tours" };
 
@@ -74,6 +80,11 @@ const MSG: Record<string, string> = {
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
   venue_saved: "Venue saved.",
+  tour_saved: "Tour saved. Its dates use the new name and poster.",
+  tour_poster: "Done. The ticked dates now show the tour poster.",
+  tour_bad_name: "Please give the tour a name (up to 120 characters).",
+  tour_bad_poster: "The poster must be a JPG, PNG or WebP image, up to 10 MB.",
+  tour_poster_failed: "The poster did not upload. Please try again.",
   venue_bad_logo: "The logo must be a JPG, PNG or WebP image. Please pick another file.",
   venue_logo_failed: "The venue was saved, but the logo did not upload. Please try the logo again.",
   venue_exists: "That city already has a venue with this name.",
@@ -87,15 +98,6 @@ const smallSelect =
   "min-h-11 rounded-button border-2 border-radar-purple/25 bg-white px-2 text-sm font-bold";
 const smallBtn = `${outlineBtn} min-h-11 px-3 text-sm`;
 const th = "px-2 py-2 font-extrabold";
-const day = (iso: string | null) =>
-  iso
-    ? new Date(iso).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        timeZone: "Africa/Cairo",
-      })
-    : "";
 
 function showStatusTag(s: string) {
   return <ShowStatusPill status={s} />;
@@ -342,28 +344,10 @@ type Ctx = {
   msg?: string;
 };
 
-async function ShowsTab({ sp, link }: Ctx) {
-  const q = one(sp.q).slice(0, 80);
-  const zone = zoneOf(one(sp.zone));
-  const status = showStatusOf(one(sp.status));
-  const period = periodOf(one(sp.period));
-  const city = UUID.test(one(sp.city)) ? one(sp.city) : "";
-  const data = await getAdminShows({ q, zone, status, city, period });
-  const rows = data.rows;
-  const filters = {
-    q,
-    zone,
-    status,
-    city,
-    period: period === "upcoming" ? "" : period,
-  };
-  const here = (over: Record<string, string> = {}) =>
-    link({ ...filters, ...over });
-  const picked = rows.find((r) => r.id === one(sp.s)) ?? null;
-  const ret = here(picked ? { s: picked.id } : {});
-  const filtered = q || zone || status || city || period !== "upcoming";
+/** The numbers and the "Data quality and signal rules" box (closed until clicked). */
+function Overview({ data, link }: { data: AdminShows; link: Ctx["link"] }) {
   const { stats, quality } = data;
-
+  const toCheck = quality.signal_requests + quality.no_venue + quality.tours_no_tickets;
   return (
     <>
       <section
@@ -378,51 +362,306 @@ async function ShowsTab({ sp, link }: Ctx) {
         <StatTile label="Cancelled (upcoming)" value={stats.cancelled} />
       </section>
 
-      <section
-        aria-labelledby="quality"
-        className={`${card} flex flex-col gap-3`}
-      >
-        <h2 id="quality" className="font-extrabold">
-          Data quality and signal rules
-        </h2>
-        <ul className="flex flex-wrap gap-2 text-sm">
-          <li>
-            <Link
-              href={link({ status: "asked", period: "all" })}
-              className={`${outlineBtn} min-h-11 px-3 text-sm`}
-            >
-              Signal change requests{" "}
-              <span className="rounded-full bg-lavender px-2">
-                {quality.signal_requests}
-              </span>
-            </Link>
-          </li>
-          <li className="inline-flex min-h-11 items-center gap-2 rounded-button border-2 border-radar-purple/15 px-3 font-extrabold">
-            Upcoming shows with no venue{" "}
-            <span className="rounded-full bg-lavender px-2">
-              {quality.no_venue}
+      <details className="group rounded-card bg-white">
+        <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 md:px-6 [&::-webkit-details-marker]:hidden">
+          <span>
+            <span className="font-extrabold">Data quality and signal rules</span>{" "}
+            <span className="ml-1 text-sm font-bold whitespace-nowrap text-radar-purple/70">
+              {toCheck === 1 ? "1 thing to check" : `${toCheck} things to check`}
             </span>
-          </li>
-          <li>
-            <Link
-              href={link({ tab: "tours" })}
-              className={`${outlineBtn} min-h-11 px-3 text-sm`}
-            >
-              Tours with a date missing a ticket link{" "}
+          </span>
+          <ChevronDown size={20} className="shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="flex flex-col gap-3 px-4 pb-4 md:px-6 md:pb-6">
+          <ul className="flex flex-wrap gap-2 text-sm">
+            <li>
+              <Link
+                href={link({ tab: "shows", status: "asked", period: "all" })}
+                className={`${outlineBtn} min-h-11 px-3 text-sm`}
+              >
+                Signal change requests{" "}
+                <span className="rounded-full bg-lavender px-2">
+                  {quality.signal_requests}
+                </span>
+              </Link>
+            </li>
+            <li className="inline-flex min-h-11 items-center gap-2 rounded-button border-2 border-radar-purple/15 px-3 font-extrabold">
+              Upcoming shows with no venue{" "}
               <span className="rounded-full bg-lavender px-2">
-                {quality.tours_no_tickets}
+                {quality.no_venue}
               </span>
-            </Link>
-          </li>
-        </ul>
-        <p className="text-sm text-radar-purple/80">
-          New shows get the <strong>New</strong> signal for{" "}
-          {quality.new_signal_days} days, then no signal.{" "}
-          <strong>Strong</strong> (high demand) and <strong>Fading</strong>{" "}
-          (last tickets) are set only here. Creators can ask for a change, and
-          the request shows on the show.
-        </p>
-      </section>
+            </li>
+            <li>
+              <Link
+                href={link({ tab: "tours" })}
+                className={`${outlineBtn} min-h-11 px-3 text-sm`}
+              >
+                Tours with a date missing a ticket link{" "}
+                <span className="rounded-full bg-lavender px-2">
+                  {quality.tours_no_tickets}
+                </span>
+              </Link>
+            </li>
+          </ul>
+          <p className="text-sm text-radar-purple/80">
+            New shows get the <strong>New</strong> signal for{" "}
+            {quality.new_signal_days} days, then no signal.{" "}
+            <strong>Strong</strong> (high demand) and <strong>Fading</strong>{" "}
+            (last tickets) are set only here. Creators can ask for a change, and
+            the request shows on the show.
+          </p>
+        </div>
+      </details>
+    </>
+  );
+}
+
+/** "With the ticked shows": signal, unpublish and (tour dates) use the tour poster. */
+function BulkBar({ id, ret, tour }: { id: string; ret: string; tour?: boolean }) {
+  return (
+    <form
+      id={id}
+      className="flex flex-wrap items-center gap-2 rounded-button bg-lavender p-2"
+    >
+      <Hidden ret={ret} />
+      <span className="px-1 text-sm font-extrabold">
+        With the ticked {tour ? "dates" : "shows"}:
+      </span>
+      <label htmlFor={`${id}-signal`} className="sr-only">
+        Signal for the ticked {tour ? "dates" : "shows"}
+      </label>
+      <select
+        id={`${id}-signal`}
+        name="signal"
+        defaultValue="strong"
+        className={smallSelect}
+      >
+        {SIGNALS.map((x) => (
+          <option key={x.value} value={x.value}>
+            {x.label}
+          </option>
+        ))}
+      </select>
+      <SubmitButton formAction={setShowSignal} name="bulk" value="signal" className={smallBtn}>
+        Set signal
+      </SubmitButton>
+      {tour && (
+        <SubmitButton formAction={applyTourPoster} name="bulk" value="poster" className={smallBtn}>
+          Use tour poster
+        </SubmitButton>
+      )}
+      <SubmitButton
+        formAction={setShowStatus}
+        name="status"
+        value="draft"
+        className={smallBtn}
+      >
+        Unpublish
+      </SubmitButton>
+    </form>
+  );
+}
+
+/** The shows table: Single shows tab, and each tour's dates in the Tours tab. */
+function DatesTable({
+  rows,
+  ret,
+  here,
+  pickedId,
+  bulkId,
+  tour,
+}: {
+  rows: AdminShowRow[];
+  ret: string;
+  here: (over?: Record<string, string>) => string;
+  pickedId?: string;
+  bulkId: string;
+  tour?: boolean;
+}) {
+  return (
+    <div className="relative -mx-4 overflow-x-auto md:mx-0">
+      <table className={`w-full ${tour ? "min-w-[900px]" : "min-w-[960px]"} text-left text-sm`}>
+        <thead>
+          <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
+            <th className="w-10 px-4 py-2 md:px-2">
+              <span className="sr-only">Tick</span>
+            </th>
+            {tour && <th className={th}>Poster</th>}
+            <th className={th}>Date</th>
+            <th className={th}>Show</th>
+            <th className={th}>Status</th>
+            <th className={th}>Signal</th>
+            <th className={th}>Tickets</th>
+            {!tour && <th className={th}>Added by</th>}
+            <th className="px-2 py-2">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const asked =
+              r.signal_request && r.signal_request !== r.signal
+                ? r.signal_request
+                : null;
+            const [date, time] = formatShowDate(new Date(r.starts_at)).split(" · ");
+            return (
+              <tr
+                key={r.id}
+                className={`border-b border-radar-purple/10 align-top ${pickedId === r.id ? "bg-lavender" : ""} ${tour && !isFuture(r.starts_at) ? "opacity-60" : ""}`}
+              >
+                <td className="px-4 py-3 md:px-2">
+                  <input
+                    type="checkbox"
+                    name="ids"
+                    value={r.id}
+                    form={bulkId}
+                    aria-label={`Tick ${r.title}, ${date}`}
+                    className="mt-1 h-5 w-5 accent-radar-purple"
+                  />
+                </td>
+                {tour && (
+                  <td className="px-2 py-3">
+                    <CoverImage
+                      src={r.poster_url ?? r.tour_poster_url}
+                      alt=""
+                      iconSize={18}
+                      tone="purple"
+                      className="h-[55px] w-11 rounded-lg"
+                    />
+                    <span
+                      className={`mt-1 block text-[11px] font-extrabold whitespace-nowrap ${r.poster_url ? "text-laugh-pink-deep" : "text-radar-purple/70"}`}
+                    >
+                      {r.poster_url ? "Own poster" : "Tour poster"}
+                    </span>
+                  </td>
+                )}
+                <td className="px-2 py-3 whitespace-nowrap">
+                  <span className="font-bold">{date}</span>
+                  <span className="block text-xs text-radar-purple/70">{time}</span>
+                </td>
+                <td className="max-w-72 px-2 py-3">
+                  <Link
+                    href={here({ s: r.id })}
+                    className="font-extrabold break-words hover:underline"
+                  >
+                    {r.title}
+                  </Link>
+                  {r.performers && !tour && (
+                    <span className="block text-xs font-bold break-words">
+                      {r.performers}
+                    </span>
+                  )}
+                  <span className="block text-xs break-words text-radar-purple/70">
+                    {[r.venue, `${flagOf(r.country_code)} ${r.city}`, labelOf(ZONES, r.zone)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </td>
+                <td className="px-2 py-3">{showStatusTag(r.status)}</td>
+                <td className="px-2 py-2">
+                  <form action={setShowSignal} className="flex items-center gap-1">
+                    <Hidden ret={ret} more={{ ids: r.id }} />
+                    <label htmlFor={`sig-${r.id}`} className="sr-only">
+                      Signal for {r.title}
+                    </label>
+                    <select
+                      id={`sig-${r.id}`}
+                      name="signal"
+                      defaultValue={r.signal}
+                      className={smallSelect}
+                    >
+                      {SIGNALS.map((x) => (
+                        <option key={x.value} value={x.value}>
+                          {x.label}
+                        </option>
+                      ))}
+                    </select>
+                    <SubmitButton className={smallBtn}>Set</SubmitButton>
+                  </form>
+                  {asked && (
+                    <span className="mt-1 block text-xs font-extrabold text-laugh-pink-deep">
+                      Asked: {labelOf(SIGNALS, asked)}
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-3">
+                  <TicketTag url={r.ticket_url} />
+                </td>
+                {!tour && (
+                  <td className="max-w-40 px-2 py-3 text-xs break-words">
+                    {r.added_by ?? "Unknown"}
+                  </td>
+                )}
+                <td className="px-2 py-1">
+                  <span className="flex justify-end">
+                    {(r.status === "published" || r.status === "sold_out") && (
+                      <a
+                        href={`/shows/${r.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={iconBtn}
+                        aria-label={`Open ${r.title}`}
+                        title="Open the public page"
+                      >
+                        <ExternalIcon />
+                      </a>
+                    )}
+                    {r.status === "published" && isFuture(r.starts_at) && (
+                      <Link
+                        href={`/admin/spotlight?show=${r.id}#new`}
+                        className={iconBtn}
+                        aria-label={`Add ${r.title} to the Spotlight`}
+                        title="Add to the Spotlight"
+                      >
+                        <StarIcon />
+                      </Link>
+                    )}
+                    <Link
+                      href={`/admin/shows/${r.id}/edit`}
+                      className={iconBtn}
+                      aria-label={`Edit ${r.title}`}
+                      title="Edit all details"
+                    >
+                      <LinkPending><EditIcon /></LinkPending>
+                    </Link>
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+async function ShowsTab({ sp, link }: Ctx) {
+  const q = one(sp.q).slice(0, 80);
+  const zone = zoneOf(one(sp.zone));
+  const status = showStatusOf(one(sp.status));
+  const period = periodOf(one(sp.period));
+  const city = UUID.test(one(sp.city)) ? one(sp.city) : "";
+  // Signal change requests can be on tour dates too, so that filter shows both.
+  const data = await getAdminShows({ q, zone, status, city, period, kind: status === "asked" ? "" : "single" });
+  const rows = data.rows;
+  const filters = {
+    q,
+    zone,
+    status,
+    city,
+    period: period === "upcoming" ? "" : period,
+  };
+  const here = (over: Record<string, string> = {}) =>
+    link({ ...filters, ...over });
+  const picked = rows.find((r) => r.id === one(sp.s)) ?? null;
+  const ret = here(picked ? { s: picked.id } : {});
+  const filtered = q || zone || status || city || period !== "upcoming";
+  const onTours = data.stats.on_tours ?? 0;
+
+  return (
+    <>
+      <Overview data={data} link={link} />
 
       <div
         className={`grid grid-cols-[minmax(0,1fr)] gap-6 ${picked ? "2xl:grid-cols-[minmax(0,1fr)_380px] 2xl:items-start" : ""}`}
@@ -432,7 +671,7 @@ async function ShowsTab({ sp, link }: Ctx) {
           className={`${card} flex min-w-0 flex-col gap-4`}
         >
           <h2 id="list" className="sr-only">
-            Shows
+            Single shows
           </h2>
           <form
             method="get"
@@ -541,211 +780,27 @@ async function ShowsTab({ sp, link }: Ctx) {
             <p className="text-radar-purple/80">
               {filtered
                 ? "No shows match these filters."
-                : "No upcoming shows yet."}
+                : "No upcoming single shows yet."}
             </p>
           ) : (
             <>
-              <form
-                id="bulk"
-                className="flex flex-wrap items-center gap-2 rounded-button bg-lavender p-2"
-              >
-                <Hidden ret={ret} />
-                <span className="px-1 text-sm font-extrabold">
-                  With the ticked shows:
-                </span>
-                <label htmlFor="bulk-signal" className="sr-only">
-                  Signal for the ticked shows
-                </label>
-                <select
-                  id="bulk-signal"
-                  name="signal"
-                  defaultValue="strong"
-                  className={smallSelect}
-                >
-                  {SIGNALS.map((x) => (
-                    <option key={x.value} value={x.value}>
-                      {x.label}
-                    </option>
-                  ))}
-                </select>
-                <SubmitButton formAction={setShowSignal} name="bulk" value="signal" className={smallBtn}>
-                  Set signal
-                </SubmitButton>
-                <SubmitButton
-                  formAction={setShowStatus}
-                  name="status"
-                  value="draft"
-                  className={smallBtn}
-                >
-                  Unpublish
-                </SubmitButton>
-              </form>
-              <div className="relative -mx-4 overflow-x-auto md:mx-0">
-                <table className="w-full min-w-[960px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
-                      <th className="w-10 px-4 py-2 md:px-2">
-                        <span className="sr-only">Tick</span>
-                      </th>
-                      <th className={th}>Date</th>
-                      <th className={th}>Show</th>
-                      <th className={th}>Status</th>
-                      <th className={th}>Signal</th>
-                      <th className={th}>Tickets</th>
-                      <th className={th}>Added by</th>
-                      <th className="px-2 py-2">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r) => {
-                      const asked =
-                        r.signal_request && r.signal_request !== r.signal
-                          ? r.signal_request
-                          : null;
-                      return (
-                        <tr
-                          key={r.id}
-                          className={`border-b border-radar-purple/10 align-top ${picked?.id === r.id ? "bg-lavender" : ""}`}
-                        >
-                          <td className="px-4 py-3 md:px-2">
-                            <input
-                              type="checkbox"
-                              name="ids"
-                              value={r.id}
-                              form="bulk"
-                              aria-label={`Tick ${r.title}`}
-                              className="mt-1 h-5 w-5 accent-radar-purple"
-                            />
-                          </td>
-                          <td className="px-2 py-3 whitespace-nowrap">
-                            <span className="font-bold">
-                              {
-                                formatShowDate(new Date(r.starts_at)).split(
-                                  " · ",
-                                )[0]
-                              }
-                            </span>
-                            <span className="block text-xs text-radar-purple/70">
-                              {
-                                formatShowDate(new Date(r.starts_at)).split(
-                                  " · ",
-                                )[1]
-                              }
-                            </span>
-                          </td>
-                          <td className="max-w-72 px-2 py-3">
-                            <Link
-                              href={here({ s: r.id })}
-                              className="font-extrabold break-words hover:underline"
-                            >
-                              {r.title}
-                            </Link>
-                            {r.performers && (
-                              <span className="block text-xs font-bold break-words">
-                                {r.performers}
-                              </span>
-                            )}
-                            <span className="block text-xs break-words text-radar-purple/70">
-                              {[
-                                r.venue,
-                                `${flagOf(r.country_code)} ${r.city}`,
-                                labelOf(ZONES, r.zone),
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </span>
-                          </td>
-                          <td className="px-2 py-3">
-                            {showStatusTag(r.status)}
-                          </td>
-                          <td className="px-2 py-2">
-                            <form
-                              action={setShowSignal}
-                              className="flex items-center gap-1"
-                            >
-                              <Hidden ret={ret} more={{ ids: r.id }} />
-                              <label
-                                htmlFor={`sig-${r.id}`}
-                                className="sr-only"
-                              >
-                                Signal for {r.title}
-                              </label>
-                              <select
-                                id={`sig-${r.id}`}
-                                name="signal"
-                                defaultValue={r.signal}
-                                className={smallSelect}
-                              >
-                                {SIGNALS.map((x) => (
-                                  <option key={x.value} value={x.value}>
-                                    {x.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <SubmitButton className={smallBtn}>Set</SubmitButton>
-                            </form>
-                            {asked && (
-                              <span className="mt-1 block text-xs font-extrabold text-laugh-pink-deep">
-                                Asked: {labelOf(SIGNALS, asked)}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-2 py-3">
-                            <TicketTag url={r.ticket_url} />
-                          </td>
-                          <td className="max-w-40 px-2 py-3 text-xs break-words">
-                            {r.added_by ?? "Unknown"}
-                          </td>
-                          <td className="px-2 py-1">
-                            <span className="flex justify-end">
-                              {(r.status === "published" ||
-                                r.status === "sold_out") && (
-                                <a
-                                  href={`/shows/${r.slug}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={iconBtn}
-                                  aria-label={`Open ${r.title}`}
-                                  title="Open the public page"
-                                >
-                                  <ExternalIcon />
-                                </a>
-                              )}
-                              {r.status === "published" &&
-                                isFuture(r.starts_at) && (
-                                  <Link
-                                    href={`/admin/spotlight?show=${r.id}#new`}
-                                    className={iconBtn}
-                                    aria-label={`Add ${r.title} to the Spotlight`}
-                                    title="Add to the Spotlight"
-                                  >
-                                    <StarIcon />
-                                  </Link>
-                                )}
-                              <Link
-                                href={`/admin/shows/${r.id}/edit`}
-                                className={iconBtn}
-                                aria-label={`Edit ${r.title}`}
-                                title="Edit all details"
-                              >
-                                <LinkPending><EditIcon /></LinkPending>
-                              </Link>
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {rows.length >= 300 && (
+              <BulkBar id="bulk" ret={ret} />
+              <DatesTable rows={rows} ret={ret} here={here} pickedId={picked?.id} bulkId="bulk" />
+              {rows.length >= 500 && (
                 <p className="text-sm text-radar-purple/75">
-                  Showing the first 300. Use the filters to narrow the list.
+                  Showing the first 500. Use the filters to narrow the list.
                 </p>
               )}
             </>
+          )}
+          {status !== "asked" && onTours > 0 && (
+            <p className="text-sm text-radar-purple/75">
+              {onTours === 1 ? "1 upcoming tour date is" : `${onTours} upcoming tour dates are`} in the{" "}
+              <Link href={link({ tab: "tours" })} className="font-extrabold underline">
+                Tours tab
+              </Link>
+              .
+            </p>
           )}
         </section>
         {picked && (
@@ -755,6 +810,7 @@ async function ShowsTab({ sp, link }: Ctx) {
     </>
   );
 }
+
 
 /** Search + status filter shared by the Tours, Podcasts and Venues tabs. */
 function SimpleFilters({
@@ -824,118 +880,225 @@ function SimpleFilters({
   );
 }
 
+const shortDay = (iso: string | null) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        timeZone: "Africa/Cairo",
+      })
+    : "";
+
+/** One tour in the Tours tab: its poster and name, a quick edit, and its dates. */
+function TourBox({
+  t,
+  dates,
+  open,
+  editing,
+  ret,
+  here,
+  pickedId,
+}: {
+  t: AdminTourRow;
+  dates: AdminShowRow[];
+  open: boolean;
+  editing: boolean;
+  ret: string;
+  here: (over?: Record<string, string>) => string;
+  pickedId?: string;
+}) {
+  const cities = [...new Set(dates.map((d) => d.city))].join(", ");
+  const own = dates.filter((d) => d.poster_url).length;
+  const count = dates.length === 1 ? "1 date" : `${dates.length} dates`;
+  return (
+    <li id={`tour-${t.id}`} className="scroll-mt-6 overflow-hidden rounded-card border-2 border-radar-purple/10">
+      <div className="flex flex-wrap items-center gap-3 bg-lavender/50 p-3 md:gap-4 md:p-4">
+        <CoverImage
+          src={t.poster_url}
+          alt=""
+          iconSize={22}
+          tone="purple"
+          className="h-20 w-16 shrink-0 rounded-xl"
+        />
+        <div className="min-w-0 flex-1">
+          <h3 className="text-lg font-extrabold break-words">{t.name}</h3>
+          <p className="text-sm text-radar-purple/75">
+            <strong>{t.owner ?? "Unknown"}</strong> · {count}
+            {t.first_at ? ` · ${shortDay(t.first_at)} – ${shortDay(t.last_at)}` : ""}
+            {cities ? ` · ${cities}` : ""}
+          </p>
+        </div>
+        <span className="flex items-center gap-1">
+          <StatusForm kind="tour" id={t.id} status={t.status} ret={ret} name={t.name} />
+          {t.status === "published" && (
+            <a
+              href={`/tours/${t.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className={iconBtn}
+              aria-label={`Open ${t.name}`}
+              title="Open the public page"
+            >
+              <ExternalIcon />
+            </a>
+          )}
+          {editing ? (
+            <Link href={`${here()}#tour-${t.id}`} className={iconBtn} aria-label="Close the quick edit" title="Close">
+              <CloseIcon size={20} />
+            </Link>
+          ) : (
+            <Link
+              href={`${here({ edit: t.id })}#tour-${t.id}`}
+              className={iconBtn}
+              aria-label={`Change the name or poster of ${t.name}`}
+              title="Change the tour name or poster"
+            >
+              <LinkPending><EditIcon /></LinkPending>
+            </Link>
+          )}
+        </span>
+      </div>
+
+      {editing && (
+        <form
+          action={quickEditTour}
+          className="flex flex-wrap items-end gap-3 border-t border-radar-purple/10 p-3 md:p-4"
+        >
+          <Hidden ret={`${here()}#tour-${t.id}`} more={{ id: t.id }} />
+          <div className="flex min-w-60 flex-1 flex-col gap-1">
+            <label htmlFor={`tn-${t.id}`} className={labelCls}>
+              Tour name
+            </label>
+            <input
+              id={`tn-${t.id}`}
+              name="name"
+              required
+              maxLength={120}
+              defaultValue={t.name}
+              className={`${inputCls} min-h-11`}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor={`tp-${t.id}`} className={labelCls}>
+              New tour poster{" "}
+              <span className="font-bold text-radar-purple/60">(optional)</span>
+            </label>
+            <input
+              id={`tp-${t.id}`}
+              name="poster"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="min-h-11 text-sm file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-3 file:font-extrabold file:text-radar-purple"
+            />
+          </div>
+          <SubmitButton
+            className={`${yellowBtn} h-11 w-11 shrink-0 px-0!`}
+            aria-label="Save the tour name and poster"
+            title="Save"
+          >
+            <SaveIcon />
+          </SubmitButton>
+          <p className="basis-full text-sm text-radar-purple/75">
+            The name and poster go on all {count} at once.{" "}
+            {own > 0
+              ? `${own === 1 ? "1 date has" : `${own} dates have`} their own poster and keep it.`
+              : "A date with its own poster keeps it."}{" "}
+            <Link href={`/admin/shows/tours/${t.id}/edit`} className="font-extrabold underline">
+              Edit dates, prices and more
+            </Link>
+          </p>
+        </form>
+      )}
+
+      <details open={open} className="group border-t border-radar-purple/10">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-extrabold md:px-4 [&::-webkit-details-marker]:hidden">
+          <ChevronDown size={18} className="transition-transform group-open:rotate-180" />
+          {dates.length ? `${count} on this tour` : "No dates yet"}
+        </summary>
+        {dates.length > 0 && (
+          <div className="flex flex-col gap-3 px-3 pb-3 md:px-4 md:pb-4">
+            <BulkBar id={`bulk-${t.id}`} ret={ret} tour />
+            <DatesTable rows={dates} ret={ret} here={here} pickedId={pickedId} bulkId={`bulk-${t.id}`} tour />
+          </div>
+        )}
+      </details>
+    </li>
+  );
+}
+
 async function ToursTab({ sp, link }: Ctx) {
   const q = one(sp.q).slice(0, 80);
   const status = contentStatusOf(one(sp.status));
-  const rows = await getAdminTours(q, status);
-  const ret = link({ tab: "tours", q, status });
+  const editId = one(sp.edit);
+  const [tours, data] = await Promise.all([
+    getAdminTours(q, status),
+    getAdminShows({ q: "", zone: "", status: "", city: "", period: "all", kind: "tour" }),
+  ]);
+  const byTour = new Map<string, AdminShowRow[]>();
+  for (const r of data.rows) {
+    if (!r.tour_id) continue;
+    const list = byTour.get(r.tour_id) ?? [];
+    list.push(r);
+    byTour.set(r.tour_id, list);
+  }
+  const here = (over: Record<string, string> = {}) =>
+    link({ tab: "tours", q, status, ...over });
+  const picked = data.rows.find((r) => r.id === one(sp.s)) ?? null;
+  const ret = here(picked ? { s: picked.id } : {});
+
   return (
-    <section
-      aria-labelledby="list"
-      className={`${card} flex min-w-0 flex-col gap-4`}
-    >
-      <h2 id="list" className="sr-only">
-        Tours
-      </h2>
-      <SimpleFilters
-        tab="tours"
-        q={q}
-        status={status}
-        link={link}
-        placeholder="Tour, comedian or group"
-      />
-      {rows.length === 0 ? (
-        <p className="text-radar-purple/80">
-          {q || status ? "No tours match these filters." : "No tours yet."}
-        </p>
-      ) : (
-        <div className="relative -mx-4 overflow-x-auto md:mx-0">
-          <table className="w-full min-w-[820px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-radar-purple/15 text-xs tracking-wider text-radar-purple/70 uppercase">
-                <th className="px-4 py-2 font-extrabold md:px-2">Tour</th>
-                <th className={th}>Dates</th>
-                <th className={`${th} text-right`}>Shows</th>
-                <th className={`${th} text-right`}>Countries</th>
-                <th className={th}>Tickets</th>
-                <th className={th}>Status</th>
-                <th className="px-2 py-2">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((t) => (
-                <tr key={t.id} className="border-b border-radar-purple/10">
-                  <td className="max-w-72 px-4 py-2 md:px-2">
-                    <span className="block font-extrabold break-words">
-                      {t.name}
-                    </span>
-                    <span className="block text-xs text-radar-purple/70">
-                      {t.owner ?? "Unknown"} ·{" "}
-                      {t.owner_kind === "group" ? "Group" : "Comedian"}
-                    </span>
-                  </td>
-                  <td className="px-2 py-2 text-xs whitespace-nowrap">
-                    {t.first_at
-                      ? `${day(t.first_at)} – ${day(t.last_at)}`
-                      : "No dates yet"}
-                  </td>
-                  <td className="px-2 py-2 text-right">
-                    {t.shows}
-                    <span className="block text-xs text-radar-purple/70">
-                      {t.upcoming} upcoming
-                    </span>
-                  </td>
-                  <td className="px-2 py-2 text-right">{t.countries}</td>
-                  <td className="px-2 py-2">
-                    {t.missing_ticket > 0 ? (
-                      <Tag tone="pink">{t.missing_ticket} missing</Tag>
-                    ) : (
-                      <Tag tone="outline">OK</Tag>
-                    )}
-                  </td>
-                  <td className="px-2 py-2">{contentStatusTag(t.status)}</td>
-                  <td className="px-2 py-1">
-                    <span className="flex items-center justify-end gap-1">
-                      <StatusForm
-                        kind="tour"
-                        id={t.id}
-                        status={t.status}
-                        ret={ret}
-                        name={t.name}
-                      />
-                      {t.status === "published" && (
-                        <a
-                          href={`/tours/${t.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={iconBtn}
-                          aria-label={`Open ${t.name}`}
-                          title="Open the public page"
-                        >
-                          <ExternalIcon />
-                        </a>
-                      )}
-                      <Link
-                        href={`/admin/shows/tours/${t.id}/edit`}
-                        className={iconBtn}
-                        aria-label={`Edit ${t.name}`}
-                        title="Edit all details"
-                      >
-                        <LinkPending><EditIcon /></LinkPending>
-                      </Link>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
+    <>
+      <Overview data={data} link={link} />
+      <div
+        className={`grid grid-cols-[minmax(0,1fr)] gap-6 ${picked ? "2xl:grid-cols-[minmax(0,1fr)_380px] 2xl:items-start" : ""}`}
+      >
+        <section
+          aria-labelledby="list"
+          className={`${card} flex min-w-0 flex-col gap-4`}
+        >
+          <h2 id="list" className="sr-only">
+            Tours
+          </h2>
+          <SimpleFilters
+            tab="tours"
+            q={q}
+            status={status}
+            link={link}
+            placeholder="Tour, comedian or group"
+          />
+          {tours.length === 0 ? (
+            <p className="text-radar-purple/80">
+              {q || status ? "No tours match these filters." : "No tours yet."}
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-4">
+              {tours.map((t, i) => {
+                const dates = byTour.get(t.id) ?? [];
+                return (
+                  <TourBox
+                    key={t.id}
+                    t={t}
+                    dates={dates}
+                    open={i === 0 || t.id === editId || dates.some((d) => d.id === picked?.id)}
+                    editing={t.id === editId}
+                    ret={ret}
+                    here={here}
+                    pickedId={picked?.id}
+                  />
+                );
+              })}
+            </ul>
+          )}
+        </section>
+        {picked && (
+          <ShowPanel key={picked.id} s={picked} ret={ret} close={here()} />
+        )}
+      </div>
+    </>
   );
 }
+
 
 async function PodcastsTab({ sp, link }: Ctx) {
   const q = one(sp.q).slice(0, 80);
@@ -1324,7 +1487,7 @@ async function Content({
   return (
     <>
       {msg && (
-        ["saved", "created", "declined", "venue_saved"].includes(msgKey) ? (
+        ["saved", "created", "declined", "venue_saved", "tour_saved", "tour_poster"].includes(msgKey) ? (
           <SuccessNote>{msg}</SuccessNote>
         ) : (
           <ErrorNote>{msg}</ErrorNote>

@@ -5,12 +5,12 @@ type ShowLike = { zone: "local" | "outbound" | "inbound"; status: string; group_
 
 /** Type badge on a comedian's show: WITH [GROUP] · ON TOUR · LINEUP · SOLO (sold out wins). */
 export function comedianShowBadge(show: ShowLike, groups: { id: string; name: string }[]): BadgeInfo {
-  if (show.status === "sold_out") return { label: "Sold out", tone: "purple" };
+  if (show.status === "sold_out") return { label: "Sold out", tone: "purple", icon: "soldout" };
   const group = groups.find((g) => (show.group_ids ?? []).includes(g.id));
-  if (group) return { label: `With ${group.name}`, tone: "yellow" };
-  if (show.zone === "outbound") return { label: "On tour", tone: "pink" };
-  if (show.performer_count > 1) return { label: "Lineup", tone: "purple" };
-  return { label: "Solo", tone: "purple" };
+  if (group) return { label: `With ${group.name}`, tone: "yellow", icon: "group" };
+  if (show.zone === "outbound") return { label: "On tour", tone: "pink", icon: "tour" };
+  if (show.performer_count > 1) return { label: "Lineup", tone: "purple", icon: "lineup" };
+  return { label: "Solo", tone: "purple", icon: "solo" };
 }
 
 /** True when any show falls between `from` (inclusive) and `to` (exclusive). */

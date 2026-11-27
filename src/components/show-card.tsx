@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ShowRow } from "@/lib/data/types";
 import { formatShowDateLine } from "@/lib/dates";
 import { cardBadge, performerHref, showHref, type BadgeInfo } from "@/lib/show-display";
-import { Badge } from "./badge";
+import { CardPill } from "./badge";
 import { InfoIcon } from "./icons";
 import { CoverImage } from "./placeholder-image";
 import { TicketButton } from "./ticket-button";
@@ -16,18 +16,29 @@ export function ShowCard({ show, now, badge: override }: { show: ShowRow; now: D
 
   return (
     <article className="relative flex items-center gap-3 rounded-2xl bg-radar-plum p-3 md:flex-col md:items-stretch md:gap-0 md:overflow-hidden md:rounded-card md:p-0">
-      <CoverImage
-        src={show.poster_url}
-        alt=""
-        iconSize={40}
-        className="h-[72px] w-[72px] shrink-0 rounded-xl md:h-40 md:w-full md:rounded-none"
-      />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5 md:gap-1.5 md:px-[18px] md:pt-4 md:pb-[18px]">
+      <div className="relative shrink-0">
+        <CoverImage
+          src={show.poster_url}
+          alt=""
+          iconSize={40}
+          className="h-[72px] w-[72px] rounded-xl md:h-40 md:w-full md:rounded-none"
+        />
         {badge && (
-          <div className="hidden md:block">
-            <Badge tone={badge.tone}>{badge.label}</Badge>
-          </div>
+          <>
+            <span className="absolute bottom-1 left-1 max-w-[64px] md:hidden">
+              <CardPill tone={badge.tone} icon={badge.icon} tiny>
+                {badge.label}
+              </CardPill>
+            </span>
+            <span className="absolute top-2.5 left-2.5 hidden max-w-[calc(100%-20px)] md:block">
+              <CardPill tone={badge.tone} icon={badge.icon}>
+                {badge.label}
+              </CardPill>
+            </span>
+          </>
         )}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 md:gap-1.5 md:px-[18px] md:pt-4 md:pb-[18px]">
         <p
           className={`text-xs font-extrabold tracking-wide md:text-label ${
             show.status === "sold_out" ? "text-lavender-text md:text-spotlight-yellow" : "text-spotlight-yellow"

@@ -1,7 +1,7 @@
 /** Admin Shows and tours (spec 11.5 item 4): tabs, filters and labels. */
 
 export const SHOW_TABS = [
-  { value: "shows", label: "Shows" },
+  { value: "shows", label: "Single shows" },
   { value: "tours", label: "Tours" },
   { value: "podcasts", label: "Podcasts" },
   { value: "venues", label: "Venues" },
