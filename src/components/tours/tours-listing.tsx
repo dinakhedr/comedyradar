@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "../badge";
 import { SearchIcon } from "../icons";
-import { CoverImage } from "../placeholder-image";
+import { PosterImage } from "../placeholder-image";
 import { FilterSheet, NavSelect, type NavOption } from "../shows/nav-controls";
 import { getToursListing, type TourCountry, type TourListItem } from "@/lib/data/tours";
 import { formatMonthRange, formatShowDate } from "@/lib/dates";
@@ -45,8 +45,9 @@ function TourGridCard({ tour }: { tour: TourListItem }) {
 
   return (
     <article className="flex flex-col overflow-hidden rounded-[18px] bg-radar-plum md:rounded-card">
-      <CoverImage
-        src={tour.poster_url ?? tour.owner_photo_url}
+      <PosterImage
+        src={tour.poster_url}
+        fallback={tour.owner_photo_url}
         alt=""
         tone="deep"
         iconSize={48}

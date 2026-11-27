@@ -7,7 +7,7 @@ import { findAnyPerformer } from "@/lib/data/admin-create";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { slugify } from "@/lib/profile-forms";
 import { photoError, text, UUID } from "@/lib/profile-server";
-import { insertShow, performerHome, placeShow, publishShow, savePerformers, uploadPoster, type Db, type Performer } from "@/lib/show-server";
+import { insertShow, performerHome, placeShow, publishShow, savePerformers, savePosters, type Db, type Performer } from "@/lib/show-server";
 import type { ShowErrors } from "@/lib/show-forms";
 import { createClient } from "@/lib/supabase/server";
 import { checkTour, type TourDateInput, type TourErrors, type TourSame } from "@/lib/tour-forms";
@@ -18,7 +18,7 @@ const ADMIN_TOUR_STATUSES = ["published", "pending", "draft", "archived"] as con
 
 export type TourState = {
   message?: string;
-  errors?: TourErrors & { poster?: string };
+  errors?: TourErrors & { poster?: string; poster_tall?: string };
   dateErrors?: ShowErrors[];
   attempt?: number;
   input?: { name: string; description: string } & TourSame;
@@ -87,9 +87,14 @@ async function storeTour(form: FormData, accountId: string, admin: boolean): Pro
   const names = new Map(((cityRows ?? []) as { id: string; name: string }[]).map((c) => [c.id, c.name]));
 
   const checked = checkTour(tourInput, dates, same, { now: new Date(), cityName: (id) => names.get(id) ?? null, needDates: !tourId && importIds.length === 0 });
+  // Two posters: wide (everywhere) and tall (the tour page). Both optional.
   const { file, error: posterErr } = photoError(form, "poster");
-  if (!checked.values || !checked.performer || posterErr) {
-    return fail({ errors: { ...checked.errors, ...(posterErr ? { poster: posterErr } : {}) }, dateErrors: checked.dateErrors });
+  const { file: tallFile, error: tallErr } = photoError(form, "poster_tall");
+  if (!checked.values || !checked.performer || posterErr || tallErr) {
+    return fail({
+      errors: { ...checked.errors, ...(posterErr ? { poster: posterErr } : {}), ...(tallErr ? { poster_tall: tallErr } : {}) },
+      dateErrors: checked.dateErrors,
+    });
   }
 
   // The owner must be one of the profiles this account manages (spec 11.4 item 8); the super admin may pick any.
@@ -136,10 +141,7 @@ async function storeTour(form: FormData, accountId: string, admin: boolean): Pro
     if (!id) return fail({ message: "We couldn't save the tour. Please try again." });
   }
 
-  if (file) {
-    const url = await uploadPoster(supabase, performer, `tour-${id}`, file);
-    if (url) await supabase.from("tours").update({ poster_url: url }).eq("id", id);
-  }
+  await savePosters(supabase, form, "tours", id, performer, `tour-${id}`, file, tallFile);
 
   // 2. Each new date is its own show on the tour (spec 11.4 item 8).
   const home = await performerHome(supabase, performer);

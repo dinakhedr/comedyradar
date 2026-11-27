@@ -51,6 +51,7 @@ export type EditableShow = {
   age_rating: string | null;
   good_to_know: string[];
   poster_url: string | null;
+  poster_tall_url: string | null;
   status: "draft" | "pending" | "published" | "sold_out" | "cancelled";
   signal: string;
   signal_request: string | null;
@@ -67,7 +68,7 @@ export async function getEditableShow(id: string): Promise<EditableShow | null> 
     .from("shows")
     .select(
       "id, slug, title, description, starts_at, doors_at, city_id, venue_id, ticket_url, price_min, price_max, currency, language, " +
-        "age_rating, good_to_know, poster_url, status, signal, signal_request, tour_id, " +
+        "age_rating, good_to_know, poster_url, poster_tall_url, status, signal, signal_request, tour_id, " +
         "show_performers(comedian_id, group_id, billing_order, link_status, comedians(name), comedy_groups(name))",
     )
     .eq("id", id)

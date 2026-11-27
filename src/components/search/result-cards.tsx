@@ -5,7 +5,7 @@ import { formatShowDate } from "@/lib/dates";
 import { plural } from "@/lib/search";
 import { Badge } from "../badge";
 import { ChevronRight } from "../icons";
-import { CoverImage } from "../placeholder-image";
+import { CoverImage, PosterImage } from "../placeholder-image";
 
 function groupLine(g: SearchGroup): string {
   const parts = [];
@@ -113,8 +113,10 @@ export function TourResult({ tour }: { tour: TourRow }) {
       href={`/tours/${tour.slug}`}
       className="group flex items-center gap-3.5 rounded-[18px] bg-radar-plum p-3 md:gap-6 md:rounded-card md:p-5"
     >
-      <CoverImage
-        src={tour.poster_url ?? tour.owner_photo_url}
+      <PosterImage
+        src={tour.poster_url}
+        fallback={tour.owner_photo_url}
+        phoneCrop
         alt=""
         iconSize={36}
         className="h-[72px] w-[72px] shrink-0 rounded-xl md:h-[110px] md:w-[180px] md:rounded-2xl"

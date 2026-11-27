@@ -70,7 +70,7 @@ function ShowSkeleton() {
 }
 
 /**
- * The show poster, never cropped: the box follows the poster's own shape.
+ * The tall show poster (or the only one), never cropped: the box follows the poster's own shape.
  * A very tall poster is capped at 4:5 (125% of the box width) and the space
  * left at the sides shows a soft blurred copy of the same poster.
  */
@@ -329,7 +329,7 @@ function eventJsonLd(show: ShowDetail) {
     eventStatus: status,
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     url: `${SITE_URL}/shows/${show.slug}`,
-    ...(show.poster_url ? { image: [show.poster_url] } : {}),
+    ...(show.poster_url ? { image: [...new Set([show.poster_url, show.poster_tall_url].filter(Boolean))] } : {}),
     ...(show.description ? { description: show.description } : {}),
     location: {
       "@type": "Place",
@@ -415,7 +415,7 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
       )}
 
       <section className={`${container} grid gap-5 pb-8 md:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] md:items-start md:gap-10 md:pb-14`}>
-        <ShowPoster src={show.poster_url} title={show.title} cancelled={cancelled} />
+        <ShowPoster src={show.poster_tall_url} title={show.title} cancelled={cancelled} />
 
         <div className="flex flex-col gap-3.5 md:gap-[18px]">
           <div className="flex flex-wrap gap-1.5 md:gap-2">

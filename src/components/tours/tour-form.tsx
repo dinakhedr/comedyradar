@@ -9,6 +9,7 @@ import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fie
 import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { CloseIcon, EditIcon } from "@/components/icons";
 import { MemberPicker } from "@/components/profiles/create-form";
+import { PosterFields } from "@/components/shows/poster-fields";
 import { Field } from "@/components/shows/show-form";
 import { TourCard } from "@/components/tour-card";
 import type { ManagedProfile } from "@/lib/dashboard";
@@ -65,7 +66,8 @@ export function TourForm({
   const [performer, setPerformer] = useState(tour?.performer ?? defaultPerformer ?? (profiles.length === 1 ? pkey(profiles[0]) : ""));
   const [name, setName] = useState(tour?.name ?? "");
   const [description, setDescription] = useState(tour?.description ?? "");
-  const [poster, setPoster] = useState<string | null>(tour?.poster_url ?? null);
+  // The card preview shows the wide poster, or the tall one if that is all there is.
+  const [poster, setPoster] = useState<string | null>(tour?.poster_url ?? tour?.poster_tall_url ?? null);
   const nextKey = useRef(1);
   const [rows, setRows] = useState<Row[]>(() => [blank(0)]);
   const [paste, setPaste] = useState("");
@@ -76,9 +78,6 @@ export function TourForm({
   useEffect(() => {
     if (focusDates) datesRef.current?.scrollIntoView({ block: "start" });
   }, [focusDates]);
-  useEffect(() => () => {
-    if (poster?.startsWith("blob:")) URL.revokeObjectURL(poster);
-  }, [poster]);
 
   const byCountry = useMemo(() => {
     const m = new Map<string, CityOption[]>();
@@ -142,7 +141,7 @@ export function TourForm({
   // Publish checklist (spec 11.4 item 8).
   const total = (tour?.dates.length ?? 0) + filled.length + imports.size;
   const checklist = [
-    { ok: !!name.trim() && !!poster, label: "Name and poster" },
+    { ok: !!name.trim() && !!poster, label: "Name and a poster" },
     { ok: total > 0, label: "At least one date" },
     { ok: total > 0 && filled.every((r) => r.ticket_status !== "on_sale" || !!r.ticket_url.trim()), label: "Ticket links for dates on sale" },
     { ok: filled.every((r) => !!r.venue_id), label: "Venues" },
@@ -187,22 +186,13 @@ export function TourForm({
           <Field label="Description" error={e.description} optional hint="Shown on the tour page and on each date.">
             {(id, d) => <textarea id={id} name="description" rows={4} maxLength={2000} value={description} onChange={(ev) => setDescription(ev.target.value)} aria-describedby={d} className={`${inputCls} py-3`} />}
           </Field>
-          <Field label="Poster" error={e.poster} optional hint="Portrait 4:5 works best (for example 1080 × 1350). JPG, PNG or WebP, up to 10 MB.">
-            {(id, d) => (
-              <input
-                id={id}
-                name="poster"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                aria-describedby={d}
-                onChange={(ev) => {
-                  const f = ev.target.files?.[0];
-                  if (f) setPoster(URL.createObjectURL(f));
-                }}
-                className="max-w-full text-base file:mr-3 file:min-h-11 file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-4 file:font-extrabold file:text-radar-purple"
-              />
-            )}
-          </Field>
+          <PosterFields
+            page="tour"
+            wide={tour?.poster_url ?? null}
+            tall={tour?.poster_tall_url ?? null}
+            errors={{ poster: e.poster, poster_tall: e.poster_tall }}
+            onChange={({ wide, tall }) => setPoster(wide ?? tall)}
+          />
         </section>
 
         {/* 3. Tour dates */}

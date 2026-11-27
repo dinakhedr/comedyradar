@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { TourRow } from "@/lib/data/types";
 import { formatMonthRange } from "@/lib/dates";
 import { Badge } from "./badge";
-import { CoverImage } from "./placeholder-image";
+import { PosterImage } from "./placeholder-image";
 
 /** One card per tour (not per show), with "View tour". No prices. */
 export function TourCard({ tour }: { tour: TourRow }) {
@@ -13,8 +13,9 @@ export function TourCard({ tour }: { tour: TourRow }) {
 
   return (
     <article className="flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-[18px] bg-radar-plum md:w-auto md:rounded-card">
-      <CoverImage
-        src={tour.poster_url ?? tour.owner_photo_url}
+      <PosterImage
+        src={tour.poster_url}
+        fallback={tour.owner_photo_url}
         alt=""
         tone="purple"
         iconSize={48}

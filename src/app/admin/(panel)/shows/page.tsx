@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TALL_GUIDE, WIDE_GUIDE } from "@/lib/posters";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -80,7 +81,7 @@ const MSG: Record<string, string> = {
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
   venue_saved: "Venue saved.",
-  tour_saved: "Tour saved. Its dates use the new name and poster.",
+  tour_saved: "Tour saved. Its dates use the new name and posters.",
   tour_poster: "Done. The ticked dates now show the tour poster.",
   tour_bad_name: "Please give the tour a name (up to 120 characters).",
   tour_bad_poster: "The poster must be a JPG, PNG or WebP image, up to 10 MB.",
@@ -979,28 +980,38 @@ function TourBox({
               className={`${inputCls} min-h-11`}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor={`tp-${t.id}`} className={labelCls}>
-              New tour poster{" "}
-              <span className="font-bold text-radar-purple/60">(optional)</span>
-            </label>
-            <input
-              id={`tp-${t.id}`}
-              name="poster"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="min-h-11 text-sm file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-3 file:font-extrabold file:text-radar-purple"
-            />
-          </div>
+          {(
+            [
+              ["poster", "tp", "New wide poster", WIDE_GUIDE],
+              ["poster_tall", "tt", "New tall poster", TALL_GUIDE],
+            ] as const
+          ).map(([field, pre, label, guide]) => (
+            <div key={field} className="flex flex-col gap-1">
+              <label htmlFor={`${pre}-${t.id}`} className={labelCls}>
+                {label} <span className="font-bold text-radar-purple/60">(optional)</span>
+              </label>
+              <input
+                id={`${pre}-${t.id}`}
+                name={field}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-describedby={`${pre}-g-${t.id}`}
+                className="min-h-11 text-sm file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-3 file:font-extrabold file:text-radar-purple"
+              />
+              <span id={`${pre}-g-${t.id}`} className="text-[12px] text-radar-purple/70">
+                {guide}
+              </span>
+            </div>
+          ))}
           <SubmitButton
             className={`${yellowBtn} h-11 w-11 shrink-0 px-0!`}
-            aria-label="Save the tour name and poster"
+            aria-label="Save the tour name and posters"
             title="Save"
           >
             <SaveIcon />
           </SubmitButton>
           <p className="basis-full text-sm text-radar-purple/75">
-            The name and poster go on all {count} at once.{" "}
+            The name and posters go on all {count} at once.{" "}
             {own > 0
               ? `${own === 1 ? "1 date has" : `${own} dates have`} their own poster and keep it.`
               : "A date with its own poster keeps it."}{" "}

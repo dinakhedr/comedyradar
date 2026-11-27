@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { TourRow } from "@/lib/data/types";
 import { formatMonthRange, formatShowDate } from "@/lib/dates";
 import { Badge } from "./badge";
-import { CoverImage } from "./placeholder-image";
+import { PosterImage } from "./placeholder-image";
 
 /** Wide tour card for profile pages: poster, name, counts, city chips, next date, "View tour". */
 export function TourWideCard({ tour, label }: { tour: TourRow; label: string }) {
@@ -19,8 +19,9 @@ export function TourWideCard({ tour, label }: { tour: TourRow; label: string }) 
 
   return (
     <article className="overflow-hidden rounded-[18px] bg-radar-plum md:grid md:grid-cols-[360px_minmax(0,1fr)] md:rounded-[24px]">
-      <CoverImage
-        src={tour.poster_url ?? tour.owner_photo_url}
+      <PosterImage
+        src={tour.poster_url}
+        fallback={tour.owner_photo_url}
         alt=""
         iconSize={56}
         tone="deep"

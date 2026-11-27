@@ -4,7 +4,7 @@ import { formatShowDateLine } from "@/lib/dates";
 import { cardBadge, performerHref, showHref, type BadgeInfo } from "@/lib/show-display";
 import { CardPill } from "./badge";
 import { InfoIcon } from "./icons";
-import { CoverImage } from "./placeholder-image";
+import { PosterImage } from "./placeholder-image";
 import { TicketButton } from "./ticket-button";
 
 /** Coming up card: a grid card on desktop, a compact row on mobile. No prices. */
@@ -17,10 +17,11 @@ export function ShowCard({ show, now, badge: override }: { show: ShowRow; now: D
   return (
     <article className="relative flex items-center gap-3 rounded-2xl bg-radar-plum p-3 md:flex-col md:items-stretch md:gap-0 md:overflow-hidden md:rounded-card md:p-0">
       <div className="relative shrink-0">
-        <CoverImage
+        <PosterImage
           src={show.poster_url}
           alt=""
           iconSize={40}
+          phoneCrop
           className="h-[72px] w-[72px] rounded-xl md:h-40 md:w-full md:rounded-none"
         />
         {badge && (

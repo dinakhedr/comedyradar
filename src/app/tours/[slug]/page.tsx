@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { Badge } from "@/components/badge";
 import { Avatar, LineupCard } from "@/components/lineup-card";
 import { NewsletterBand } from "@/components/newsletter-band";
-import { CoverImage } from "@/components/placeholder-image";
+import { PosterImage } from "@/components/placeholder-image";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -103,6 +103,8 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
   const more = await getMoreTours(tour.id, 3);
   const owner = tour.owner;
   const ownerHref = owner.kind === "group" ? `/groups/${owner.slug}` : `/comedians/${owner.slug}`;
+  // The tall poster goes on this page when there is one; otherwise the wide banner.
+  const tall = tour.poster_tall_url;
 
   return (
     <>
@@ -124,16 +126,27 @@ async function TourContent({ params }: { params: PageProps<"/tours/[slug]">["par
 
       {/* Tour header card */}
       <section className={`${container} pb-8 md:pb-14`}>
-        <div className="overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px]">
-          {/* Wide banner on top, details below (Dina picked option B, 2026-11-27) */}
-          <CoverImage
-            src={tour.poster_url ?? owner.photo_url}
-            alt={`Poster for ${tour.name}`}
-            iconSize={88}
-            tone="deep"
-            className="aspect-[16/9] w-full object-center md:max-h-[480px]"
-          />
-          <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:items-start md:gap-8 md:px-11 md:py-9">
+        <div
+          className={`overflow-hidden rounded-[22px] bg-radar-plum md:rounded-[28px] ${tall ? "md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:items-start" : ""}`}
+        >
+          {tall ? (
+            // A tall tour poster sits beside the details, like on a show page (Dina, 2026-11-27).
+            <PosterImage src={tall} alt={`Poster for ${tour.name}`} eager className="aspect-[4/5] w-full" />
+          ) : (
+            // Wide banner on top, details below (Dina picked option B, 2026-11-27). Shown whole, never cropped.
+            <PosterImage
+              src={tour.poster_url}
+              fallback={owner.photo_url}
+              alt={`Poster for ${tour.name}`}
+              iconSize={88}
+              tone="deep"
+              eager
+              className="aspect-[16/9] w-full md:max-h-[480px]"
+            />
+          )}
+          <div
+            className={`grid gap-5 p-4 md:items-start md:gap-8 md:px-11 md:py-9 ${tall ? "" : "md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"}`}
+          >
             <div className="flex flex-col gap-3.5 md:gap-4">
               <div className="flex flex-wrap gap-1.5 md:gap-2">
                 <Badge tone={owner.kind === "group" ? "yellow" : "pink"} size="md">

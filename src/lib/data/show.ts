@@ -1,5 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { pickPosters } from "@/lib/posters";
 import { createPublicClient } from "@/lib/supabase/public";
 import { LISTING_CACHE, SHOW_COLUMNS } from "./home";
 import type { ShowRow } from "./types";
@@ -24,7 +25,10 @@ export type ShowDetail = {
   price_max: number | null;
   currency: string;
   ticket_url: string | null;
+  /** The wide poster (cards, sharing). */
   poster_url: string | null;
+  /** The tall poster for the show page (the wide one if there is no tall one). */
+  poster_tall_url: string | null;
   language: string | null;
   age_rating: string | null;
   city: { name: string; slug: string; country_name: string; country_code: string };
@@ -39,7 +43,7 @@ export type Performer = (Person & { kind: "group"; members: Person[] }) | (Perso
 type Raw = Omit<ShowDetail, "city" | "venue" | "tour" | "performers"> & {
   cities: { name: string; slug: string; countries: { name: string; code: string } };
   venues: { name: string; slug: string; address: string | null; map_url: string | null; capacity: number | null; status: string } | null;
-  tours: { name: string; slug: string; status: string; poster_url: string | null } | null;
+  tours: { name: string; slug: string; status: string; poster_url: string | null; poster_tall_url: string | null } | null;
   show_performers: {
     billing_order: number;
     comedians: (Person & { status: string }) | null;
@@ -70,9 +74,9 @@ export async function getShow(slug: string): Promise<ShowDetail | null> {
     .from("shows")
     .select(
       "id, slug, title, description, starts_at, ends_at, doors_at, good_to_know, status, zone, signal, created_at, updated_at, price_min, " +
-        "price_max, currency, ticket_url, poster_url, language, age_rating, " +
+        "price_max, currency, ticket_url, poster_url, poster_tall_url, language, age_rating, " +
         "cities!inner(name, slug, countries!inner(name, code)), " +
-        "venues(name, slug, address, map_url, capacity, status), tours(name, slug, status, poster_url), " +
+        "venues(name, slug, address, map_url, capacity, status), tours(name, slug, status, poster_url, poster_tall_url), " +
         `show_performers(billing_order, comedians(${PERSON}), ` +
         `comedy_groups(${PERSON}, group_members(display_order, left_on, comedians(${PERSON}))))`,
     )
@@ -103,10 +107,12 @@ export async function getShow(slug: string): Promise<ShowDetail | null> {
 
   const { cities, venues, tours, show_performers: _sp, ...rest } = raw;
   void _sp;
+  // A tour date without its own posters uses the tour's; one poster is used for both places.
+  const posters = pickPosters(rest, pub(tours) ? tours : null);
   return {
     ...rest,
-    // A tour date without its own poster uses the tour's poster.
-    poster_url: rest.poster_url ?? (pub(tours) ? tours.poster_url : null),
+    poster_url: posters.wide,
+    poster_tall_url: posters.tall,
     city: { name: cities.name, slug: cities.slug, country_name: cities.countries.name, country_code: cities.countries.code },
     venue: pub(venues) ? { name: venues.name, slug: venues.slug, address: venues.address, map_url: venues.map_url, capacity: venues.capacity } : null,
     tour: pub(tours) ? { name: tours.name, slug: tours.slug } : null,

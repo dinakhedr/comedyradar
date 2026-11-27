@@ -7,14 +7,14 @@ import { findAnyPerformer } from "@/lib/data/admin-create";
 import { getMyProfiles, requireAccount } from "@/lib/data/dashboard";
 import { photoError, text, UUID } from "@/lib/profile-server";
 import { checkShow, type ShowErrors, type ShowInput } from "@/lib/show-forms";
-import { insertShow, performerHome, placeShow, publishShow, savePerformers, uploadPoster } from "@/lib/show-server";
+import { insertShow, performerHome, placeShow, publishShow, savePerformers, savePosters } from "@/lib/show-server";
 import { createClient } from "@/lib/supabase/server";
 
 /** Add, edit and update shows from the creator dashboard (spec 11.4 items 4 and 9). */
 
 const ADMIN_SHOW_STATUSES = ["published", "pending", "draft", "sold_out", "cancelled"] as const;
 
-export type ShowState = { message?: string; errors?: ShowErrors & { poster?: string }; attempt?: number; input?: Partial<ShowInput> };
+export type ShowState = { message?: string; errors?: ShowErrors & { poster?: string; poster_tall?: string }; attempt?: number; input?: Partial<ShowInput> };
 
 const FIELDS: (keyof ShowInput)[] = [
   "performer",
@@ -61,9 +61,16 @@ async function storeShow(form: FormData, accountId: string, admin: boolean): Pro
 
   const input = Object.fromEntries(FIELDS.map((k) => [k, text(form.get(k))])) as ShowInput;
   const { values, errors } = checkShow(input, { now: new Date(), allowPast: !!showId });
+  // Two posters: wide (everywhere) and tall (the show page). Both optional.
   const { file, error: posterErr } = photoError(form, "poster");
-  if (!values || posterErr) {
-    return { errors: { ...errors, ...(posterErr ? { poster: posterErr } : {}) }, message: "Please check the highlighted fields.", attempt: Date.now(), input };
+  const { file: tallFile, error: tallErr } = photoError(form, "poster_tall");
+  if (!values || posterErr || tallErr) {
+    return {
+      errors: { ...errors, ...(posterErr ? { poster: posterErr } : {}), ...(tallErr ? { poster_tall: tallErr } : {}) },
+      message: "Please check the highlighted fields.",
+      attempt: Date.now(),
+      input,
+    };
   }
 
   // The performer must be one of the profiles this account manages (spec 11.4 item 4); the super admin may pick any.
@@ -120,10 +127,7 @@ async function storeShow(form: FormData, accountId: string, admin: boolean): Pro
 
   await savePerformers(supabase, accountId, id, performer, form.getAll("member_ids").map(String), new Set(form.getAll("keep_lineup").map(String)));
 
-  if (file) {
-    const url = await uploadPoster(supabase, performer, `show-${id}`, file);
-    if (url) await supabase.from("shows").update({ poster_url: url }).eq("id", id);
-  }
+  await savePosters(supabase, form, "shows", id, performer, `show-${id}`, file, tallFile);
 
   if (admin) {
     const picked = ADMIN_SHOW_STATUSES.find((x) => x === text(form.get("status")));
