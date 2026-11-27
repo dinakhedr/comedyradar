@@ -77,7 +77,8 @@ export async function createProfile(_prev: CreateState, form: FormData): Promise
   const { values, errors } = readProfileForm(form, kind);
 
   const { file, error: photoErr } = photoError(form, "photo");
-  const { file: coverFile, error: coverErr } = photoError(form, "cover");
+  // Only groups have a cover photo (comedians' was removed, Dina 2026-11-27).
+  const { file: coverFile, error: coverErr } = kind === "group" ? photoError(form, "cover") : { file: null, error: null };
   if (!values || photoErr || coverErr) {
     return {
       errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}), ...(coverErr ? { cover: coverErr } : {}) },

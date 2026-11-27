@@ -36,7 +36,8 @@ export async function updateProfile(_prev: EditState, form: FormData): Promise<E
   if (!p) return { message: NOT_ADMIN };
   const { values, errors } = readProfileForm(form, p.kind);
   const { file, error: photoErr } = photoError(form, "photo");
-  const { file: coverFile, error: coverErr } = photoError(form, "cover");
+  // Only groups have a cover photo (comedians' was removed, Dina 2026-11-27).
+  const { file: coverFile, error: coverErr } = p.kind === "group" ? photoError(form, "cover") : { file: null, error: null };
   if (!values || photoErr || coverErr) {
     return {
       errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}), ...(coverErr ? { cover: coverErr } : {}) },
@@ -58,7 +59,7 @@ export async function updateProfile(_prev: EditState, form: FormData): Promise<E
     const url = await uploadImage(supabase, p.kind === "group" ? "groups" : "comedians", p.id, "cover", coverFile);
     if (!url) return { errors: { cover: "We couldn't upload the cover. Please try again." }, message: "Please check the highlighted fields." };
     update.cover_url = url;
-  } else if (form.get("remove_cover") === "on") {
+  } else if (p.kind === "group" && form.get("remove_cover") === "on") {
     update.cover_url = null;
   }
 
