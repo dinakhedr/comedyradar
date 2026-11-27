@@ -875,4 +875,39 @@ set local request.jwt.claim.aal = '';
 select pg_temp.check(public.admin_ticket_sites() is null, 'only the super admin sees ticket clicks per site');
 reset role;
 
+-- Error log (Activity log, Errors tab).
+set local request.jwt.claim.sub = '';
+set local request.jwt.claim.aal = '';
+set local role anon;
+select public.log_site_error('{"source":"render","message":"Boom","digest":"2434855665","path":"/shows"}'::jsonb);
+select public.log_site_error('{"source":"render","message":"Boom","digest":"2434855665","path":"/shows"}'::jsonb);
+select public.log_site_error('{"source":"hack","message":"x"}'::jsonb);
+do $$ begin
+  perform 1 from public.site_errors;
+  raise exception 'FAILED: anon read the error log';
+exception when insufficient_privilege then
+  raise notice 'ok - anon cannot read the error log';
+end $$;
+reset role;
+select pg_temp.check((select count(*) = 1 and sum(times) = 2 and min(account_id::text) is null from public.site_errors),
+  'a visitor''s error is logged once and counted twice; unknown sources are ignored');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+set local request.jwt.claim.aal = '';
+select public.log_site_error('{"source":"browser","message":"Hydration failed","path":"/comedians"}'::jsonb);
+select pg_temp.check(public.admin_site_errors('', '', 'all', 100) is null, 'only the super admin reads the error log');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select jsonb_array_length(r -> 'rows') = 2 and (r ->> 'last24')::int = 2 from (select public.admin_site_errors('', '', '7d', 100) r) x),
+  'the super admin sees the error log');
+select pg_temp.check((select (r -> 'rows' -> 0 ->> 'path') = '/shows' and (r -> 'rows' -> 0 ->> 'times')::int = 2
+                      from (select public.admin_site_errors('2434855665', 'server', 'all', 100) r) x),
+  'the super admin finds an error by its reference');
+select pg_temp.check((select (r -> 'rows' -> 0 ->> 'who') is not null and jsonb_array_length(r -> 'rows') = 1
+                      from (select public.admin_site_errors('', 'browser', 'today', 100) r) x),
+  'a signed-in person''s browser error shows who it was');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;

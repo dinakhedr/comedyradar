@@ -17,7 +17,8 @@ import {
   typeLabel,
   type ActivityEntry,
 } from "@/lib/admin-activity";
-import { getAdminActivity } from "@/lib/data/admin";
+import { getAdminActivity, getSiteErrorCount } from "@/lib/data/admin";
+import { ErrorsTab } from "./errors-tab";
 import { UUID } from "@/lib/profile-server";
 
 export const metadata: Metadata = { title: "Activity log" };
@@ -137,13 +138,11 @@ function Entry({ e }: { e: ActivityEntry }) {
   );
 }
 
-async function Content({
-  searchParams,
+async function ChangesTab({
+  sp,
 }: {
-  searchParams: PageProps<"/admin/activity">["searchParams"];
+  sp: Record<string, string | string[] | undefined>;
 }) {
-  await connection();
-  const sp = await searchParams;
   const q = one(sp.q).slice(0, 80);
   const who = UUID.test(one(sp.who)) ? one(sp.who) : "";
   const type = activityTypeOf(one(sp.type));
@@ -344,6 +343,54 @@ async function Content({
           </p>
         ))}
     </section>
+  );
+}
+
+/** Tabs: Changes (who changed what) and Errors (website errors). */
+async function Content({
+  searchParams,
+}: {
+  searchParams: PageProps<"/admin/activity">["searchParams"];
+}) {
+  await connection();
+  const sp = await searchParams;
+  const tab = one(sp.tab) === "errors" ? "errors" : "changes";
+  const errors24 = await getSiteErrorCount();
+  const tabs = [
+    { value: "changes", label: "Changes", href: "/admin/activity" },
+    { value: "errors", label: "Errors", href: "/admin/activity?tab=errors" },
+  ] as const;
+  return (
+    <>
+      <nav
+        aria-label="Activity log tabs"
+        className="-mx-1 flex gap-1 overflow-x-auto pb-1"
+      >
+        {tabs.map((t) => {
+          const active = t.value === tab;
+          return (
+            <Link
+              key={t.value}
+              href={t.href}
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-button px-3 text-[15px] font-extrabold ${active ? "bg-stage-black text-white" : "bg-white hover:bg-lavender"}`}
+            >
+              {t.label}
+              {t.value === "errors" && errors24 > 0 && (
+                <span
+                  className="rounded-full bg-[#d12a1f] px-2 text-xs leading-5 text-white"
+                  title="Errors in the last 24 hours"
+                >
+                  <span className="sr-only">, in the last 24 hours: </span>
+                  {errors24}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      {tab === "errors" ? <ErrorsTab sp={sp} /> : <ChangesTab sp={sp} />}
+    </>
   );
 }
 

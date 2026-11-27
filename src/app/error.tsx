@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { ErrorScreen } from "@/components/error-screen";
+import { reportBrowserError } from "@/lib/report-browser-error";
 
 /** Error page for any page of the site (spec 7.6 item 2). */
 export default function Error({
@@ -13,6 +14,7 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error);
+    reportBrowserError(error);
   }, [error]);
   return (
     <>
