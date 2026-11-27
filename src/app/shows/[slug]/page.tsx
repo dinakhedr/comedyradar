@@ -14,6 +14,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { ticketsClickEvent } from "@/lib/analytics-events";
+import { withReferral } from "@/lib/ticket-links";
 import { formatShowDate } from "@/lib/dates";
 import { getRelatedShows, getShow, type Person, type ShowDetail } from "@/lib/data/show";
 import type { ShowRow } from "@/lib/data/types";
@@ -85,7 +86,7 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
   return (
     <TrackedLink
       id={id}
-      href={show.ticket_url}
+      href={withReferral(show.ticket_url, show.slug)}
       target="_blank"
       rel="noopener"
       data-ticket-show={show.id}
@@ -95,6 +96,7 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
         performer: show.performers[0]?.name,
         city: show.city.name,
         zone: show.zone,
+        ticketUrl: show.ticket_url,
       })}
       className={`block rounded-[14px] bg-spotlight-yellow text-center font-extrabold text-radar-purple hover:bg-white ${
         compact ? "px-[18px] py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"

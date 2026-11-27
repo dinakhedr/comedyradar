@@ -276,7 +276,7 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                     ) : (
                       <TrackedLink
                         href={link.href}
-                        {...(link.external ? { target: "_blank", rel: "noopener" } : {})}
+                        {...(link.external ? { target: "_blank", rel: "noopener", "data-ticket-show": show.id } : {})}
                         className="relative z-10 text-[13px] font-extrabold text-spotlight-yellow hover:text-white"
                         event={ticketsClickEvent({
                           id: show.id,
@@ -284,6 +284,7 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                           performer: member.name,
                           city: show.city_name,
                           zone: show.zone,
+                          ticketUrl: show.ticket_url,
                         })}
                       >
                         Get tickets ›

@@ -1,5 +1,6 @@
 import type { BadgeTone } from "@/components/badge";
 import type { ShowRow } from "@/lib/data/types";
+import { withReferral } from "@/lib/ticket-links";
 
 /** The small icon on a card pill (see CardPill). */
 export type PillIcon = "new" | "strong" | "fading" | "soldout" | "group" | "visiting" | "place" | "tour" | "lineup" | "solo";
@@ -65,6 +66,6 @@ export function performerHref(show: ShowRow): string | null {
 
 /** Where "Get tickets" goes: the official seller, or the show page when there is no link. */
 export function ticketLink(show: ShowRow): { href: string; external: boolean } {
-  if (show.ticket_url) return { href: show.ticket_url, external: true };
+  if (show.ticket_url) return { href: withReferral(show.ticket_url, show.slug), external: true };
   return { href: showHref(show), external: false };
 }

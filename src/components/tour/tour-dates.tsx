@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { trackTicketsClick } from "@/lib/analytics";
 import type { TourDate } from "@/lib/data/tour";
+import { withReferral } from "@/lib/ticket-links";
 import { countryCounts, dateTile } from "@/lib/tour-page";
 import { Badge } from "../badge";
 import { InfoIcon } from "../icons";
@@ -20,12 +21,12 @@ function Action({ date, performer }: { date: TourDate; performer: string }) {
   if (date.status === "published" && date.ticket_url) {
     return (
       <a
-        href={date.ticket_url}
+        href={withReferral(date.ticket_url, date.slug)}
         target="_blank"
         rel="noopener"
         data-ticket-show={date.id}
         className={`${cls} bg-spotlight-yellow text-radar-purple hover:bg-white`}
-        onClick={() => trackTicketsClick({ id: date.id, title: date.title, performer, city: date.city_name, zone: date.zone })}
+        onClick={() => trackTicketsClick({ id: date.id, title: date.title, performer, city: date.city_name, zone: date.zone, ticketUrl: date.ticket_url })}
       >
         Get tickets
       </a>
