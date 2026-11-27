@@ -271,13 +271,13 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
           </form>
 
           {kind === "comedian" && (
-            <nav aria-label="Jump to letter" className="flex flex-wrap items-center gap-0.5">
-              <span className="w-11 shrink-0 text-[13px] font-extrabold tracking-[1px] text-radar-purple/70">A–Z</span>
+            <nav aria-label="Jump to letter" className="-mx-1 flex flex-nowrap items-center gap-0.5 overflow-x-auto px-1 pb-1">
+              <span className="w-10 shrink-0 text-[13px] font-extrabold tracking-[1px] text-radar-purple/70">A–Z</span>
               <Link
                 href={link({ letter: "" })}
                 scroll={false}
                 aria-current={!letter ? "true" : undefined}
-                className={`inline-flex h-11 items-center rounded-[10px] px-2.5 text-sm font-extrabold ${!letter ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
+                className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-2 text-sm font-extrabold ${!letter ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
               >
                 All
               </Link>
@@ -288,12 +288,12 @@ async function Content({ kind, searchParams }: { kind: Kind; searchParams: Promi
                     href={link({ letter: l })}
                     scroll={false}
                     aria-current={letter === l ? "true" : undefined}
-                    className={`inline-flex h-11 min-w-8 items-center justify-center rounded-[10px] text-sm font-extrabold ${letter === l ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
+                    className={`inline-flex h-11 min-w-7 flex-1 shrink-0 items-center justify-center rounded-[10px] text-sm font-extrabold ${letter === l ? "bg-spotlight-yellow" : "hover:bg-lavender"}`}
                   >
                     {l}
                   </Link>
                 ) : (
-                  <span key={l} aria-hidden="true" className="inline-flex h-11 min-w-8 items-center justify-center text-sm font-bold text-radar-purple/30">
+                  <span key={l} aria-hidden="true" className="inline-flex h-11 min-w-7 flex-1 shrink-0 items-center justify-center text-sm font-bold text-radar-purple/30">
                     {l}
                   </span>
                 ),
