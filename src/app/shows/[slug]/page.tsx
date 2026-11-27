@@ -3,7 +3,7 @@ import Link from "next/link";
 import { contactHref } from "@/lib/contact";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Badge } from "@/components/badge";
+import { CardPill } from "@/components/badge";
 import { Avatar, LineupCard } from "@/components/lineup-card";
 import { NewsletterBand } from "@/components/newsletter-band";
 import { CoverImage } from "@/components/placeholder-image";
@@ -104,7 +104,7 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
       <span
         id={id}
         className={`block rounded-[14px] border-2 border-plum-line text-center font-extrabold text-lavender-text ${
-          compact ? "px-4 py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"
+          compact ? "shrink-0 whitespace-nowrap px-4 py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"
         }`}
       >
         {text}
@@ -127,7 +127,7 @@ function TicketCta({ show, id, compact = false }: { show: ShowDetail; id?: strin
         ticketUrl: show.ticket_url,
       })}
       className={`block rounded-[14px] bg-spotlight-yellow text-center font-extrabold text-radar-purple hover:bg-white ${
-        compact ? "px-[18px] py-3 text-[15px]" : "p-4 text-[17px] md:text-lg"
+        compact ? "shrink-0 whitespace-nowrap px-[18px] py-3 text-[15px] md:px-7" : "p-4 text-[17px] md:text-lg"
       }`}
     >
       Get tickets
@@ -196,10 +196,10 @@ function DetailsPanel({ show }: { show: ShowDetail }) {
       </div>
       {audience && (
         <div className="flex gap-3">
-          <TicketIcon />
+          <SpeechIcon />
           <div>
             <p className="text-[15px] font-extrabold md:text-base">{audience}</p>
-            <p className="hidden text-small text-lavender-text md:block">Language and age set by the organiser</p>
+            <p className="text-[13px] text-lavender-text md:text-small">As listed by the organiser</p>
           </div>
         </div>
       )}
@@ -207,16 +207,24 @@ function DetailsPanel({ show }: { show: ShowDetail }) {
         <p className="border-t-2 border-plum-line pt-3 text-base">No tickets are on sale for this show.</p>
       ) : (
         <>
-          {price && (
-            <div className="flex items-baseline justify-between gap-3 border-t-2 border-plum-line pt-3 md:pt-3.5">
-              <span className="text-[13px] text-lavender-text md:text-small">Tickets</span>
-              <span className="text-[19px] font-extrabold md:text-[22px]">{price}</span>
+          <div className="relative flex items-center justify-between gap-3 rounded-[14px] border-2 border-dashed border-plum-line bg-plum-deep py-3 pl-3.5 pr-3 md:px-4 md:py-3.5">
+            <span aria-hidden="true" className="absolute -left-[9px] top-1/2 size-4 -translate-y-1/2 rounded-full bg-radar-plum" />
+            <span aria-hidden="true" className="absolute -right-[9px] top-1/2 size-4 -translate-y-1/2 rounded-full bg-radar-plum" />
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-lavender-text">
+                <TicketIcon />
+                Tickets
+              </p>
+              {price && <p className="mt-0.5 whitespace-nowrap text-[15px] font-extrabold md:text-base">{price}</p>}
             </div>
-          )}
-          <TicketCta show={show} id="main-tickets" />
+            <TicketCta show={show} id="main-tickets" compact />
+          </div>
           {show.status === "published" && site && (
-            <p className="text-center text-xs text-lavender-text md:text-[13px]">
-              You will buy tickets on {site}. Opens in a new tab.
+            <p className="flex gap-1.5 text-xs text-lavender-text md:text-[13px]">
+              <InfoIcon />
+              <span>
+                Tickets are sold by <span className="font-bold text-white">{site}</span>. Comedy Radar only lists the show.
+              </span>
             </p>
           )}
         </>
@@ -420,9 +428,9 @@ async function ShowContent({ params }: { params: PageProps<"/shows/[slug]">["par
         <div className="flex flex-col gap-3.5 md:gap-[18px]">
           <div className="flex flex-wrap gap-1.5 md:gap-2">
             {badges.map((b) => (
-              <Badge key={b.label} tone={b.tone} size="md">
+              <CardPill key={b.label} tone={b.tone} icon={b.icon} large>
                 {b.label}
-              </Badge>
+              </CardPill>
             ))}
           </div>
           <h1
@@ -541,10 +549,28 @@ function PinIcon() {
   );
 }
 
+function SpeechIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-0.5 shrink-0 text-spotlight-yellow">
+      <path d="M4 5 H16 A2 2 0 0 1 18 7 V13 A2 2 0 0 1 16 15 H10 L6 19 V15 H4 A2 2 0 0 1 2 13 V7 A2 2 0 0 1 4 5 Z M6 9 H14 M6 12 H11" />
+    </svg>
+  );
+}
+
 function TicketIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" className="mt-0.5 shrink-0 text-spotlight-yellow">
-      <path d="M4 6 H20 V18 H4 Z M8 10 H16 M8 14 H13" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-spotlight-yellow">
+      <path d="M3 8 V6 H21 V8 A2 2 0 0 0 21 12 A2 2 0 0 0 21 16 V18 H3 V16 A2 2 0 0 0 3 12 A2 2 0 0 0 3 8 Z" />
+      <path d="M14 6 V18" strokeDasharray="2 2.5" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" className="mt-px shrink-0">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11 V16.5 M12 7.8 V7.9" />
     </svg>
   );
 }

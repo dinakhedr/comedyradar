@@ -19,16 +19,21 @@ export function showBadges(
 ): BadgeInfo[] {
   const badges: BadgeInfo[] = [];
   if (show.status === "cancelled") badges.push({ label: "Cancelled", tone: "pink" });
-  else if (show.status === "sold_out") badges.push({ label: "Sold out", tone: "pink" });
+  else if (show.status === "sold_out") badges.push({ label: "Sold out", tone: "pink", icon: "soldout" });
   else {
+    // Same short words and icons as the show cards (Dina, 2026-11-27).
     const signal = displaySignal(show.signal, show.created_at, now);
-    if (signal === "strong") badges.push({ label: "Strong signal", tone: "pink" });
-    if (signal === "fading") badges.push({ label: "Fading signal · Last tickets", tone: "pink" });
-    if (signal === "new") badges.push({ label: "New signal", tone: "yellow" });
+    if (signal === "strong") badges.push({ label: "Strong", tone: "pink", icon: "strong" });
+    if (signal === "fading") badges.push({ label: "Fading", tone: "pink", icon: "fading" });
+    if (signal === "new") badges.push({ label: "New", tone: "yellow", icon: "new" });
   }
-  const type = performers[0]?.kind === "group" ? "Group show" : performers.length > 1 ? "Lineup" : performers.length ? "Solo" : null;
-  if (type) badges.push({ label: type, tone: "plum" });
-  badges.push({ label: show.zone === "outbound" ? "On tour" : show.zone === "inbound" ? "Visiting" : "In Egypt", tone: "plum" });
+  const kind = performers[0]?.kind;
+  if (kind === "group") badges.push({ label: "Group show", tone: "plum", icon: "group" });
+  else if (performers.length > 1) badges.push({ label: "Lineup", tone: "plum", icon: "lineup" });
+  else if (performers.length) badges.push({ label: "Solo", tone: "plum", icon: "solo" });
+  if (show.zone === "outbound") badges.push({ label: "On tour", tone: "plum", icon: "tour" });
+  else if (show.zone === "inbound") badges.push({ label: "Visiting", tone: "plum", icon: "visiting" });
+  else badges.push({ label: "In Egypt", tone: "plum", icon: "place" });
   return badges;
 }
 

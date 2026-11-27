@@ -15,7 +15,7 @@ describe("showBadges", () => {
   const base = { status: "published" as const, zone: "local" as const, signal: "fading" as const, created_at: "2026-01-01" };
   it("signal, type and zone", () => {
     expect(showBadges(base, [{ kind: "group" }], now).map((b) => b.label)).toEqual([
-      "Fading signal · Last tickets",
+      "Fading",
       "Group show",
       "In Egypt",
     ]);
@@ -25,6 +25,13 @@ describe("showBadges", () => {
       (b) => b.label,
     );
     expect(labels).toEqual(["Cancelled", "Lineup", "Visiting"]);
+  });
+  it("uses the card icons", () => {
+    expect(showBadges({ ...base, signal: "new", created_at: "2026-11-25", zone: "outbound" }, [{ kind: "comedian" }], now).map((b) => b.icon)).toEqual([
+      "new",
+      "solo",
+      "tour",
+    ]);
   });
 });
 
