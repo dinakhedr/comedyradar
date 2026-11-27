@@ -14,7 +14,7 @@ import { checkTour, type TourDateInput, type TourErrors, type TourSame } from "@
 
 /** Add and edit tours, and put shows on a tour (spec 11.4 items 8, 9 and 10). */
 
-const ADMIN_TOUR_STATUSES = ["published", "pending", "draft"] as const;
+const ADMIN_TOUR_STATUSES = ["published", "pending", "draft", "archived"] as const;
 
 export type TourState = {
   message?: string;
@@ -54,7 +54,7 @@ export async function saveTour(_prev: TourState, form: FormData): Promise<TourSt
  */
 export async function adminSaveTour(_prev: TourState, form: FormData): Promise<TourState> {
   const account = await requireSuperAdmin();
-  form.delete("tour_id");
+  // With a tour_id the super admin edits any tour (Admin > Shows and tours > Tours > pencil).
   form.delete("import_ids");
   return storeTour(form, account.id, true);
 }
@@ -188,14 +188,20 @@ async function storeTour(form: FormData, accountId: string, admin: boolean): Pro
   }
 
   if (admin) {
-    const status = ADMIN_TOUR_STATUSES.find((x) => x === text(form.get("status"))) ?? "published";
-    if (status !== "draft") {
-      await supabase.from("tours").update({ status }).eq("id", id);
+    const picked = ADMIN_TOUR_STATUSES.find((x) => x === text(form.get("status")));
+    // Archived is only for tours that exist.
+    const status = picked && (tourId || picked !== "archived") ? picked : "published";
+    if (tourId || status !== "draft") {
+      const { error } = await supabase.from("tours").update({ status }).eq("id", id);
+      if (error) console.error("admin tour status", error.message);
+    }
+    // New dates follow the tour (an archived tour's new dates stay drafts).
+    if (status === "published" || status === "pending") {
       for (const m of made) await supabase.from("shows").update({ status: status === "published" && m.soldOut ? "sold_out" : status }).eq("id", m.id);
     }
     updateTag("shows");
     updateTag("tours");
-    redirect(`/admin/shows?tab=tours&msg=${failed.length ? "tour_some_failed" : "created"}`);
+    redirect(`/admin/shows?tab=tours&msg=${failed.length ? (tourId ? "tour_dates_failed" : "tour_some_failed") : tourId ? "saved" : "created"}`);
   }
 
   // 4. Publish: the tour and its draft dates go live (or to review for unverified profiles).

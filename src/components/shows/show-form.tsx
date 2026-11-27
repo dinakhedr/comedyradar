@@ -346,7 +346,13 @@ export function ShowForm({
         </section>
 
         {admin ? (
-          <AdminSaveRow noun="show" pending={pending} />
+          <AdminSaveRow
+            noun="show"
+            pending={pending}
+            editing={!!show}
+            defaultStatus={show?.status}
+            extraStatuses={show ? [{ value: "sold_out", label: "Sold out" }, { value: "cancelled", label: "Cancelled" }] : []}
+          />
         ) : (
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <SubmitButton type="submit" name="intent" value="publish" disabled={pending} className={`${yellowBtn} min-h-12 px-6`}>

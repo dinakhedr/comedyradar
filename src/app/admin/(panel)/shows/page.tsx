@@ -69,6 +69,7 @@ const MSG: Record<string, string> = {
   saved: "Saved.",
   created: "Added.",
   tour_some_failed: "The tour was added, but some dates could not be saved. Open the tour to check its dates.",
+  tour_dates_failed: "The tour was saved, but some new dates could not be saved. Open the tour to check its dates.",
   declined: "Signal change request declined. The signal stays as it is.",
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
@@ -194,6 +195,14 @@ function ShowPanel({
             <ExternalIcon />
           </a>
         )}
+        <Link
+          href={`/admin/shows/${s.id}/edit`}
+          className={iconBtn}
+          aria-label="Edit all details"
+          title="Edit all details"
+        >
+          <LinkPending><EditIcon /></LinkPending>
+        </Link>
         <Link href={close} className={iconBtn} aria-label="Close" title="Close">
           <CloseIcon size={20} />
         </Link>
@@ -716,10 +725,10 @@ async function ShowsTab({ sp, link }: Ctx) {
                                   </Link>
                                 )}
                               <Link
-                                href={here({ s: r.id })}
+                                href={`/admin/shows/${r.id}/edit`}
                                 className={iconBtn}
-                                aria-label={`Manage ${r.title}`}
-                                title="Manage"
+                                aria-label={`Edit ${r.title}`}
+                                title="Edit all details"
                               >
                                 <LinkPending><EditIcon /></LinkPending>
                               </Link>
@@ -908,6 +917,14 @@ async function ToursTab({ sp, link }: Ctx) {
                           <ExternalIcon />
                         </a>
                       )}
+                      <Link
+                        href={`/admin/shows/tours/${t.id}/edit`}
+                        className={iconBtn}
+                        aria-label={`Edit ${t.name}`}
+                        title="Edit all details"
+                      >
+                        <LinkPending><EditIcon /></LinkPending>
+                      </Link>
                     </span>
                   </td>
                 </tr>
