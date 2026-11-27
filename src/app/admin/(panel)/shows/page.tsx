@@ -8,6 +8,7 @@ import {
   declineSignalRequest,
   quickEditTour,
   setContentStatus,
+  setShowHomepage,
   setShowSignal,
   setShowStatus,
   setTicketLink,
@@ -28,6 +29,7 @@ import {
   CloseIcon,
   EditIcon,
   ExternalIcon,
+  HomeIcon,
   StarIcon,
   SaveIcon,
 } from "@/components/icons";
@@ -80,6 +82,8 @@ const MSG: Record<string, string> = {
   declined: "Signal change request declined. The signal stays as it is.",
   none_picked: "Tick at least one show first.",
   bad_url: "That ticket link is not a web link. It must start with https://",
+  home_on: "Done. The show is back on the homepage.",
+  home_off: "Done. The show is off the homepage. It still shows on the Shows page.",
   venue_saved: "Venue saved.",
   tour_saved: "Tour saved. Its dates use the new name and posters.",
   tour_poster: "Done. The ticked dates now show the tour poster.",
@@ -618,6 +622,24 @@ function DatesTable({
                         <StarIcon />
                       </Link>
                     )}
+                    <form action={setShowHomepage}>
+                      <Hidden ret={ret} more={{ id: r.id, on: r.on_homepage === false ? "1" : "0" }} />
+                      <SubmitButton
+                        className={iconBtn}
+                        aria-label={
+                          r.on_homepage === false
+                            ? `Put ${r.title} on the homepage`
+                            : `Take ${r.title} off the homepage`
+                        }
+                        title={
+                          r.on_homepage === false
+                            ? "Not on the homepage. Click to put it in Coming up"
+                            : "On the homepage (Coming up). Click to take it off"
+                        }
+                      >
+                        <HomeIcon filled={r.on_homepage !== false} />
+                      </SubmitButton>
+                    </form>
                     <Link
                       href={`/admin/shows/${r.id}/edit`}
                       className={iconBtn}
