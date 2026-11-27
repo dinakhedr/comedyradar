@@ -207,10 +207,10 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
 
       <section aria-labelledby="links" className={`${card} flex flex-col gap-4`}>
         <h2 id="links" className="text-heading font-extrabold">
-          {group ? "Website and social links" : "Social links"}
+          Website and social links
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {group && <TextField label="Website" name="website" placeholder="https://…" maxLength={300} error={e.website} defaultValue={p.website_url ?? ""} />}
+          <TextField label="Website" name="website" placeholder="https://…" maxLength={300} error={e.website} defaultValue={p.website_url ?? ""} />
           {SOCIAL_FIELDS.map((f) => (
             <TextField key={f.key} label={f.label} name={f.key} placeholder={f.placeholder} maxLength={300} error={e[f.key]} defaultValue={socials[f.key] ?? ""} />
           ))}

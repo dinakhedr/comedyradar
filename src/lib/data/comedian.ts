@@ -65,7 +65,7 @@ export async function getComedian(slug: string): Promise<ComedianDetail | null> 
   const { data, error } = await db
     .from("comedians")
     .select(
-      "id, name, slug, bio, photo_url, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
+      "id, name, slug, bio, photo_url, website_url, instagram_url, tiktok_url, youtube_url, facebook_url, countries(name), " +
         `group_members(left_on, comedy_groups(${PERSON}, group_members(display_order, left_on, comedians(${PERSON})))), ` +
         "podcast_hosts(podcasts(id, name, slug, description, cover_url, apple_podcasts_url, spotify_url, anghami_url, " +
         `podu_url, youtube_url, is_active, status, podcast_hosts(display_order, comedians(${PERSON}))))`,
