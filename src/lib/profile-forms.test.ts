@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkClaim, checkPodcast, checkProfile, cleanHandle, cleanSocial, nextSlug, slugify } from "./profile-forms";
+import { checkClaim, checkPodcast, checkProfile, cleanHandle, cleanSocial, cleanWebsite, nextSlug, slugify } from "./profile-forms";
 
 const base = {
   kind: "comedian" as const,
@@ -86,5 +86,22 @@ describe("checkPodcast", () => {
     const ok = checkPodcast({ name: "Estry Mni", description: " ", links: { ...empty, podu_url: "podu.me/estry", spotify_url: "https://open.spotify.com/show/abc" } });
     expect(ok.values).toMatchObject({ podu_url: "https://podu.me/estry", spotify_url: "https://open.spotify.com/show/abc", description: null });
     expect(checkPodcast({ name: "Estry Mni", description: "", links: { ...empty, anghami_url: "https://evil.com/x" } }).errors.anghami_url).toBeTruthy();
+  });
+});
+
+describe("group website", () => {
+  it("cleans a website link", () => {
+    expect(cleanWebsite("")).toBeNull();
+    expect(cleanWebsite(" highfive.com ")).toBe("https://highfive.com/");
+    expect(cleanWebsite("http://highfive.com/about")).toBe("http://highfive.com/about");
+    expect(cleanWebsite("not a link")).toBe("invalid");
+    expect(cleanWebsite("localhost")).toBe("invalid");
+  });
+
+  it("is saved for groups only", () => {
+    const g = { name: "High Five", name_ar: "", bio: "", country: "", socials: { instagram: "", tiktok: "", youtube: "", facebook: "" }, styles: [], language: "" };
+    expect(checkProfile({ ...g, kind: "group", website: "highfive.com" }).values?.website_url).toBe("https://highfive.com/");
+    expect(checkProfile({ ...g, kind: "group", website: "nope" }).errors.website).toBeTruthy();
+    expect(checkProfile({ ...g, kind: "comedian", website: "highfive.com" }).values).not.toHaveProperty("website_url");
   });
 });

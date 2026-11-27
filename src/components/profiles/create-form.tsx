@@ -334,9 +334,10 @@ export function CreateProfileForm({ kind, countries, admin = false }: { kind: Pr
 
       <section aria-labelledby="links" className={`${card} flex flex-col gap-4`}>
         <h2 id="links" className="text-heading font-extrabold">
-          Social links
+          {group ? "Website and social links" : "Social links"}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
+          {group && <TextField label="Website" name="website" placeholder="https://…" maxLength={300} error={e.website} defaultValue={v.website} />}
           {SOCIAL_FIELDS.map((f) => (
             <TextField key={f.key} label={f.label} name={f.key} placeholder={f.placeholder} maxLength={300} error={e[f.key]} defaultValue={v[f.key]} />
           ))}

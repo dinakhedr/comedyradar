@@ -71,13 +71,6 @@ function groupJsonLd(g: GroupDetail) {
   };
 }
 
-function memberLine(m: GroupDetail["members"][number]): string {
-  const parts = [];
-  if (m.solo_count > 0) parts.push(`${m.solo_count} solo ${m.solo_count === 1 ? "show" : "shows"}`);
-  if (m.hosts_podcast) parts.push("podcast");
-  return parts.join(" · ") || "Comedian";
-}
-
 async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["params"] }) {
   const { slug } = await params;
   const g = await getGroup(slug);
@@ -212,7 +205,6 @@ async function GroupContent({ params }: { params: PageProps<"/groups/[slug]">["p
                   <Avatar person={m} ring={i % 2 === 0 ? "yellow" : "pink"} size="h-16 w-16 md:h-[120px] md:w-[120px] md:border-4" />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5 md:items-center md:gap-1.5">
                     <span className="text-base font-extrabold group-hover:text-spotlight-yellow md:text-lg">{m.name}</span>
-                    <span className="text-[13px] text-lavender-text">{memberLine(m)}</span>
                     <span className="hidden text-sm font-extrabold text-spotlight-yellow md:inline">View profile ›</span>
                   </span>
                   <span aria-hidden="true" className="text-xl font-extrabold text-spotlight-yellow md:hidden">

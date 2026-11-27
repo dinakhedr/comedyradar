@@ -32,6 +32,7 @@ export function readProfileForm(form: FormData, kind: ProfileKind) {
     bio: text(form.get("bio")),
     country: text(form.get("country")),
     socials,
+    website: text(form.get("website")),
     styles: form.getAll("styles").map(String),
     language: text(form.get("language")),
   });

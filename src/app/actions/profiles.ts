@@ -62,7 +62,7 @@ export type CreateState = {
 
 function echo(form: FormData): NonNullable<CreateState["input"]> {
   const fields: Record<string, string> = {};
-  for (const k of ["name", "name_ar", "bio", "country", "instagram", "tiktok", "youtube", "facebook", "language", "new_members", "status"]) {
+  for (const k of ["name", "name_ar", "bio", "country", "instagram", "tiktok", "youtube", "facebook", "website", "language", "new_members", "status"]) {
     fields[k] = text(form.get(k)).slice(0, 2000);
   }
   const ids = form.getAll("member_ids").map(String);

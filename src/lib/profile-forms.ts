@@ -68,6 +68,21 @@ export function cleanSocial(kind: Social, raw: string): string | null | "invalid
   }
 }
 
+/** A website as a full https URL ("example.com" works too), null when empty, or "invalid". */
+export function cleanWebsite(raw: string): string | null | "invalid" {
+  let v = raw.trim();
+  if (!v) return null;
+  if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+  if (v.length > 300) return "invalid";
+  try {
+    const u = new URL(v);
+    if (!/^https?:$/.test(u.protocol) || !u.hostname.includes(".") || /\s/.test(raw.trim())) return "invalid";
+    return u.toString();
+  } catch {
+    return "invalid";
+  }
+}
+
 export type ProfileInput = {
   kind: ProfileKind;
   name: string;
@@ -75,6 +90,8 @@ export type ProfileInput = {
   bio: string;
   country: string;
   socials: Record<Social, string>;
+  /** Groups only. */
+  website?: string;
   styles: string[];
   language: string;
 };
@@ -88,11 +105,12 @@ export type ProfileValues = {
   tiktok_url: string | null;
   youtube_url: string | null;
   facebook_url: string | null;
+  website_url?: string | null;
   styles?: GroupStyle[];
   performing_language?: GroupLanguage | null;
 };
 
-export type ProfileErrors = Partial<Record<"name" | "name_ar" | "bio" | "country" | Social | "language", string>>;
+export type ProfileErrors = Partial<Record<"name" | "name_ar" | "bio" | "country" | Social | "website" | "language", string>>;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -114,6 +132,8 @@ export function checkProfile(f: ProfileInput): { values?: ProfileValues; errors:
     if (v === "invalid") errors[key] = `Please paste a ${label} link${key === "instagram" || key === "tiktok" ? " or @handle" : ""}.`;
     else links[key] = v;
   }
+  const website = f.kind === "group" ? cleanWebsite(f.website ?? "") : null;
+  if (website === "invalid") errors.website = "Please paste a website link, like https://example.com.";
   const styles = GROUP_STYLES.map((s) => s.value).filter((v) => f.styles.includes(v));
   const language = f.language ? GROUP_LANGUAGES.find((l) => l.value === f.language)?.value : null;
   if (f.language && !language) errors.language = "Please pick a language from the list.";
@@ -129,7 +149,7 @@ export function checkProfile(f: ProfileInput): { values?: ProfileValues; errors:
       tiktok_url: links.tiktok,
       youtube_url: links.youtube,
       facebook_url: links.facebook,
-      ...(f.kind === "group" ? { styles, performing_language: language ?? null } : {}),
+      ...(f.kind === "group" ? { website_url: website, styles, performing_language: language ?? null } : {}),
     },
   };
 }

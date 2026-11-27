@@ -1,9 +1,10 @@
 import type { ComponentType } from "react";
 import type { Socials } from "@/lib/data/group";
 import { IconLink } from "./icon-link";
-import { FacebookIcon, InstagramIcon, TikTokIcon, YouTubeIcon } from "./icons";
+import { FacebookIcon, GlobeIcon, InstagramIcon, TikTokIcon, YouTubeIcon } from "./icons";
 
 const LINKS: [keyof Socials, string, ComponentType<{ className?: string; size?: number }>][] = [
+  ["website_url", "the web", GlobeIcon],
   ["instagram_url", "Instagram", InstagramIcon],
   ["tiktok_url", "TikTok", TikTokIcon],
   ["youtube_url", "YouTube", YouTubeIcon],
