@@ -29,17 +29,17 @@ async function adminProfile(form: FormData) {
 
 const NOT_ADMIN = "Only an admin of this profile can change it.";
 
-export type EditState = { ok?: boolean; message?: string; errors?: ProfileErrors & { photo?: string; cover?: string }; attempt?: number };
+export type EditState = { ok?: boolean; message?: string; errors?: ProfileErrors & { photo?: string }; attempt?: number };
 
 export async function updateProfile(_prev: EditState, form: FormData): Promise<EditState> {
   const p = await adminProfile(form);
   if (!p) return { message: NOT_ADMIN };
   const { values, errors } = readProfileForm(form, p.kind);
   const { file, error: photoErr } = photoError(form, "photo");
-  const { file: coverFile, error: coverErr } = photoError(form, "cover");
-  if (!values || photoErr || coverErr) {
+  // Profiles have no cover photo any more (Dina, 2026-11-27).
+  if (!values || photoErr) {
     return {
-      errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}), ...(coverErr ? { cover: coverErr } : {}) },
+      errors: { ...errors, ...(photoErr ? { photo: photoErr } : {}) },
       message: "Please check the highlighted fields.",
     };
   }
@@ -53,13 +53,6 @@ export async function updateProfile(_prev: EditState, form: FormData): Promise<E
     update.photo_url = url;
   } else if (form.get("remove_photo") === "on") {
     update.photo_url = null;
-  }
-  if (coverFile) {
-    const url = await uploadImage(supabase, p.kind === "group" ? "groups" : "comedians", p.id, "cover", coverFile);
-    if (!url) return { errors: { cover: "We couldn't upload the cover. Please try again." }, message: "Please check the highlighted fields." };
-    update.cover_url = url;
-  } else if (form.get("remove_cover") === "on") {
-    update.cover_url = null;
   }
 
   const { data, error } = await supabase.from(table).update(update).eq("id", p.id).select("name, name_ar").single();
