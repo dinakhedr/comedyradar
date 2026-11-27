@@ -8,6 +8,7 @@ export type VenueListItem = {
   logo_url: string | null;
   city: { name: string; slug: string };
   country_name: string;
+  country_code: string;
   upcoming: number;
 };
 

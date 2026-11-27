@@ -9,6 +9,7 @@ const v = (name: string, city: string, upcoming: number): VenueListItem => ({
   logo_url: null,
   city: { name: city, slug: city.toLowerCase() },
   country_name: "Egypt",
+  country_code: "EG",
   upcoming,
 });
 

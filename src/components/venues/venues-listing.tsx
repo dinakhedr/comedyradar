@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { VenueLogo, venuePlace } from "../venue-logo";
+import { flagOf } from "@/lib/countries";
 import { getVenuesListing } from "@/lib/data/venues";
 import { cityChips, filterVenues, type VenueListItem } from "@/lib/venues-list";
 
@@ -22,7 +23,8 @@ function VenueCard({ v }: { v: VenueListItem }) {
       <p className="text-[13px] text-lavender-text md:text-sm">
         {venuePlace(v.area, v.city.name)}
         <br />
-        {v.country_name}
+        {v.country_name}{" "}
+        <span aria-hidden="true">{flagOf(v.country_code)}</span>
       </p>
       <p className={`text-[13px] md:text-sm ${v.upcoming ? "font-extrabold text-spotlight-yellow" : "text-lavender-text"}`}>
         {v.upcoming === 0 ? "No shows right now" : v.upcoming === 1 ? "1 show coming up" : `${v.upcoming} shows coming up`}
