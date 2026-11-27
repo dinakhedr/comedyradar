@@ -127,7 +127,14 @@ async function storeShow(form: FormData, accountId: string, admin: boolean): Pro
 
   await savePerformers(supabase, accountId, id, performer, form.getAll("member_ids").map(String), new Set(form.getAll("keep_lineup").map(String)));
 
-  await savePosters(supabase, form, "shows", id, performer, `show-${id}`, file, tallFile);
+  // Duplicate: the copy keeps the posters of the show it came from (read with the same access rules).
+  const copyFrom = showId ? "" : text(form.get("copy_from"));
+  let copied: { poster_url: string | null; poster_tall_url: string | null } | null = null;
+  if (copyFrom && UUID.test(copyFrom)) {
+    const { data } = await supabase.from("shows").select("poster_url, poster_tall_url").eq("id", copyFrom).maybeSingle();
+    copied = (data as typeof copied) ?? null;
+  }
+  await savePosters(supabase, form, "shows", id, performer, `show-${id}`, file, tallFile, copied);
 
   if (admin) {
     const picked = ADMIN_SHOW_STATUSES.find((x) => x === text(form.get("status")));

@@ -127,6 +127,7 @@ export function ShowForm({
   return (
     <form key={state.attempt ?? 0} action={action} className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start" noValidate>
       {show && <input type="hidden" name="show_id" value={show.id} />}
+      {!show && copy && <input type="hidden" name="copy_from" value={copy.id} />}
       <div className="flex min-w-0 flex-col gap-6">
         <FormMessage message={state.message} />
 
@@ -156,7 +157,7 @@ export function ShowForm({
             </div>
           )}
           <MemberPicker
-            initial={[]}
+            initial={admin && !show && copy ? copy.lineup.map((m) => ({ id: m.id, name: m.name })) : []}
             label="Add comedians to the lineup"
             hint="Tag other comedians on the bill. Those who manage their own page are asked first, and show once they accept."
             listLabel="Comedians to tag"

@@ -27,6 +27,7 @@ import {
 import {
   ChevronDown,
   CloseIcon,
+  CopyIcon,
   EditIcon,
   ExternalIcon,
   HomeIcon,
@@ -648,6 +649,14 @@ function DatesTable({
                       title="Edit all details"
                     >
                       <LinkPending><EditIcon /></LinkPending>
+                    </Link>
+                    <Link
+                      href={`/admin/shows/new?from=${r.id}`}
+                      className={iconBtn}
+                      aria-label={`Duplicate ${r.title}`}
+                      title="Duplicate: a new show with the same details"
+                    >
+                      <LinkPending><CopyIcon /></LinkPending>
                     </Link>
                   </span>
                 </td>
