@@ -3,6 +3,7 @@ import type { ShowRow } from "@/lib/data/types";
 import { formatShowDateLine } from "@/lib/dates";
 import { cardBadge, performerHref, showHref, type BadgeInfo } from "@/lib/show-display";
 import { Badge } from "./badge";
+import { InfoIcon } from "./icons";
 import { CoverImage } from "./placeholder-image";
 import { TicketButton } from "./ticket-button";
 
@@ -55,8 +56,24 @@ export function ShowCard({ show, now, badge: override }: { show: ShowRow; now: D
           </span>
         </p>
         <p className="hidden text-small text-lavender-text md:block">{place}</p>
-        <div className="hidden pt-2 md:mt-auto md:block">
+        <Link
+          href={showHref(show)}
+          aria-label={`More details about ${show.title}`}
+          className="mt-0.5 inline-flex min-h-8 items-center gap-1.5 self-start text-[13px] font-extrabold text-white underline decoration-white/45 underline-offset-[3px] hover:decoration-white md:hidden"
+        >
+          <InfoIcon size={16} />
+          More details
+        </Link>
+        <div className="hidden items-center gap-4 pt-2 md:mt-auto md:flex md:flex-wrap">
           <TicketButton show={show} />
+          <Link
+            href={showHref(show)}
+            aria-label={`More details about ${show.title}`}
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm font-extrabold text-white underline decoration-white/45 underline-offset-[3px] hover:decoration-white"
+          >
+            <InfoIcon size={18} />
+            More details
+          </Link>
         </div>
       </div>
       <div className="shrink-0 md:hidden">

@@ -218,6 +218,17 @@ export function AlertIcon({ className, size = 20 }: IconProps) {
   );
 }
 
+/** A circled "i": the "More details" link on show cards. */
+export function InfoIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11 V16.5" />
+      <path d="M12 7.5 V7.6" />
+    </svg>
+  );
+}
+
 /* Menu icons for the admin and dashboard sidebars. */
 
 export function HomeIcon({ className, size = 20 }: IconProps) {
