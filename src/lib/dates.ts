@@ -67,7 +67,8 @@ function addCairoDays(p: Parts, days: number): Date {
  * - tonight: now until the end of today (Cairo).
  * - weekend: the Egyptian weekend, Friday and Saturday (Cairo). During the
  *   weekend it starts now; on other days it starts on Friday at midnight.
- * - month: now until the end of the current calendar month (Cairo).
+ * - month ("This month"): the next 30 days, so shows early next month still
+ *   appear at the end of a month. Now until midnight (Cairo) 30 days after today.
  */
 export function whenRange(when: WhenFilter, now: Date): { from: Date; to: Date } {
   const p = cairoParts(now);
@@ -83,8 +84,7 @@ export function whenRange(when: WhenFilter, now: Date): { from: Date; to: Date }
     const daysToFriday = 5 - p.weekday;
     return { from: addCairoDays(p, daysToFriday), to: addCairoDays(p, daysToFriday + 2) };
   }
-  const nextMonth = p.month === 12 ? { y: p.year + 1, m: 1 } : { y: p.year, m: p.month + 1 };
-  return { from: now, to: cairoMidnight(nextMonth.y, nextMonth.m, 1) };
+  return { from: now, to: addCairoDays(p, 31) };
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

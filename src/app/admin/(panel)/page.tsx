@@ -27,7 +27,7 @@ async function Content() {
   const o = await getAdminOverview();
   if (!o) return <p className={card}>The overview could not be loaded. Please reload the page.</p>;
   const waiting = o.queue.reduce((n, q) => n + q.count, 0);
-  const autoFill = Math.max(0, 5 - o.spotlight_now.length);
+  const emptySlides = Math.max(0, 5 - o.spotlight_now.length);
 
   return (
     <>
@@ -84,9 +84,13 @@ async function Content() {
             )}
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="font-extrabold">Auto-filled Spotlight slides ({autoFill})</h3>
+            <h3 className="font-extrabold">Empty Spotlight slides ({emptySlides})</h3>
             <p className="text-sm text-radar-purple/75">
-              {autoFill ? `${autoFill} of the 5 homepage slides are filled automatically with the next shows.` : "All 5 slides have a placement."}
+              {o.spotlight_now.length === 0
+                ? "Nothing picked, so the homepage has no Spotlight. Add shows in Spotlight."
+                : emptySlides
+                  ? `${emptySlides} of the 5 slides are empty. Only shows you pick appear.`
+                  : "All 5 slides have a placement."}
             </p>
           </div>
           <div className="flex flex-col gap-1">
@@ -121,11 +125,10 @@ async function Content() {
                 <span className="text-xs text-radar-purple/70">until {day(s.ends_at)}</span>
               </li>
             ))}
-            {Array.from({ length: autoFill }, (_, i) => (
+            {Array.from({ length: emptySlides }, (_, i) => (
               <li key={`auto-${i}`} className="flex items-center gap-3 rounded-button border-2 border-dashed border-radar-purple/20 p-3">
                 <span className="font-display text-xl">{o.spotlight_now.length + i + 1}</span>
-                <span className="flex-1 text-sm text-radar-purple/75">Next upcoming show</span>
-                <Tag tone="outline">Auto fill</Tag>
+                <span className="flex-1 text-sm text-radar-purple/75">Empty slide</span>
               </li>
             ))}
           </ol>
