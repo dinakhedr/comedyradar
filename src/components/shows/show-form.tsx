@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useMemo, useState } from "react";
+import { useActionState, useId, useMemo, useState } from "react";
 import { adminSaveShow, saveShow, type ShowState } from "@/app/actions/shows";
 import { AdminSaveRow } from "@/components/admin/admin-save-row";
 import { errorCls, FormMessage, inputCls, labelCls } from "@/components/auth/fields";
@@ -8,6 +8,7 @@ import { card, outlineBtn, yellowBtn } from "@/components/dashboard/ui";
 import { MemberPicker } from "@/components/profiles/create-form";
 import { PerformerPicker } from "@/components/shows/performer-picker";
 import { ShowCard } from "@/components/show-card";
+import { PosterFields } from "./poster-fields";
 import type { ShowRow } from "@/lib/data/types";
 import type { ManagedProfile } from "@/lib/dashboard";
 import type { CityOption, EditableShow, TourOption, VenueOption } from "@/lib/data/my-shows";
@@ -78,14 +79,11 @@ export function ShowForm({
   const [cityId, setCityId] = useState(src?.city_id ?? "");
   const [venueId, setVenueId] = useState(src?.venue_id ?? "");
   const [ticket, setTicket] = useState(src?.ticket_url ?? "");
-  const [poster, setPoster] = useState<string | null>(src?.poster_url ?? null);
+  // The card preview shows the wide poster, or the tall one if that is all there is.
+  const [poster, setPoster] = useState<string | null>(src?.poster_url ?? src?.poster_tall_url ?? null);
   const [lineup, setLineup] = useState(show?.lineup ?? []);
   // A week from now, for the preview until a date is picked.
   const [placeholderIso] = useState(() => new Date(Date.now() + 7 * 86_400_000).toISOString());
-
-  useEffect(() => () => {
-    if (poster?.startsWith("blob:")) URL.revokeObjectURL(poster);
-  }, [poster]);
 
   const cityVenues = venues.filter((v) => v.city_id === cityId);
   const byCountry = useMemo(() => {
@@ -175,22 +173,13 @@ export function ShowForm({
           <Field label="Description" error={e.description} optional>
             {(id, d) => <textarea id={id} name="description" rows={4} maxLength={2000} defaultValue={back?.description ?? src?.description ?? ""} aria-describedby={d} className={`${inputCls} py-3`} />}
           </Field>
-          <Field label="Poster" error={e.poster} optional hint="Portrait 4:5 works best (for example 1080 × 1350). JPG, PNG or WebP, up to 10 MB.">
-            {(id, d) => (
-              <input
-                id={id}
-                name="poster"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                aria-describedby={d}
-                onChange={(ev) => {
-                  const f = ev.target.files?.[0];
-                  if (f) setPoster(URL.createObjectURL(f));
-                }}
-                className="max-w-full text-base file:mr-3 file:min-h-11 file:rounded-button file:border-2 file:border-radar-purple file:bg-white file:px-4 file:font-extrabold file:text-radar-purple"
-              />
-            )}
-          </Field>
+          <PosterFields
+            page="show"
+            wide={src?.poster_url ?? null}
+            tall={src?.poster_tall_url ?? null}
+            errors={{ poster: e.poster, poster_tall: e.poster_tall }}
+            onChange={({ wide, tall }) => setPoster(wide ?? tall)}
+          />
         </section>
 
         <section aria-labelledby="whenwhere" className={`${card} flex flex-col gap-4`}>

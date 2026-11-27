@@ -119,6 +119,37 @@ export async function uploadPoster(db: Db, performer: Performer, name: string, f
 }
 
 /**
+ * Saves a show's or tour's two posters (Dina, 2026-11-27): uploads the new
+ * wide (`poster`) and tall (`poster_tall`) files, and clears the ones taken
+ * off with Remove. A poster that is not touched stays as it is.
+ */
+export async function savePosters(
+  db: Db,
+  form: FormData,
+  table: "shows" | "tours",
+  id: string,
+  performer: Performer,
+  name: string,
+  wide: File | null,
+  tall: File | null,
+): Promise<void> {
+  const patch: { poster_url?: string | null; poster_tall_url?: string | null } = {};
+  if (form.get("poster_remove") === "1") patch.poster_url = null;
+  if (form.get("poster_tall_remove") === "1") patch.poster_tall_url = null;
+  if (wide) {
+    const url = await uploadPoster(db, performer, name, wide);
+    if (url) patch.poster_url = url;
+  }
+  if (tall) {
+    const url = await uploadPoster(db, performer, `${name}-tall`, tall);
+    if (url) patch.poster_tall_url = url;
+  }
+  if (!Object.keys(patch).length) return;
+  const { error } = await db.from(table).update(patch).eq("id", id);
+  if (error) console.error("posters", error.message);
+}
+
+/**
  * Publishes a draft or pending show: live at once for verified profiles; the
  * database sends the others to review. Returns the status it ends with.
  */

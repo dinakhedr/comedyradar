@@ -1,5 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { pickPosters } from "@/lib/posters";
 import { createPublicClient } from "@/lib/supabase/public";
 import { LISTING_CACHE } from "./home";
 import type { Performer, Person } from "./show";
@@ -26,7 +27,10 @@ export type TourDetail = {
   slug: string;
   name: string;
   description: string | null;
+  /** The wide poster (banner, sharing). */
   poster_url: string | null;
+  /** The tall poster, or null when the tour has only a wide one. */
+  poster_tall_url: string | null;
   owner: Performer;
   dates: TourDate[];
 };
@@ -38,6 +42,7 @@ type Raw = {
   name: string;
   description: string | null;
   poster_url: string | null;
+  poster_tall_url: string | null;
   comedians: RawPerson | null;
   comedy_groups:
     | (RawPerson & { group_members: { display_order: number; left_on: string | null; comedians: RawPerson | null }[] })
@@ -72,7 +77,7 @@ export async function getTour(slug: string): Promise<TourDetail | null> {
   const { data, error } = await db
     .from("tours")
     .select(
-      `id, slug, name, description, poster_url, comedians(${PERSON}), ` +
+      `id, slug, name, description, poster_url, poster_tall_url, comedians(${PERSON}), ` +
         `comedy_groups(${PERSON}, group_members(display_order, left_on, comedians(${PERSON}))), ` +
         "shows(id, slug, title, starts_at, status, zone, signal, created_at, ticket_url, " +
         "cities!inner(name, countries!inner(name, code)), venues(name, status))",
@@ -119,7 +124,18 @@ export async function getTour(slug: string): Promise<TourDetail | null> {
     }))
     .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
 
-  return { id: raw.id, slug: raw.slug, name: raw.name, description: raw.description, poster_url: raw.poster_url, owner, dates };
+  const posters = pickPosters(raw);
+  return {
+    id: raw.id,
+    slug: raw.slug,
+    name: raw.name,
+    description: raw.description,
+    poster_url: posters.wide,
+    // Only a real tall poster changes the tour page layout; a wide-only tour keeps its banner.
+    poster_tall_url: raw.poster_tall_url ? posters.tall : null,
+    owner,
+    dates,
+  };
 }
 
 /** Other tours with upcoming dates, soonest first. */

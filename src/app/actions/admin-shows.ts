@@ -96,8 +96,8 @@ export async function applyTourPoster(form: FormData): Promise<void> {
 }
 
 /**
- * Tours tab > pencil: the tour name and poster, once for the whole tour.
- * Its dates show the tour poster unless they have their own.
+ * Tours tab > pencil: the tour name and its wide and tall posters, once for
+ * the whole tour. Its dates show the tour posters unless they have their own.
  */
 export async function quickEditTour(form: FormData): Promise<void> {
   await requireSuperAdmin();
@@ -106,18 +106,26 @@ export async function quickEditTour(form: FormData): Promise<void> {
   const name = text(form.get("name")).trim();
   if (!name || name.length > 120) return back(form, "tour_bad_name");
   const { file, error } = photoError(form, "poster");
-  if (error) return back(form, "tour_bad_poster");
+  const { file: tallFile, error: tallError } = photoError(form, "poster_tall");
+  if (error || tallError) return back(form, "tour_bad_poster");
 
   let posterUrl: string | null = null;
-  if (file) {
+  let tallUrl: string | null = null;
+  if (file || tallFile) {
     const supabase = await createClient();
     const { data } = await supabase.from("tours").select("comedian_id, group_id").eq("id", id).maybeSingle();
     const t = data as { comedian_id: string | null; group_id: string | null } | null;
     if (!t) return back(form, "error");
     const performer = t.group_id ? { kind: "group" as const, id: t.group_id } : { kind: "comedian" as const, id: t.comedian_id! };
-    posterUrl = await uploadPoster(supabase, performer, `tour-${id}`, file);
-    if (!posterUrl) return back(form, "tour_poster_failed");
+    if (file) {
+      posterUrl = await uploadPoster(supabase, performer, `tour-${id}`, file);
+      if (!posterUrl) return back(form, "tour_poster_failed");
+    }
+    if (tallFile) {
+      tallUrl = await uploadPoster(supabase, performer, `tour-${id}-tall`, tallFile);
+      if (!tallUrl) return back(form, "tour_poster_failed");
+    }
   }
-  const r = await run("admin_update_tour", { p_id: id, p_name: name, p_poster_url: posterUrl });
+  const r = await run("admin_update_tour", { p_id: id, p_name: name, p_poster_url: posterUrl, p_poster_tall_url: tallUrl });
   back(form, r === "ok" ? "tour_saved" : r === "bad_name" ? "tour_bad_name" : "error");
 }

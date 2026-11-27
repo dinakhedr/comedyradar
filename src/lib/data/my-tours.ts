@@ -43,6 +43,7 @@ export type EditableTour = {
   name: string;
   description: string | null;
   poster_url: string | null;
+  poster_tall_url: string | null;
   status: "draft" | "pending" | "published" | "archived";
   performer: string;
   dates: TourDate[];
@@ -59,7 +60,7 @@ export async function getEditableTour(id: string, opts: { anyOwner?: boolean } =
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tours")
-    .select(`id, slug, name, description, poster_url, status, comedian_id, group_id, shows(${DATE_FIELDS})`)
+    .select(`id, slug, name, description, poster_url, poster_tall_url, status, comedian_id, group_id, shows(${DATE_FIELDS})`)
     .eq("id", id)
     .maybeSingle();
   if (error) console.error("getEditableTour", error.message);
@@ -74,6 +75,7 @@ export async function getEditableTour(id: string, opts: { anyOwner?: boolean } =
     name: t.name,
     description: t.description,
     poster_url: t.poster_url,
+    poster_tall_url: t.poster_tall_url,
     status: t.status,
     performer,
     dates: (t.shows ?? []).map(toDate).sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
@@ -126,7 +128,7 @@ export async function getMyTours(f: { tab: TourTab; q: string; kind: "comedian" 
   const [toursRes, statsRes] = await Promise.all([
     supabase
       .from("tours")
-      .select("id, slug, name, poster_url, status, comedian_id, group_id, created_at, comedians(name), comedy_groups(name), shows(starts_at, status, ticket_url, cities(name, country_id))")
+      .select("id, slug, name, poster_url, poster_tall_url, status, comedian_id, group_id, created_at, comedians(name), comedy_groups(name), shows(starts_at, status, ticket_url, cities(name, country_id))")
       .or(or)
       .neq("status", "archived")
       .order("created_at", { ascending: false })
@@ -144,6 +146,7 @@ export async function getMyTours(f: { tab: TourTab; q: string; kind: "comedian" 
     slug: string;
     name: string;
     poster_url: string | null;
+    poster_tall_url: string | null;
     status: ListedTour["status"];
     group_id: string | null;
     comedians: { name: string } | null;
@@ -159,7 +162,7 @@ export async function getMyTours(f: { tab: TourTab; q: string; kind: "comedian" 
       id: t.id,
       slug: t.slug,
       name: t.name,
-      poster_url: t.poster_url,
+      poster_url: t.poster_url ?? t.poster_tall_url,
       status: t.status,
       owner_kind: t.group_id ? "group" : "comedian",
       owner_name: t.comedy_groups?.name ?? t.comedians?.name ?? "",
