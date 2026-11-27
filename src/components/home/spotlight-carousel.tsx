@@ -110,9 +110,6 @@ export function SpotlightCarousel({
           >
             Spotlight
           </h2>
-          <span className="text-small text-lavender-text md:text-base">
-            This month
-          </span>
         </div>
         <div className="flex items-center gap-2.5">
           <span
