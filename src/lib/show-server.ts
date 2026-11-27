@@ -132,8 +132,12 @@ export async function savePosters(
   name: string,
   wide: File | null,
   tall: File | null,
+  /** A duplicated show: its posters carry over unless removed or replaced. */
+  copied?: { poster_url: string | null; poster_tall_url: string | null } | null,
 ): Promise<void> {
   const patch: { poster_url?: string | null; poster_tall_url?: string | null } = {};
+  if (copied?.poster_url && form.get("poster_remove") !== "1") patch.poster_url = copied.poster_url;
+  if (copied?.poster_tall_url && form.get("poster_tall_remove") !== "1") patch.poster_tall_url = copied.poster_tall_url;
   if (form.get("poster_remove") === "1") patch.poster_url = null;
   if (form.get("poster_tall_remove") === "1") patch.poster_tall_url = null;
   if (wide) {
