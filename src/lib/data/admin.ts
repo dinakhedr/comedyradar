@@ -79,6 +79,17 @@ export async function getAdminOverview(): Promise<AdminOverview | null> {
   return (data ?? null) as AdminOverview | null;
 }
 
+export type TicketSiteClicks = { site: string; clicks: number; shows: number };
+
+/** "Get tickets" clicks per ticket site in the last 30 days, most first. */
+export async function getAdminTicketSites(): Promise<TicketSiteClicks[]> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_ticket_sites");
+  if (error) console.error("admin_ticket_sites", error.message);
+  return (data ?? []) as TicketSiteClicks[];
+}
+
 /** The review queue, plus a short-lived link to a claim's document when one is open. */
 export async function getReviewQueue(): Promise<
   import("@/lib/admin-review").ReviewQueue

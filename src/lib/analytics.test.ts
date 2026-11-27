@@ -45,8 +45,12 @@ describe("events", () => {
       ticketsClickEvent({ id: "s1", title: "Big Night", performer: null, city: "Cairo", zone: "local" }),
     ).toEqual({
       name: "get_tickets_click",
-      params: { show_id: "s1", show_title: "Big Night", performer: "", city: "Cairo", zone: "local" },
+      params: { show_id: "s1", show_title: "Big Night", performer: "", city: "Cairo", zone: "local", ticket_site: "" },
     });
+    expect(
+      ticketsClickEvent({ id: "s1", title: "T", performer: "A", city: "Cairo", zone: "local", ticketUrl: "https://www.ticketsmarche.com/e/1" })
+        .params,
+    ).toMatchObject({ ticket_site: "ticketsmarche.com" });
   });
   it("maps listen buttons to platforms", () => {
     expect(podcastPlatform("Apple Podcasts")).toBe("apple");

@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { card, StatTile, Tag } from "@/components/dashboard/ui";
 import { formatShowDate } from "@/lib/dates";
-import { getAdminOverview, type QueueItem } from "@/lib/data/admin";
+import { getAdminOverview, getAdminTicketSites, type QueueItem } from "@/lib/data/admin";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -24,7 +24,7 @@ const when = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "nume
 
 async function Content() {
   await connection();
-  const o = await getAdminOverview();
+  const [o, sites] = await Promise.all([getAdminOverview(), getAdminTicketSites()]);
   if (!o) return <p className={card}>The overview could not be loaded. Please reload the page.</p>;
   const waiting = o.queue.reduce((n, q) => n + q.count, 0);
   const emptySlides = Math.max(0, 5 - o.spotlight_now.length);
@@ -43,6 +43,32 @@ async function Content() {
         <StatTile label="Ticket clicks" value={o.clicks_30} note="Last 30 days" />
         <StatTile label="Newsletter subscribers" value={o.subscribers} note="All time" />
         <StatTile label="Spotlight clicks" value={o.spotlight_clicks_30} note="Last 30 days" />
+      </section>
+
+      <section aria-labelledby="ticket-sites" className={`${card} flex flex-col gap-3`}>
+        <div className="flex flex-col gap-1">
+          <h2 id="ticket-sites" className="text-heading font-extrabold">
+            Ticket clicks by site
+          </h2>
+          <p className="text-sm text-radar-purple/75">
+            Last 30 days. Every ticket link carries utm_source=comedyradar, so ticket sites can see these buyers in their own reports.
+          </p>
+        </div>
+        {sites.length === 0 ? (
+          <p className="text-sm text-radar-purple/75">No ticket clicks yet.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-radar-purple/10">
+            {sites.map((s) => (
+              <li key={s.site} className="flex min-h-12 items-center gap-3 py-2">
+                <span className="min-w-0 flex-1 truncate font-bold">{s.site}</span>
+                <span className="text-sm text-radar-purple/70">
+                  {s.shows} {s.shows === 1 ? "show" : "shows"}
+                </span>
+                <span className="min-w-10 rounded-full bg-lavender px-2 text-center text-sm font-extrabold">{s.clicks.toLocaleString("en")}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">

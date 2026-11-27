@@ -55,6 +55,7 @@ export function TicketButton({
           performer: show.headliner_name,
           city: show.city_name,
           zone: show.zone,
+          ticketUrl: show.ticket_url,
         })}
       >
         Get tickets

@@ -8,13 +8,15 @@
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID?.trim() || "";
 export const analyticsEnabled = GA_ID !== "";
 
+import { ticketSite } from "./show-page";
+
 export type Zone = "local" | "outbound" | "inbound";
 export type PodcastPlatform = "apple" | "spotify" | "anghami" | "podu";
 
 export type AnalyticsEvent =
   | {
       name: "get_tickets_click";
-      params: { show_id: string; show_title: string; performer: string; city: string; zone: Zone };
+      params: { show_id: string; show_title: string; performer: string; city: string; zone: Zone; ticket_site: string };
     }
   | { name: "spotlight_click"; params: { show_id: string; slide_position: number } }
   | { name: "podcast_link_click"; params: { podcast: string; platform: PodcastPlatform } }
@@ -27,10 +29,19 @@ export function ticketsClickEvent(show: {
   performer: string | null | undefined;
   city: string;
   zone: Zone;
+  /** The ticket link, so GA can report clicks per ticket site. */
+  ticketUrl?: string | null;
 }): AnalyticsEvent {
   return {
     name: "get_tickets_click",
-    params: { show_id: show.id, show_title: show.title, performer: show.performer ?? "", city: show.city, zone: show.zone },
+    params: {
+      show_id: show.id,
+      show_title: show.title,
+      performer: show.performer ?? "",
+      city: show.city,
+      zone: show.zone,
+      ticket_site: ticketSite(show.ticketUrl ?? null) ?? "",
+    },
   };
 }
 

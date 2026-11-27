@@ -840,4 +840,39 @@ set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
 set local request.jwt.claim.aal = '';
 reset role;
 
+
+-- Ticket clicks per ticket site (ticket referrals).
+insert into public.shows (id, slug, title, starts_at, city_id, zone, market_country_id, status, signal, ticket_url)
+values ('40000000-0000-0000-0000-0000000000f1', 'ticket-site-test', 'Ticket Site Test', now() + interval '2 days',
+        '20000000-0000-0000-0000-000000000001', 'local', '10000000-0000-0000-0000-000000000001', 'published', 'strong',
+        'https://WWW.TicketsMarche.com/event/9?x=1');
+update public.shows set status = 'published', ticket_url = 'https://www.ticketsmarche.com/event/9?x=1'
+where id = '40000000-0000-0000-0000-0000000000f1';
+set local role anon;
+select public.record_page_stat('ticket_click', '40000000-0000-0000-0000-0000000000f1');
+select public.record_page_stat('ticket_click', '40000000-0000-0000-0000-0000000000f1');
+do $$ begin
+  perform 1 from public.ticket_clicks;
+  raise exception 'FAILED: anon read ticket clicks';
+exception when insufficient_privilege then
+  raise notice 'ok - anon cannot read ticket clicks';
+end $$;
+reset role;
+select pg_temp.check((select count(*) = 1 and sum(count) = 2 and min(site) = 'ticketsmarche.com' from public.ticket_clicks
+                      where show_id = '40000000-0000-0000-0000-0000000000f1'),
+  'a ticket click is counted for the ticket site of the show''s own link');
+select pg_temp.check(private.ticket_site('http://user@tix.example.com:8080/a') = 'tix.example.com'
+                     and private.ticket_site('not a link') is null,
+  'ticket_site reads the domain from a link');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check((select (e ->> 'clicks')::int = 2 and (e ->> 'shows')::int = 1
+                      from jsonb_array_elements(public.admin_ticket_sites()) e where e ->> 'site' = 'ticketsmarche.com'),
+  'the super admin sees ticket clicks per site');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+set local request.jwt.claim.aal = '';
+select pg_temp.check(public.admin_ticket_sites() is null, 'only the super admin sees ticket clicks per site');
+reset role;
+
 rollback;
