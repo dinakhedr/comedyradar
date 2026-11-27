@@ -154,7 +154,9 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
               Home country
               <Optional />
             </label>
-            <select id={ids.country} name="country" defaultValue={p.home_country_id ?? ""} className={inputCls}>
+            {/* The key makes the menu start again from the saved country after Save. Without it, React resets the
+                form after Save and the menu jumps back to the country the page first opened with. */}
+            <select key={p.home_country_id ?? ""} id={ids.country} name="country" defaultValue={p.home_country_id ?? ""} className={inputCls}>
               <option value="">Choose a country</option>
               {countries.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -190,7 +192,7 @@ export function ProfileEditForm({ p, countries }: { p: EditValues; countries: Co
               Performing language
               <Optional />
             </label>
-            <select id={ids.language} name="language" defaultValue={p.performing_language ?? ""} className={inputCls}>
+            <select key={p.performing_language ?? ""} id={ids.language} name="language" defaultValue={p.performing_language ?? ""} className={inputCls}>
               <option value="">Choose a language</option>
               {GROUP_LANGUAGES.map((l) => (
                 <option key={l.value} value={l.value}>
