@@ -28,6 +28,15 @@ export function shrinkTo(width: number, height: number, bytes: number, max = POS
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
+/**
+ * True when a poster is wide enough to fill a wide box (cards, Spotlight, banners)
+ * without losing much: then it fills the box, no blur. Tall and square posters
+ * are shown whole with a blurred fill instead.
+ */
+export function posterFits(width: number, height: number): boolean {
+  return height > 0 && width / height >= 1.2;
+}
+
 const clean = (v: string | null | undefined) => (v && v.trim() ? v : null);
 
 export function pickPosters(own: Partial<PosterPair> | null | undefined, tour?: Partial<PosterPair> | null): Posters {
