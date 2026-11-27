@@ -1,7 +1,7 @@
 import "server-only";
 import type { ManagedProfile } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
-import { tourTabOf, type TourTab } from "@/lib/tour-forms";
+import { tourTabOf, type PastTourDate, type TourTab } from "@/lib/tour-forms";
 import { getMyProfiles, requireAccount } from "./dashboard";
 import { getShowFormOptions, type CityOption, type VenueOption } from "./my-shows";
 
@@ -35,7 +35,7 @@ export async function getTourFormOptions(): Promise<TourFormOptions> {
   return { profiles, cities, venues, importable };
 }
 
-export type TourDate = { id: string; title: string; starts_at: string; status: string; ticket_url: string | null; city_name: string | null; venue_name: string | null };
+export type TourDate = PastTourDate & { id: string; title: string; city_name: string | null; venue_name: string | null };
 
 export type EditableTour = {
   id: string;
@@ -49,9 +49,10 @@ export type EditableTour = {
   dates: TourDate[];
 };
 
-const DATE_FIELDS = "id, title, starts_at, status, ticket_url, cities(name), venues(name)";
+const DATE_FIELDS =
+  "id, title, starts_at, doors_at, status, city_id, venue_id, ticket_url, price_min, price_max, currency, language, age_rating, cities(name), venues(name)";
 type RawDate = Omit<TourDate, "city_name" | "venue_name"> & { cities: { name: string } | null; venues: { name: string } | null };
-const toDate = (d: RawDate): TourDate => ({ id: d.id, title: d.title, starts_at: d.starts_at, status: d.status, ticket_url: d.ticket_url, city_name: d.cities?.name ?? null, venue_name: d.venues?.name ?? null });
+const toDate = ({ cities, venues, ...d }: RawDate): TourDate => ({ ...d, city_name: cities?.name ?? null, venue_name: venues?.name ?? null });
 
 /** A tour this account manages, with its dates, for the edit form. */
 export async function getEditableTour(id: string, opts: { anyOwner?: boolean } = {}): Promise<EditableTour | null> {

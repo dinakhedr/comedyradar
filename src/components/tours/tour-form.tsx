@@ -17,7 +17,7 @@ import type { CityOption, VenueOption } from "@/lib/data/my-shows";
 import type { EditableTour, ImportableShow } from "@/lib/data/my-tours";
 import { formatShowDate } from "@/lib/dates";
 import { AGE_RATINGS, cairoToIso, CURRENCIES, SHOW_LANGUAGES } from "@/lib/show-forms";
-import { DEFAULT_TITLE_PATTERN, DOORS_OPTIONS, isBlankDate, MAX_TOUR_DATES, parsePastedDates, TICKET_STATUSES, type TourDateInput } from "@/lib/tour-forms";
+import { DEFAULT_TITLE_PATTERN, DOORS_OPTIONS, isBlankDate, MAX_TOUR_DATES, nextDateDefaults, parsePastedDates, TICKET_STATUSES, type TourDateInput } from "@/lib/tour-forms";
 import { SubmitButton } from "@/components/submit-button";
 import { LinkPending } from "@/components/link-pending";
 
@@ -54,7 +54,7 @@ export function TourForm({
   importable: ImportableShow[];
   tour?: EditableTour | null;
   defaultPerformer?: string;
-  /** Opened from "+ Add dates": scroll to the dates. */
+  /** Opened from "+ Add dates" / "+ Add a date": scroll to the dates, with one date set up like the last one. */
   focusDates?: boolean;
   /** Admin > Add new tour: any profile, and a status to pick. */
   admin?: boolean;
@@ -69,7 +69,9 @@ export function TourForm({
   // The card preview shows the wide poster, or the tall one if that is all there is.
   const [poster, setPoster] = useState<string | null>(tour?.poster_url ?? tour?.poster_tall_url ?? null);
   const nextKey = useRef(1);
-  const [rows, setRows] = useState<Row[]>(() => [blank(0)]);
+  // Opened from "+ Add a date": one date is ready, set up like the last date on the tour (only the day is empty).
+  const [prefill] = useState(() => (focusDates && tour ? nextDateDefaults(tour.dates) : { row: {}, same: {} }));
+  const [rows, setRows] = useState<Row[]>(() => [blank(0, prefill.row)]);
   const [paste, setPaste] = useState("");
   const [pasteNote, setPasteNote] = useState<string | null>(null);
   const [imports, setImports] = useState<Set<string>>(new Set());
@@ -299,14 +301,14 @@ export function TourForm({
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Price from" optional error={e.price}>
-              {(id, d) => <input id={id} name="price_min" inputMode="decimal" maxLength={10} defaultValue={back?.price_min ?? ""} aria-describedby={d} className={inputCls} />}
+              {(id, d) => <input id={id} name="price_min" inputMode="decimal" maxLength={10} defaultValue={back?.price_min ?? prefill.same.price_min ?? ""} aria-describedby={d} className={inputCls} />}
             </Field>
             <Field label="Price to" optional>
-              {(id) => <input id={id} name="price_max" inputMode="decimal" maxLength={10} defaultValue={back?.price_max ?? ""} className={inputCls} />}
+              {(id) => <input id={id} name="price_max" inputMode="decimal" maxLength={10} defaultValue={back?.price_max ?? prefill.same.price_max ?? ""} className={inputCls} />}
             </Field>
             <Field label="Currency" error={e.currency}>
               {(id) => (
-                <select id={id} name="currency" defaultValue={back?.currency ?? "EGP"} className={inputCls}>
+                <select id={id} name="currency" defaultValue={back?.currency ?? prefill.same.currency ?? "EGP"} className={inputCls}>
                   {CURRENCIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
@@ -317,7 +319,7 @@ export function TourForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Language" optional error={e.language}>
               {(id) => (
-                <select id={id} name="language" defaultValue={back?.language ?? ""} className={inputCls}>
+                <select id={id} name="language" defaultValue={back?.language ?? prefill.same.language ?? ""} className={inputCls}>
                   <option value="">Choose a language</option>
                   {SHOW_LANGUAGES.map((l) => (
                     <option key={l}>{l}</option>
@@ -327,7 +329,7 @@ export function TourForm({
             </Field>
             <Field label="Age" optional error={e.age_rating}>
               {(id) => (
-                <select id={id} name="age_rating" defaultValue={back?.age_rating ?? ""} className={inputCls}>
+                <select id={id} name="age_rating" defaultValue={back?.age_rating ?? prefill.same.age_rating ?? ""} className={inputCls}>
                   <option value="">Choose an age</option>
                   {AGE_RATINGS.map((a) => (
                     <option key={a}>{a}</option>
@@ -337,7 +339,7 @@ export function TourForm({
             </Field>
             <Field label="Doors open" optional>
               {(id) => (
-                <select id={id} name="doors" defaultValue={back?.doors ?? ""} className={inputCls}>
+                <select id={id} name="doors" defaultValue={back?.doors ?? prefill.same.doors ?? ""} className={inputCls}>
                   {DOORS_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
