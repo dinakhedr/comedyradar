@@ -21,7 +21,7 @@ function SectionHeader() {
 
 const wrapper = "mx-auto flex max-w-[1280px] scroll-mt-4 flex-col gap-3 px-[18px] pb-8 md:gap-6 md:px-8 md:pb-16";
 
-/** Coming up (spec 5.4): the next 8 published shows for the hero filters. */
+/** Coming up (spec 5.4): the next 8 published shows on the homepage, any date unless a chip narrows it. */
 export async function ComingUp({ searchParams }: { searchParams: SP }) {
   const [{ when, country, withinRange }, settings] = await Promise.all([homeFilters(searchParams), getHomeSettings()]);
   // Within range: only the picked country (Egypt by default). Otherwise every show.

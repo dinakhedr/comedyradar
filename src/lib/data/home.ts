@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
-import { whenRange, type WhenFilter } from "@/lib/dates";
+import { homeWindow, type HomeWhen } from "@/lib/home-filters";
 import { buildSpotlight, type SpotlightSlide } from "@/lib/spotlight";
 import type { City, ShowRow, TourRow, TrackItem } from "./types";
 
@@ -67,25 +67,24 @@ export async function getCities(): Promise<City[]> {
 }
 
 /** Coming up: the next N published shows for the hero filters, soonest first. */
-export async function getComingUp(when: WhenFilter, city: string | null, limit: number, country: string | null = null): Promise<ShowRow[]> {
+export async function getComingUp(when: HomeWhen, city: string | null, limit: number, country: string | null = null): Promise<ShowRow[]> {
   "use cache";
   cacheLife(LISTING_CACHE);
   cacheTag("shows");
   const db = createPublicClient();
   if (!db) return [];
-  const { from, to } = whenRange(when, new Date());
+  // No chip picked: the next shows whatever their date (no "this month" limit).
+  const { from, to } = homeWindow(when, new Date());
   let q = db
     .from("v_upcoming_shows")
     .select(SHOW_COLUMNS)
     .gte("starts_at", from.toISOString())
-    .lt("starts_at", to.toISOString())
     // Only shows left on the homepage (house icon in Admin > Shows and tours).
-    .eq("on_homepage", true)
-    .order("starts_at")
-    .limit(limit);
+    .eq("on_homepage", true);
+  if (to) q = q.lt("starts_at", to.toISOString());
   if (city) q = q.eq("city_slug", city);
   else if (country) q = q.eq("country_code", country);
-  const { data, error } = await q;
+  const { data, error } = await q.order("starts_at").limit(limit);
   if (error) console.error("getComingUp", error.message);
   return (data ?? []) as unknown as ShowRow[];
 }
