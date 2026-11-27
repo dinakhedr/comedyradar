@@ -28,7 +28,7 @@ export const FAQ: FaqItem[] = [
     topic: "finding",
     q: "Which cities do you cover?",
     a: [
-      "Every city in Egypt with live stand-up comedy. Use the city menu on the homepage to see the shows near you.",
+      "Every city in Egypt with live stand-up comedy. Use the country menu on the homepage to see the shows near you.",
       "We also list Egyptian comedians performing abroad (On tour) and comedians from other countries performing in Egypt (Visiting).",
     ],
   },
@@ -40,7 +40,7 @@ export const FAQ: FaqItem[] = [
       "New Signal: the show was just added.",
       "Strong Signal: tickets are selling fast.",
       "Fading Signal: the last tickets are left.",
-      "Within range: shows in the city you picked in the city menu.",
+      "Within range: shows in the country you picked in the country menu.",
     ],
   },
   {

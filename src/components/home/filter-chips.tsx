@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { City } from "@/lib/data/types";
+import { countriesOf } from "@/lib/countries";
 import { parseWhen, type WhenFilter } from "@/lib/dates";
-import { CitySelect } from "../city-select";
+import { CountrySelect } from "../country-select";
 import { homeFilters } from "./params";
 
 const WHEN_LABELS: { value: WhenFilter; label: string }[] = [
@@ -10,11 +11,11 @@ const WHEN_LABELS: { value: WhenFilter; label: string }[] = [
   { value: "month", label: "This month" },
 ];
 
-function href(when: WhenFilter, city: string | null, country: string | null) {
+function href(when: WhenFilter, withinRange: boolean, country: string | null) {
   const p = new URLSearchParams();
   if (when !== "month") p.set("when", when);
   if (country) p.set("country", country.toLowerCase());
-  if (city) p.set("city", city);
+  if (withinRange) p.set("range", "1");
   const qs = p.toString();
   return qs ? `/?${qs}#coming-up` : "/#coming-up";
 }
@@ -25,8 +26,9 @@ const off = "border-plum-line font-bold text-white hover:border-spotlight-yellow
 
 /**
  * Filter chips: Tonight · This weekend · This month (default) · Within range,
- * plus the city dropdown. "Within range" = shows in the chosen city
- * (Cairo by default). The choice lives in the address, e.g. /?when=weekend&city=cairo.
+ * plus the country dropdown. "Within range" = shows in the chosen country
+ * (Egypt by default). The country is the same one as in the header menu, so the
+ * two always match. The choice lives in the address, e.g. /?when=weekend&country=ae&range=1.
  */
 export async function FilterChips({
   searchParams,
@@ -35,18 +37,14 @@ export async function FilterChips({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   cities: City[];
 }) {
-  const { when, city, country, defaultCity } = await homeFilters(searchParams);
-  const withinRange = city !== null;
-  // The city menu lists the cities of the country picked in the header (Egypt by default).
-  const shown = cities.filter((c) => c.country_code === (country ?? "EG"));
-  const nearest = country ? (shown[0]?.slug ?? null) : defaultCity;
+  const { when, country, withinRange } = await homeFilters(searchParams);
 
   return (
     <div role="group" aria-label="Filter shows" className="no-scrollbar -mx-[18px] flex items-center gap-2 overflow-x-auto px-[18px] pb-1 md:mx-0 md:flex-wrap md:gap-2.5 md:overflow-visible md:px-0">
       {WHEN_LABELS.map((w) => (
         <Link
           key={w.value}
-          href={href(w.value, city, country)}
+          href={href(w.value, withinRange, country)}
           scroll={false}
           aria-current={when === w.value ? "true" : undefined}
           className={`${chip} ${when === w.value ? on : off}`}
@@ -55,7 +53,7 @@ export async function FilterChips({
         </Link>
       ))}
       <Link
-        href={href(when, withinRange ? null : nearest, country)}
+        href={href(when, !withinRange, country)}
         scroll={false}
         aria-current={withinRange ? "true" : undefined}
         className={`${chip} ${withinRange ? on : off}`}
@@ -63,7 +61,7 @@ export async function FilterChips({
         Within range
       </Link>
       <span className="hidden h-7 w-0.5 bg-plum-line md:block" aria-hidden />
-      <CitySelect cities={shown} variant="chip" id="hero-city" />
+      <CountrySelect countries={countriesOf(cities)} id="hero-country" variant="chip" />
     </div>
   );
 }
