@@ -203,7 +203,9 @@ async function storeTour(form: FormData, accountId: string, admin: boolean): Pro
     }
     updateTag("shows");
     updateTag("tours");
-    redirect(`/admin/shows?tab=tours&msg=${failed.length ? (tourId ? "tour_dates_failed" : "tour_some_failed") : tourId ? "saved" : "created"}`);
+    const msg = failed.length ? (tourId ? "tour_dates_failed" : "tour_some_failed") : !tourId ? "created" : made.length ? "dates_added" : "saved";
+    // Back to this tour's box, so the new dates are in view.
+    redirect(`/admin/shows?tab=tours&msg=${msg}${tourId ? `#tour-${id}` : ""}`);
   }
 
   // 4. Publish: the tour and its draft dates go live (or to review for unverified profiles).

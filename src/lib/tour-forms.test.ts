@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyTitle, checkTour, doorsTime, parsePastedDates, tourTabOf, type TourDateInput, type TourSame } from "./tour-forms";
+import { applyTitle, checkTour, doorsTime, nextDateDefaults, parsePastedDates, tourTabOf, type PastTourDate, type TourDateInput, type TourSame } from "./tour-forms";
 
 const CAIRO = "11111111-1111-4111-8111-111111111111";
 const DUBAI = "22222222-2222-4222-8222-222222222222";
@@ -72,5 +72,41 @@ describe("tourTabOf", () => {
     expect(tourTabOf({ status: "draft", upcoming: 2, total: 2 })).toBe("drafts");
     expect(tourTabOf({ status: "published", upcoming: 0, total: 3 })).toBe("past");
     expect(tourTabOf({ status: "pending", upcoming: 0, total: 0 })).toBe("active");
+  });
+});
+
+describe("nextDateDefaults", () => {
+  const past = (over: Partial<PastTourDate> = {}): PastTourDate => ({
+    starts_at: "2026-12-11T18:00:00Z", // 8:00 PM Cairo
+    doors_at: "2026-12-11T17:30:00Z",
+    status: "published",
+    city_id: CAIRO,
+    venue_id: "33333333-3333-4333-8333-333333333333",
+    ticket_url: "https://tazkarti.com/x",
+    price_min: 350,
+    price_max: 500,
+    currency: "EGP",
+    language: "Egyptian Arabic",
+    age_rating: "16+",
+    ...over,
+  });
+  it("is empty for a tour with no dates", () => {
+    expect(nextDateDefaults([])).toEqual({ row: {}, same: {} });
+  });
+  it("copies the last date, leaving the day empty", () => {
+    const r = nextDateDefaults([past({ starts_at: "2026-12-03T17:00:00Z", city_id: DUBAI }), past()]);
+    expect(r.row).toEqual({ time: "20:00", city_id: CAIRO, venue_id: "33333333-3333-4333-8333-333333333333", ticket_url: "https://tazkarti.com/x" });
+    expect(r.row.date).toBeUndefined();
+    expect(r.same).toEqual({ price_min: "350", price_max: "500", currency: "EGP", language: "Egyptian Arabic", age_rating: "16+", doors: "30" });
+  });
+  it("skips cancelled dates when another date exists", () => {
+    const r = nextDateDefaults([past({ starts_at: "2026-12-03T17:00:00Z", city_id: DUBAI }), past({ status: "cancelled" })]);
+    expect(r.row.city_id).toBe(DUBAI);
+    expect(r.row.time).toBe("19:00");
+  });
+  it("marks no ticket link and leaves unknown doors and empty fields out", () => {
+    const r = nextDateDefaults([past({ ticket_url: null, doors_at: "2026-12-11T17:40:00Z", price_min: null, price_max: null, language: null, age_rating: null, venue_id: null })]);
+    expect(r.row).toEqual({ time: "20:00", city_id: CAIRO, ticket_status: "no_link" });
+    expect(r.same).toEqual({ currency: "EGP" });
   });
 });

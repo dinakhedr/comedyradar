@@ -14,8 +14,8 @@ export const metadata: Metadata = { title: "Edit tour" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const STATUS = { draft: "Draft", pending: "In review", published: "Live", archived: "Archived" } as const;
 
-async function Content({ params }: { params: PageProps<"/admin/shows/tours/[id]/edit">["params"] }) {
-  const { id } = await params;
+async function Content({ params, searchParams }: PageProps<"/admin/shows/tours/[id]/edit">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!UUID.test(id)) notFound();
   await requireSuperAdmin();
   const [tour, options] = await Promise.all([getEditableTour(id, { anyOwner: true }), getAdminTourFormOptions()]);
@@ -31,13 +31,13 @@ async function Content({ params }: { params: PageProps<"/admin/shows/tours/[id]/
           </a>
         )}
       </div>
-      <TourForm {...options} tour={tour} admin />
+      <TourForm {...options} tour={tour} admin focusDates={sp.add === "1"} />
     </>
   );
 }
 
-/** Admin > Shows and tours > Tours > pencil: edit any tour and add dates, in the same form as Add new tour. */
-export default function AdminEditTourPage({ params }: PageProps<"/admin/shows/tours/[id]/edit">) {
+/** Admin > Shows and tours > Tours > "+ Add a date" (?add=1) or "Edit dates, prices and more": edit any tour and add dates. */
+export default function AdminEditTourPage({ params, searchParams }: PageProps<"/admin/shows/tours/[id]/edit">) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1.5">
@@ -47,7 +47,7 @@ export default function AdminEditTourPage({ params }: PageProps<"/admin/shows/to
         <h1 className="font-display text-[32px] leading-none md:text-[44px]">EDIT TOUR</h1>
       </div>
       <Suspense fallback={<div className={`${card} h-96 animate-pulse`} />}>
-        <Content params={params} />
+        <Content params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   );

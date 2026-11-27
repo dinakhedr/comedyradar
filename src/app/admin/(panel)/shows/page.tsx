@@ -86,6 +86,7 @@ const MSG: Record<string, string> = {
   home_off: "Done. The show is off the homepage. It still shows on the Shows page.",
   venue_saved: "Venue saved.",
   tour_saved: "Tour saved. Its dates use the new name and posters.",
+  dates_added: "Done. The new dates are on the tour.",
   tour_poster: "Done. The ticked dates now show the tour poster.",
   tour_bad_name: "Please give the tour a name (up to 120 characters).",
   tour_bad_poster: "The poster must be a JPG, PNG or WebP image, up to 10 MB.",
@@ -1049,12 +1050,21 @@ function TourBox({
           <ChevronDown size={18} className="transition-transform group-open:rotate-180" />
           {dates.length ? `${count} on this tour` : "No dates yet"}
         </summary>
-        {dates.length > 0 && (
-          <div className="flex flex-col gap-3 px-3 pb-3 md:px-4 md:pb-4">
-            <BulkBar id={`bulk-${t.id}`} ret={ret} tour />
-            <DatesTable rows={dates} ret={ret} here={here} pickedId={pickedId} bulkId={`bulk-${t.id}`} tour />
-          </div>
-        )}
+        <div className="flex flex-col gap-3 px-3 pb-3 md:px-4 md:pb-4">
+          {dates.length > 0 && (
+            <>
+              <BulkBar id={`bulk-${t.id}`} ret={ret} tour />
+              <DatesTable rows={dates} ret={ret} here={here} pickedId={pickedId} bulkId={`bulk-${t.id}`} tour />
+            </>
+          )}
+          <Link
+            href={`/admin/shows/tours/${t.id}/edit?add=1`}
+            className={`${smallBtn} self-start`}
+            aria-label={`Add a date to ${t.name}`}
+          >
+            <LinkPending>+ Add a date</LinkPending>
+          </Link>
+        </div>
       </details>
     </li>
   );
@@ -1520,7 +1530,7 @@ async function Content({
   return (
     <>
       {msg && (
-        ["saved", "created", "declined", "venue_saved", "tour_saved", "tour_poster"].includes(msgKey) ? (
+        ["saved", "created", "declined", "venue_saved", "tour_saved", "tour_poster", "dates_added"].includes(msgKey) ? (
           <SuccessNote>{msg}</SuccessNote>
         ) : (
           <ErrorNote>{msg}</ErrorNote>

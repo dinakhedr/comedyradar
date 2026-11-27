@@ -3,7 +3,7 @@
  * Pure checks, shared by the form and the server action. Each tour date is
  * saved as its own show, so dates are checked with the show rules.
  */
-import { checkShow, type ShowErrors, type ShowInput, type ShowValues } from "./show-forms";
+import { checkShow, isoToCairo, type ShowErrors, type ShowInput, type ShowValues } from "./show-forms";
 
 export const MAX_TOUR_DATES = 40;
 export const DEFAULT_TITLE_PATTERN = "[Tour]";
@@ -206,4 +206,49 @@ export function tourTabOf(t: { status: string; upcoming: number; total: number }
   if (t.status === "draft") return "drafts";
   if (t.total > 0 && t.upcoming === 0) return "past";
   return "active";
+}
+
+/** What a date already on the tour tells the next one ("+ Add a date" on admin Tours). */
+export type PastTourDate = {
+  starts_at: string;
+  doors_at: string | null;
+  status: string;
+  city_id: string | null;
+  venue_id: string | null;
+  ticket_url: string | null;
+  price_min: number | null;
+  price_max: number | null;
+  currency: string | null;
+  language: string | null;
+  age_rating: string | null;
+};
+
+/**
+ * A new tour date starts like the last date on the tour: same time, city, venue and
+ * ticket link, and the same price, language, age and doors. Only the day is left empty.
+ * Cancelled dates are skipped when there is another one.
+ */
+export function nextDateDefaults(dates: PastTourDate[]): { row: Partial<TourDateInput>; same: Partial<TourSame> } {
+  if (!dates.length) return { row: {}, same: {} };
+  const live = dates.filter((d) => d.status !== "cancelled");
+  const last = [...(live.length ? live : dates)].sort((a, b) => a.starts_at.localeCompare(b.starts_at)).at(-1)!;
+  const time = isoToCairo(last.starts_at).time;
+  const row: Partial<TourDateInput> = {};
+  if (time) row.time = time;
+  if (last.city_id) row.city_id = last.city_id;
+  if (last.city_id && last.venue_id) row.venue_id = last.venue_id;
+  if (last.ticket_url) row.ticket_url = last.ticket_url;
+  else row.ticket_status = "no_link";
+
+  const same: Partial<TourSame> = {};
+  if (last.price_min != null) same.price_min = String(last.price_min);
+  if (last.price_max != null) same.price_max = String(last.price_max);
+  if (last.currency) same.currency = last.currency;
+  if (last.language) same.language = last.language;
+  if (last.age_rating) same.age_rating = last.age_rating;
+  if (last.doors_at) {
+    const minutes = String(Math.round((Date.parse(last.starts_at) - Date.parse(last.doors_at)) / 60000));
+    if (DOORS_OPTIONS.some((o) => o.value && o.value === minutes)) same.doors = minutes;
+  }
+  return { row, same };
 }
