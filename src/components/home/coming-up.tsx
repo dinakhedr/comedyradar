@@ -23,8 +23,9 @@ const wrapper = "mx-auto flex max-w-[1280px] scroll-mt-4 flex-col gap-3 px-[18px
 
 /** Coming up (spec 5.4): the next 8 published shows for the hero filters. */
 export async function ComingUp({ searchParams }: { searchParams: SP }) {
-  const [{ when, city, country }, settings] = await Promise.all([homeFilters(searchParams), getHomeSettings()]);
-  const shows = await getComingUp(when, city, settings.comingUpCount, country);
+  const [{ when, country, withinRange }, settings] = await Promise.all([homeFilters(searchParams), getHomeSettings()]);
+  // Within range: only the picked country (Egypt by default). Otherwise every show.
+  const shows = await getComingUp(when, null, settings.comingUpCount, withinRange ? (country ?? "EG") : null);
   const now = new Date();
 
   return (

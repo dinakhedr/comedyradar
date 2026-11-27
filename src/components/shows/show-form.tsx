@@ -198,46 +198,52 @@ export function ShowForm({
               {(id, d) => <input id={id} name="doors" type="time" defaultValue={back?.doors ?? doors} aria-describedby={d} aria-invalid={e.doors ? true : undefined} className={inputCls} />}
             </Field>
           </div>
-          <Field label="City" error={e.city_id}>
-            {(id, d) => (
-              <select
-                id={id}
-                name="city_id"
-                value={cityId}
-                onChange={(ev) => {
-                  setCityId(ev.target.value);
-                  setVenueId("");
-                }}
-                aria-describedby={d}
-                aria-invalid={e.city_id ? true : undefined}
-                className={inputCls}
-              >
-                <option value="">Choose a city</option>
-                {byCountry.map(([country, list]) => (
-                  <optgroup key={country} label={country}>
-                    {list.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            )}
-          </Field>
-          <Field label="Venue" error={e.venue} optional hint={cityId ? (admin ? "Pick the venue. Not on the list? Add it first under Shows and tours > Venues." : "Pick the venue. Not on the list? Contact Comedy Radar and we will add it.") : "Choose the city first."}>
-            {(id, d) => (
-              <select id={id} name="venue_id" value={venueId} disabled={!cityId} onChange={(ev) => setVenueId(ev.target.value)} aria-describedby={d} className={inputCls}>
-                <option value="">No venue yet</option>
-                {cityVenues.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                    {v.pending ? " (waiting for review)" : ""}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="City" error={e.city_id}>
+              {(id, d) => (
+                <select
+                  id={id}
+                  name="city_id"
+                  value={cityId}
+                  onChange={(ev) => {
+                    setCityId(ev.target.value);
+                    setVenueId("");
+                  }}
+                  aria-describedby={d}
+                  aria-invalid={e.city_id ? true : undefined}
+                  className={inputCls}
+                >
+                  <option value="">Choose a city</option>
+                  {byCountry.map(([country, list]) => (
+                    <optgroup key={country} label={country}>
+                      {list.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field label="Venue" error={e.venue} optional>
+              {(id, d) => (
+                <select id={id} name="venue_id" value={venueId} disabled={!cityId} onChange={(ev) => setVenueId(ev.target.value)} aria-describedby={[d, "venue-hint"].filter(Boolean).join(" ")} className={inputCls}>
+                  <option value="">No venue yet</option>
+                  {cityVenues.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                      {v.pending ? " (waiting for review)" : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+          </div>
+          {/* The venue tip sits under the row so City and Venue line up side by side. */}
+          <p id="venue-hint" className="-mt-2 text-sm text-radar-purple/75">
+            {cityId ? (admin ? "Venue: pick it from the list. Not on the list? Add it first under Shows and tours > Venues." : "Venue: pick it from the list. Not on the list? Contact Comedy Radar and we will add it.") : "Choose the city first, then the venue."}
+          </p>
         </section>
 
         <section aria-labelledby="tickets" className={`${card} flex flex-col gap-4`}>
