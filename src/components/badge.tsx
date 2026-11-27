@@ -58,18 +58,33 @@ const PILL_PATHS: Record<PillIcon, React.ReactNode> = {
  * The small pill that sits on a show photo: an icon and a short word
  * (NEW, STRONG, SOLD OUT, UAE…). Dina, 2026-11-27.
  */
-export function CardPill({ tone, icon, children, tiny = false }: { tone: BadgeTone; icon?: PillIcon; children: React.ReactNode; tiny?: boolean }) {
+export function CardPill({
+  tone,
+  icon,
+  children,
+  tiny = false,
+  large = false,
+}: {
+  tone: BadgeTone;
+  icon?: PillIcon;
+  children: React.ReactNode;
+  tiny?: boolean;
+  /** Show page header size: no shadow, a little bigger. */
+  large?: boolean;
+}) {
   return (
     <span
-      className={`inline-flex max-w-full items-center gap-1 rounded-full tracking-wider whitespace-nowrap uppercase shadow-[0_1px_4px_rgba(0,0,0,0.35)] ${tones[tone]} ${
-        tiny ? "py-0.5 pr-1.5 pl-1 text-[9px]" : "py-[3px] pr-2 pl-1.5 text-[10.5px]"
+      className={`inline-flex max-w-full items-center rounded-full tracking-wider whitespace-nowrap uppercase ${tones[tone]} ${
+        large
+          ? "gap-1.5 py-1 pr-3 pl-2 text-xs"
+          : `gap-1 shadow-[0_1px_4px_rgba(0,0,0,0.35)] ${tiny ? "py-0.5 pr-1.5 pl-1 text-[9px]" : "py-[3px] pr-2 pl-1.5 text-[10.5px]"}`
       }`}
     >
       {icon && (
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
-          className={`shrink-0 ${tiny ? "h-2.5 w-2.5" : "h-3 w-3"}`}
+          className={`shrink-0 ${large ? "h-3.5 w-3.5" : tiny ? "h-2.5 w-2.5" : "h-3 w-3"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth={2.6}
