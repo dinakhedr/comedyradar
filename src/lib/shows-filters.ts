@@ -33,7 +33,7 @@ export type ShowsFilters = {
 
 export const DEFAULT_FILTERS: ShowsFilters = {
   q: "",
-  when: "month",
+  when: "all",
   from: null,
   to: null,
   zone: "all",
@@ -95,7 +95,7 @@ export function parseShowsFilters(raw: Raw, preset: { city?: string } = {}): Sho
   let to = isoDay(first(raw.to));
   if (from && to && from > to) [from, to] = [to, from];
   const when: ShowsWhen =
-    whenRaw === "dates" ? (from || to ? "dates" : "month") : oneOf(whenRaw, WHEN_OPTIONS, "month");
+    whenRaw === "dates" ? (from || to ? "dates" : "all") : oneOf(whenRaw, WHEN_OPTIONS, "all");
   const comedian = slug(first(raw.comedian));
   const page = Number.parseInt(first(raw.page), 10);
   return {
@@ -127,7 +127,7 @@ export function showsHref(
   const f = { ...current, ...("page" in change ? {} : { page: 1 }), ...change };
   const p = new URLSearchParams();
   if (f.q) p.set("q", f.q);
-  if (f.when !== "month") p.set("when", f.when);
+  if (f.when !== "all") p.set("when", f.when);
   if (f.when === "dates") {
     if (f.from) p.set("from", f.from);
     if (f.to) p.set("to", f.to);
@@ -189,7 +189,7 @@ export function activeChips(
 ): FilterChip[] {
   const chips: FilterChip[] = [];
   if (f.q) chips.push({ label: `“${f.q}”`, remove: { q: "" } });
-  if (f.when === "dates") chips.push({ label: datesLabel(f.from, f.to), remove: { when: "month", from: null, to: null } });
+  if (f.when === "dates") chips.push({ label: datesLabel(f.from, f.to), remove: { when: "all", from: null, to: null } });
   if (f.city) chips.push({ label: names.city ?? f.city, remove: { city: null } });
   if (f.zone !== "all") chips.push({ label: ZONE_OPTIONS.find((o) => o.value === f.zone)!.label, remove: { zone: "all" } });
   if (f.comedian || f.group)
