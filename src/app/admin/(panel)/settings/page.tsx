@@ -18,6 +18,7 @@ const one = (v: string | string[] | undefined) =>
 const MSG: Record<string, [string, boolean]> = {
   saved: ["Settings saved. The website updates within a few minutes.", true],
   city_added: ["City added.", true],
+  city_renamed: ["City name saved.", true],
   city_exists: ["That city is already in the list.", false],
   city_bad: ["Type a city name of 2 to 60 letters.", false],
   bad_value: [
@@ -124,7 +125,7 @@ function NumberField({
   );
 }
 
-const LOCATION_MSGS = new Set(["city_added", "city_exists", "city_bad"]);
+const LOCATION_MSGS = new Set(["city_added", "city_renamed", "city_exists", "city_bad"]);
 
 function Locations({
   data,
@@ -141,7 +142,7 @@ function Locations({
       title="Countries and cities"
       note={
         <>
-          Open a country to see and add its cities. Shows in a country marked as a market count as In Egypt; others are On
+          Open a country to see and add its cities. Press the pencil on a city to change its name. Shows in a country marked as a market count as In Egypt; others are On
           tour. Venues are on the{" "}
           <Link href="/admin/venues" className="font-extrabold underline">
             Venues page

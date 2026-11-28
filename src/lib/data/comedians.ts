@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
+import { byCountryName } from "@/lib/countries";
 import type { ListedComedian } from "@/lib/comedians-filters";
 import { whenRange } from "@/lib/dates";
 import { LISTING_CACHE } from "./home";
@@ -98,7 +99,7 @@ export async function getComediansListing(): Promise<ComediansListing> {
 
   return {
     comedians: items,
-    countries: [...countryNames].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name)),
+    countries: [...countryNames].map(([code, name]) => ({ code, name })).sort(byCountryName),
     groupCount: groups.count ?? 0,
   };
 }

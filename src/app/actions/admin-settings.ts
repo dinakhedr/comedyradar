@@ -82,6 +82,46 @@ export async function addCity(form: FormData): Promise<void> {
   );
 }
 
+/** Renames a city (Settings > Countries and cities). The web address of the city stays the same so old links keep working. */
+export async function renameCity(form: FormData): Promise<void> {
+  await requireSuperAdmin();
+  const id = text(form.get("city_id"));
+  const name = text(form.get("name")).replace(/\s+/g, " ").trim().slice(0, 80);
+  let r = "error";
+  if (UUID.test(id)) {
+    if (name.length < 2 || name.length > 60) r = "bad_value";
+    else {
+      const supabase = await createClient();
+      const { data: city } = await supabase.from("cities").select("country_id").eq("id", id).maybeSingle();
+      if (city) {
+        const { data: same } = await supabase
+          .from("cities")
+          .select("id")
+          .eq("country_id", city.country_id)
+          .ilike("name", name.replace(/[\\%_]/g, "\\$&"))
+          .neq("id", id)
+          .limit(1);
+        if (same?.length) r = "exists";
+        else {
+          const { error } = await supabase.from("cities").update({ name }).eq("id", id);
+          if (error) console.error("rename city", error.message);
+          else {
+            r = "ok";
+            refresh();
+            updateTag("cities");
+            updateTag("shows");
+            updateTag("tours");
+            updateTag("site-settings");
+          }
+        }
+      }
+    }
+  }
+  redirect(
+    `/admin/settings?${openParam(form)}msg=${r === "ok" ? "city_renamed" : r === "exists" ? "city_exists" : r === "bad_value" ? "city_bad" : "error"}#locations`,
+  );
+}
+
 /** Adds a published venue to a city, from the + beside the city. Returns a message shown in the form. */
 export async function addVenue(
   _prev: VenueFormState,
