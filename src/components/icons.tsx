@@ -432,3 +432,25 @@ export function PlusIcon({ className, size = 18 }: IconProps) {
     </svg>
   );
 }
+
+/** A picture, for Social images. */
+export function ImageIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M21 16 L16 11 L6 20" />
+    </svg>
+  );
+}
+
+/** An arrow into a tray, for downloads. */
+export function DownloadIcon({ className, size = 20 }: IconProps) {
+  return (
+    <svg {...base(size)} strokeWidth={2} className={className}>
+      <path d="M12 4 V15" />
+      <path d="M7 10 L12 15 L17 10" />
+      <path d="M4 15 V19 A1 1 0 0 0 5 20 H19 A1 1 0 0 0 20 19 V15" />
+    </svg>
+  );
+}

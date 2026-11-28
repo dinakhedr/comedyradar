@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { changeAccess, grantAccess, setProfileStatus } from "@/app/actions/admin-profiles";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import { card, outlineBtn, StatTile, Tag, yellowBtn } from "@/components/dashboard/ui";
-import { CloseIcon, EditIcon, ExternalIcon, MicLineIcon, PeopleIcon, SaveIcon } from "@/components/icons";
+import { CloseIcon, EditIcon, ExternalIcon, ImageIcon, MicLineIcon, PeopleIcon, SaveIcon } from "@/components/icons";
 import { adminEditPath, adminListPath } from "@/lib/admin-paths";
 import { getAdminProfileAccess, getAdminProfiles, type AdminProfileRow } from "@/lib/data/admin";
 import { ErrorNote, SuccessNote } from "@/components/status-note";
@@ -90,6 +90,13 @@ async function SidePanel({ p, ret, close }: { p: AdminProfileRow; ret: string; c
           <CloseIcon size={20} />
         </Link>
       </div>
+
+      {p.kind === "comedian" && (
+        <Link href={`/admin/social?slug=${encodeURIComponent(p.slug)}`} className={`${outlineBtn} self-start`}>
+          <ImageIcon />
+          Generate feature image
+        </Link>
+      )}
 
       <form action={setProfileStatus} className="flex flex-col gap-3 rounded-button bg-lavender p-3">
         <input type="hidden" name="kind" value={p.kind} />

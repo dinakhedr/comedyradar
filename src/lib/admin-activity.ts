@@ -35,6 +35,7 @@ export const ACTIVITY_ACTIONS = [
   { value: "role_change", label: "Changed a role" },
   { value: "invite", label: "Invited" },
   { value: "delete", label: "Deleted" },
+  { value: "generate_social_image", label: "Made a social image" },
 ] as const;
 
 export const ACTIVITY_PERIODS = [
