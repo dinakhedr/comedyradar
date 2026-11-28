@@ -1,6 +1,7 @@
 import "server-only";
 import type { ProfileKind } from "@/lib/profile-forms";
 import { createClient } from "@/lib/supabase/server";
+import { byCountryName } from "@/lib/countries";
 import { requireAccount } from "./dashboard";
 
 /** Data for "Create or claim a profile" (spec 11.3). Runs as the signed-in account. */
@@ -10,8 +11,8 @@ export type Country = { id: string; name: string };
 /** Countries for the "Home country" menu (empty until the super admin adds them). */
 export async function getCountries(): Promise<Country[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("countries").select("id, name").order("name").limit(300);
-  return (data ?? []) as Country[];
+  const { data } = await supabase.from("countries").select("id, code, name").limit(300);
+  return ((data ?? []) as (Country & { code: string })[]).sort(byCountryName).map(({ id, name }) => ({ id, name }));
 }
 
 export type ClaimTarget = {

@@ -12,9 +12,14 @@ export function parseCountry(v: unknown): string | null {
   return typeof s === "string" && /^[a-zA-Z]{2}$/.test(s) && s.toUpperCase() !== "EG" ? s.toUpperCase() : null;
 }
 
-/** One entry per country, in name order, from the city list. */
+/** Sort order for every country list on the site: Egypt first, then the rest A to Z by name. */
+export function byCountryName(a: { code: string; name: string }, b: { code: string; name: string }): number {
+  return Number(b.code === "EG") - Number(a.code === "EG") || a.name.localeCompare(b.name);
+}
+
+/** One entry per country, Egypt first then by name, from the city list. */
 export function countriesOf(cities: { country_code: string; country_name: string }[]): { code: string; name: string }[] {
   const seen = new Map<string, string>();
   for (const c of cities) if (!seen.has(c.country_code)) seen.set(c.country_code, c.country_name);
-  return [...seen].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
+  return [...seen].map(([code, name]) => ({ code, name })).sort(byCountryName);
 }

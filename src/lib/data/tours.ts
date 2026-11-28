@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
+import { byCountryName } from "@/lib/countries";
 import type { ListedTour, TourDateInfo } from "@/lib/tours-filters";
 import { TOUR_COLUMNS } from "./group";
 import { LISTING_CACHE } from "./home";
@@ -74,6 +75,6 @@ export async function getToursListing(): Promise<ToursListing> {
     tours: items,
     countries: [...used]
       .map((code) => ({ code, name: countryByCode.get(code)?.name ?? code }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
+      .sort(byCountryName),
   };
 }

@@ -1,4 +1,5 @@
 import { addCity } from "@/app/actions/admin-settings";
+import { CityChip } from "@/components/admin/city-chip";
 import { inputCls } from "@/components/auth/field-classes";
 import { PlusIcon } from "@/components/icons";
 import { SubmitButton } from "@/components/submit-button";
@@ -10,7 +11,7 @@ type Country = AdminSettings["countries"][number];
 const purpleBtn =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-button bg-radar-purple px-4 text-[15px] font-extrabold text-spotlight-yellow hover:bg-radar-plum disabled:bg-radar-plum disabled:opacity-90";
 
-/** Settings > Countries and cities: each country opens to show its cities and a form to add one. Venues live on /admin/venues. */
+/** Settings > Countries and cities: each country opens to show its cities (each with a pencil to rename it) and a form to add one. Venues live on /admin/venues. */
 export function CountryCities({ countries, open }: { countries: Country[]; open: string }) {
   return (
     <ul className="flex flex-col gap-2 text-radar-purple">
@@ -46,9 +47,7 @@ export function CountryCities({ countries, open }: { countries: Country[]; open:
               ) : (
                 <ul className="flex flex-wrap gap-2" aria-label={`Cities in ${c.name}`}>
                   {c.cities.map((x) => (
-                    <li key={x.id} className="rounded-full bg-lavender px-3.5 py-1.5 text-sm font-bold">
-                      {x.name}
-                    </li>
+                    <CityChip key={x.id} id={x.id} name={x.name} countryCode={c.code} />
                   ))}
                 </ul>
               )}

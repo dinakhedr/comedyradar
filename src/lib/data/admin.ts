@@ -2,6 +2,7 @@ import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { byCountryName } from "@/lib/countries";
 import { requireAccount } from "./dashboard";
 import type { SiteError } from "@/lib/site-errors";
 
@@ -582,12 +583,14 @@ export async function getAdminSettings(): Promise<AdminSettings> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_settings");
   if (error) console.error("admin_settings", error.message);
-  return (data ?? {
+  const result = (data ?? {
     settings: {},
     countries: [],
     venues: { published: 0, pending: 0 },
     super_admins: [],
   }) as AdminSettings;
+  // Egypt first, then A to Z (the database groups them by region).
+  return { ...result, countries: [...result.countries].sort(byCountryName) };
 }
 
 export type AdminMessage = {
