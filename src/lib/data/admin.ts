@@ -660,3 +660,18 @@ export async function getDeleteImpact(kind: "comedian" | "group", id: string): P
   if (error) console.error("admin_profile_delete_impact", error.message);
   return (data ?? null) as DeleteImpact | null;
 }
+
+export type SocialComedian = { id: string; name: string; name_ar: string | null; slug: string; photo_url: string | null; status: string };
+
+/** Every comedian (any status) for the Social images picker, A to Z. */
+export async function getSocialComedians(): Promise<SocialComedian[]> {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("comedians")
+    .select("id, name, name_ar, slug, photo_url, status")
+    .order("name")
+    .limit(2000);
+  if (error) console.error("social comedians", error.message);
+  return (data ?? []) as SocialComedian[];
+}

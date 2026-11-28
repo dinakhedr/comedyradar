@@ -939,4 +939,18 @@ set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 set local request.jwt.claim.aal = '';
 reset role;
 
+-- ---------------------------------------------------------------- social images
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.check(public.admin_log_social_image((select id from public.comedians limit 1), 'comedian_feature', null) = 'forbidden',
+  'only the super admin logs a social image');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+set local request.jwt.claim.aal = 'aal2';
+select pg_temp.check(public.admin_log_social_image((select id from public.comedians limit 1), 'comedian_feature', 'Hamo') = 'ok',
+  'the super admin logs a social image download');
+select pg_temp.check((select count(*) = 1 from jsonb_array_elements(public.admin_activity('', null, 'comedian', 'generate_social_image', 'all', null, 50) -> 'rows') r),
+  'social image downloads show in the activity log');
+set local request.jwt.claim.aal = '';
+reset role;
+
 rollback;

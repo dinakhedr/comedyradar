@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // The social image route reads its TTF fonts and the logo from disk.
+  outputFileTracingIncludes: {
+    "/api/admin/social/**": ["./assets/fonts/**", "./public/brand/logos/comedy-radar-horizontal-dark.svg"],
+  },
   experimental: {
     // Show and tour forms send up to two posters at once. The default 1 MB made
     // saving fail with an Error 500 (2026-11-27). Vercel accepts up to 4.5 MB;
