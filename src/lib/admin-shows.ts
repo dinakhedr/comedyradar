@@ -72,3 +72,52 @@ export function ticketCheck(url: string | null | undefined): "ok" | "missing" | 
 
 /** Has this date not happened yet? */
 export const isFuture = (iso: string) => Date.parse(iso) > Date.now();
+
+const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The ?cities= value ("id,id,…") as a clean list of ids. */
+export function parseIdList(v: string | undefined, max = 200): string[] {
+  const out: string[] = [];
+  for (const part of (v ?? "").split(",")) {
+    const id = part.trim().toLowerCase();
+    if (ID_RE.test(id) && !out.includes(id)) out.push(id);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+export type FilterCity = { id: string; name: string; country_code: string; country?: string };
+export type CountryGroup = { code: string; name: string; cities: FilterCity[] };
+
+/** Cities grouped by country, keeping the order they came in (Egypt first, then A to Z). */
+export function groupCities(cities: FilterCity[]): CountryGroup[] {
+  const groups: CountryGroup[] = [];
+  for (const c of cities) {
+    let g = groups.find((x) => x.code === c.country_code);
+    if (!g) {
+      g = { code: c.country_code, name: c.country || c.country_code, cities: [] };
+      groups.push(g);
+    }
+    g.cities.push(c);
+  }
+  return groups;
+}
+
+/**
+ * What the closed Cities box says: "All cities" when nothing is ticked, a
+ * country's name when all its cities are ticked, city names otherwise, and
+ * "X + N more" past two.
+ */
+export function citiesSummary(selected: readonly string[], cities: FilterCity[]): string {
+  const picked = new Set(selected);
+  const parts: string[] = [];
+  for (const g of groupCities(cities)) {
+    const on = g.cities.filter((c) => picked.has(c.id));
+    if (on.length === 0) continue;
+    if (on.length === g.cities.length) parts.push(g.name);
+    else parts.push(...on.map((c) => c.name));
+  }
+  if (parts.length === 0) return "All cities";
+  if (parts.length <= 2) return parts.join(", ");
+  return `${parts[0]} + ${parts.length - 1} more`;
+}

@@ -241,8 +241,15 @@ export type AdminShows = {
     tours_no_tickets: number;
     new_signal_days: number;
   };
-  cities: { id: string; name: string; country_code: string }[];
+  cities: { id: string; name: string; country_code: string; country?: string }[];
+  comedians?: AdminShowComedian[];
   rows: AdminShowRow[];
+};
+export type AdminShowComedian = {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  upcoming: number;
 };
 export type AdminTourRow = {
   id: string;
@@ -310,9 +317,11 @@ const EMPTY_SHOWS: AdminShows = {
 
 export async function getAdminShows(f: {
   q: string;
-  zone: string;
   status: string;
-  city: string;
+  /** City ids; empty = all cities. */
+  cities: string[];
+  /** Comedian id; "" = all comedians. */
+  comedian: string;
   period: string;
   /** "single" = not on a tour, "tour" = tour dates only. */
   kind: "single" | "tour" | "";
@@ -321,9 +330,10 @@ export async function getAdminShows(f: {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_shows", {
     p_q: f.q,
-    p_zone: f.zone,
+    p_zone: "",
     p_status: f.status,
-    p_city: f.city || null,
+    p_cities: f.cities,
+    p_comedian: f.comedian || null,
     p_period: f.period,
     p_kind: f.kind,
   });

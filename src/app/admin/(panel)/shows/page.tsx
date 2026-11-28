@@ -15,6 +15,7 @@ import {
 } from "@/app/actions/admin-shows";
 import { updateVenue } from "@/app/actions/admin-settings";
 import { LogoPicker } from "@/components/admin/logo-picker";
+import { CitiesFilter, ComedianFilter } from "@/components/admin/show-filters";
 import { StatusSelect } from "@/components/admin/status-select";
 import { inputCls, labelCls } from "@/components/auth/field-classes";
 import {
@@ -48,7 +49,7 @@ import {
   ticketCheck,
   isFuture,
   ZONES,
-  zoneOf,
+  parseIdList,
   type ShowTab,
 } from "@/lib/admin-shows";
 import { flagOf } from "@/lib/countries";
@@ -671,25 +672,25 @@ function DatesTable({
 
 async function ShowsTab({ sp, link }: Ctx) {
   const q = one(sp.q).slice(0, 80);
-  const zone = zoneOf(one(sp.zone));
+  const comedian = UUID.test(one(sp.comedian)) ? one(sp.comedian).toLowerCase() : "";
   const status = showStatusOf(one(sp.status));
   const period = periodOf(one(sp.period));
-  const city = UUID.test(one(sp.city)) ? one(sp.city) : "";
+  const cities = parseIdList(one(sp.cities));
   // Signal change requests can be on tour dates too, so that filter shows both.
-  const data = await getAdminShows({ q, zone, status, city, period, kind: status === "asked" ? "" : "single" });
+  const data = await getAdminShows({ q, comedian, status, cities, period, kind: status === "asked" ? "" : "single" });
   const rows = data.rows;
   const filters = {
     q,
-    zone,
+    comedian,
     status,
-    city,
+    cities: cities.join(","),
     period: period === "upcoming" ? "" : period,
   };
   const here = (over: Record<string, string> = {}) =>
     link({ ...filters, ...over });
   const picked = rows.find((r) => r.id === one(sp.s)) ?? null;
   const ret = here(picked ? { s: picked.id } : {});
-  const filtered = q || zone || status || city || period !== "upcoming";
+  const filtered = q || comedian || status || cities.length > 0 || period !== "upcoming";
   const onTours = data.stats.on_tours ?? 0;
 
   return (
@@ -724,22 +725,16 @@ async function ShowsTab({ sp, link }: Ctx) {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="as-zone" className={labelCls}>
-                Zone
+              <label htmlFor="as-comedian" className={labelCls}>
+                Comedian
               </label>
-              <select
-                id="as-zone"
-                name="zone"
-                defaultValue={zone}
-                className={`${inputCls} min-h-11`}
-              >
-                <option value="">All zones</option>
-                {ZONES.map((z) => (
-                  <option key={z.value} value={z.value}>
-                    {z.label}
-                  </option>
-                ))}
-              </select>
+              <ComedianFilter
+                // Remount when the URL changes, so Clear filters resets it.
+                key={comedian}
+                id="as-comedian"
+                comedians={data.comedians ?? []}
+                value={comedian}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="as-status" className={labelCls}>
@@ -760,22 +755,15 @@ async function ShowsTab({ sp, link }: Ctx) {
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="as-city" className={labelCls}>
-                City
+              <label htmlFor="as-cities" className={labelCls}>
+                Cities
               </label>
-              <select
-                id="as-city"
-                name="city"
-                defaultValue={city}
-                className={`${inputCls} min-h-11`}
-              >
-                <option value="">All cities</option>
-                {data.cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {flagOf(c.country_code)} {c.name}
-                  </option>
-                ))}
-              </select>
+              <CitiesFilter
+                key={cities.join(",")}
+                id="as-cities"
+                cities={data.cities}
+                value={cities}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="as-period" className={labelCls}>
@@ -798,14 +786,12 @@ async function ShowsTab({ sp, link }: Ctx) {
               <button type="submit" className={outlineBtn}>
                 Show
               </button>
-              {filtered && (
-                <Link
-                  href={link({})}
-                  className={`${outlineBtn} border-transparent`}
-                >
-                  Clear
-                </Link>
-              )}
+              <Link
+                href={link({})}
+                className="inline-flex min-h-11 items-center gap-1.5 px-2 font-extrabold whitespace-nowrap underline"
+              >
+                <span aria-hidden="true">✕</span> Clear filters
+              </Link>
             </div>
           </form>
 
@@ -1085,7 +1071,7 @@ async function ToursTab({ sp, link }: Ctx) {
   const editId = one(sp.edit);
   const [tours, data] = await Promise.all([
     getAdminTours(q, status),
-    getAdminShows({ q: "", zone: "", status: "", city: "", period: "all", kind: "tour" }),
+    getAdminShows({ q: "", comedian: "", status: "", cities: [], period: "all", kind: "tour" }),
   ]);
   const byTour = new Map<string, AdminShowRow[]>();
   for (const r of data.rows) {
