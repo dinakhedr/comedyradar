@@ -219,6 +219,22 @@ select pg_temp.check((select not on_homepage from public.shows where id = '40000
 select pg_temp.check((select (r -> 'rows' -> 0 ->> 'on_homepage')::boolean = false
                       from (select public.admin_shows('', '', '', null, 'all', '') r) x),
                      'the admin list shows the homepage flag');
+select pg_temp.check(jsonb_array_length(public.admin_shows('', '', '', null, '30000000-0000-0000-0000-00000000000a', 'all', '') -> 'rows') = 1,
+                     'the admin list filters by comedian');
+select pg_temp.check(jsonb_array_length(public.admin_shows('', '', '', null, '30000000-0000-0000-0000-0000000000ff', 'all', '') -> 'rows') = 0,
+                     'a comedian with no shows gives an empty admin list');
+select pg_temp.check(jsonb_array_length(public.admin_shows('', '', '', array['20000000-0000-0000-0000-000000000001']::uuid[], null, 'all', '') -> 'rows') = 1,
+                     'the admin list filters by a list of cities');
+select pg_temp.check(jsonb_array_length(public.admin_shows('', '', '', array['20000000-0000-0000-0000-0000000000ff']::uuid[], null, 'all', '') -> 'rows') = 0,
+                     'cities with no shows give an empty admin list');
+select pg_temp.check(jsonb_array_length(public.admin_shows('', '', '', '{}'::uuid[], null, 'all', '') -> 'rows') = 1,
+                     'no cities ticked means all cities');
+select pg_temp.check((select bool_or(c ->> 'name' = 'Comic A') from jsonb_array_elements(
+                        public.admin_shows('', '', '', null, null, 'all', '') -> 'comedians') c),
+                     'the admin list gives the comedians menu');
+select pg_temp.check((select (c ->> 'country') = 'Egypt' from jsonb_array_elements(
+                        public.admin_shows('', '', '', null, null, 'all', '') -> 'cities') c limit 1),
+                     'the cities menu knows each city''s country');
 select public.admin_set_show_homepage('40000000-0000-0000-0000-000000000001', true);
 set local request.jwt.claim.aal = '';
 reset role;
@@ -576,6 +592,7 @@ set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 update public.shows set signal_request = 'strong' where id = '40000000-0000-0000-0000-000000000001';
 select pg_temp.check(public.admin_shows('', '', '', null, 'upcoming') is null
+                     and public.admin_shows('', '', '', null, null, 'upcoming', '') is null
                      and public.admin_set_show_signal(array['40000000-0000-0000-0000-000000000001'::uuid], 'strong') = 0
                      and public.admin_tours('', '') is null and public.admin_venues('', '') is null,
   'only the super admin lists shows and sets signals');
